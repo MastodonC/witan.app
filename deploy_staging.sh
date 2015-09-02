@@ -26,4 +26,4 @@ docker push "${IMAGE_NAME}"
 # using deployment service sebastopol
 TAG=git-$(git rev-parse --short=12 HEAD)
 sed "s/@@TAG@@/$TAG/" witan.app.json.template > witan.app.json
-curl -i -X POST http://sebastopol.marathon.mesos:9501/marathon/witan.app -H "Content-Type: application/json" -H "x-kixi-keep-it-secret-keep-it-safe" --data-binary "@witan.app.json"
+curl -i -X POST http://52.28.251.86:9501/marathon/witan.app -H "Content-Type: application/json" -H "x-kixi-keep-it-secret-keep-it-safe" --data-binary "@witan.app.json"
