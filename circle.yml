@@ -10,6 +10,7 @@ deployment:
   staging:
     branch: master
     commands:
+      - lein clean
       - lein ring uberjar
       - docker build -t mastodonc/witan.app .
       - docker tag -f mastodonc/witan.app mastodonc/witan.app:latest
