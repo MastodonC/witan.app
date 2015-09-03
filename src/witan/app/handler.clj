@@ -3,6 +3,7 @@
             [compojure.core :refer :all]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [buddy.core.nonce :as nonce]
             [buddy.core.codecs :as codecs]
             [buddy.auth :refer [authenticated? throw-unauthorized]]
@@ -100,4 +101,6 @@
              (wrap-authentication auth-backend)
              (wrap-json-response {:pretty false})
              (wrap-json-body {:keywords? true :bigdecimals? true})
-             (wrap-defaults api-defaults)))
+             (wrap-defaults api-defaults)
+             (wrap-cors :access-control-allow-origin [#".*"]
+                        :access-control-allow-methods [:get :put :post :delete])))
