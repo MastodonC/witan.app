@@ -22,5 +22,5 @@
         "portIndex": 0,
         "timeoutSeconds": 10,
         "maxConsecutiveFailures": 2
-  }],
+  }]
 }
