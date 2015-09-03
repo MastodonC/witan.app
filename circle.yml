@@ -2,10 +2,6 @@ machine:
   services:
     - docker
 
-dependencies:
-  post:
-    - lein ring uberjar
-
 deployment:
   staging:
     branch: master
