@@ -6,6 +6,7 @@
                  [compojure "1.3.1"]
                  [ring/ring-defaults "0.1.2"]
                  [liberator "0.13"]
+                 [org.clojure/tools.logging "0.3.1"]
                  [cheshire "5.5.0"]]
   :plugins [[lein-ring "0.8.13"]]
   :ring {:handler witan.app.handler/app}
