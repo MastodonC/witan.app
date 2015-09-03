@@ -1,13 +1,8 @@
 (ns witan.app.handler
   (:require [compojure.route :as route]
             [compojure.core :refer :all]
-            [compojure.response :refer [render]]
-            [clojure.java.io :as io]
-            [ring.util.response :refer [response redirect content-type]]
-            [ring.middleware.session :refer [wrap-session]]
-            [ring.middleware.params :refer [wrap-params]]
+            [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
-            [ring.adapter.jetty :as jetty]
             [buddy.core.nonce :as nonce]
             [buddy.core.codecs :as codecs]
             [buddy.auth :refer [authenticated? throw-unauthorized]]
@@ -22,6 +17,8 @@
 
 (defn ok [d] {:status 200 :body d})
 (defn bad-request [d] {:status 400 :body d})
+(defn unauthorized [d] {:status 401 :body d})
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Token generator helpers
@@ -72,7 +69,7 @@
       (let [token (random-token)]
         (swap! tokens assoc (keyword token) (keyword username))
         (ok {:token token}))
-      (bad-request {:message "wrong auth data"}))))
+      (ok {:message "login failed"}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Routes and Middlewares                           ;;
@@ -102,4 +99,5 @@
              (wrap-authorization auth-backend)
              (wrap-authentication auth-backend)
              (wrap-json-response {:pretty false})
-             (wrap-json-body {:keywords? true :bigdecimals? true})))
+             (wrap-json-body {:keywords? true :bigdecimals? true})
+             (wrap-defaults api-defaults)))

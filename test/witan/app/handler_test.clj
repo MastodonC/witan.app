@@ -30,7 +30,7 @@
 
   (testing "login failure"
     (let [response (app (json-post-request "/login" {"username" "blah@blah.blah" "password" "foobar"}))]
-      (is (= (:status response) 400))
+      (is (= (:status response) 200))
       (is (not (contains? (response-body-as-json response) :token)))))
 
   (testing "not-found route"
