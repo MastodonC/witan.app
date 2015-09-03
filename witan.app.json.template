@@ -1,8 +1,10 @@
 {
+  "acceptedResourceRoles": ["slave_public"],
   "container": {
     "type": "DOCKER",
     "docker": {
         "image": "mastodonc/witan.app:@@TAG@@",
+        "network": "BRIDGE",
         "portMappings": [
             {
                 "containerPort": 3000,
@@ -12,8 +14,8 @@
         ]
     }
   },
-  "id": "witan.app",
-  "cpus": 1,
+  "id": "witan_app",
+  "cpus": 2,
   "mem": 2048,
   "healthChecks": [{
         "protocol": "TCP",
