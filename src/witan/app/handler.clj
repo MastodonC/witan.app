@@ -12,7 +12,11 @@
             [buddy.core.codecs :as codecs]
             [buddy.auth :refer [authenticated? throw-unauthorized]]
             [buddy.auth.backends.token :refer [token-backend]]
-            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]])
+            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
+            ;;
+            [cheshire.core :as json]
+            [cheshire.parse :as parse]
+            [ring.util.response :refer [content-type]])
   (:gen-class))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -60,8 +64,9 @@
 
 (defn login
   [request]
-  (let [username (get-in request [:body :username])
-        password (get-in request [:body :password])
+  (let [body (:body request)
+        username (:username body)
+        password (:password body)
         valid? (some-> authdata
                        (get username)
                        (= password))]
@@ -79,9 +84,10 @@
 ;; Note: no any middleware for authorization, all authorization system
 ;; is totally decoupled from main routes.
 
-(defroutes app
+(defroutes app-routes
   (GET "/" [] home)
-  (POST "/login" [] login))
+  (POST "/login" [] login)
+  (route/not-found "Not Found"))
 
 (defn my-authfn
   [req token]
@@ -94,7 +100,7 @@
   (token-backend {:authfn my-authfn}))
 
 ; the Ring app definition including the authentication backend
-(def app (-> app
+(def app (-> app-routes
             (wrap-authorization auth-backend)
             (wrap-authentication auth-backend)
             (wrap-json-response {:pretty false})

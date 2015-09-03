@@ -5,7 +5,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [compojure "1.4.0"]
                  [ring/ring-defaults "0.1.2"]
-                 [ring/ring-json "0.3.1" :exclusions [ring/ring-core]]
+                 [ring/ring-json "0.4.0" :exclusions [ring/ring-core]]
                  [ring/ring-jetty-adapter "1.3.2"]
                  [liberator "0.13"]
                  [cheshire "5.5.0"]
