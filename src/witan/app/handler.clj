@@ -13,11 +13,7 @@
             [buddy.auth :refer [authenticated? throw-unauthorized]]
             [buddy.auth.backends.token :refer [token-backend]]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
-            [clojure.tools.logging :as log]
-            ;;
-            [cheshire.core :as json]
-            [cheshire.parse :as parse]
-            [ring.util.response :refer [content-type]])
+            [clojure.tools.logging :as log])
   (:gen-class))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -103,7 +99,7 @@
 
 ; the Ring app definition including the authentication backend
 (def app (-> app-routes
-            (wrap-authorization auth-backend)
-            (wrap-authentication auth-backend)
-            (wrap-json-response {:pretty false})
-            (wrap-json-body {:keywords? true :bigdecimals? true})))
+             (wrap-authorization auth-backend)
+             (wrap-authentication auth-backend)
+             (wrap-json-response {:pretty false})
+             (wrap-json-body {:keywords? true :bigdecimals? true})))
