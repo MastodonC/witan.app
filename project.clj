@@ -9,7 +9,9 @@
                  [ring/ring-jetty-adapter "1.3.2"]
                  [liberator "0.13"]
                  [cheshire "5.5.0"]
-                 [buddy/buddy-auth "0.6.2"]]
+                 [buddy/buddy-auth "0.6.2"]
+                 [org.clojure/tools.logging "0.3.1"]]
+
   :plugins [[lein-ring "0.8.13"]]
   :ring {:handler witan.app.handler/app
          :nrepl {:start? true :port 7888}}

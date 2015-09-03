@@ -13,6 +13,7 @@
             [buddy.auth :refer [authenticated? throw-unauthorized]]
             [buddy.auth.backends.token :refer [token-backend]]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
+            [clojure.tools.logging :as log]
             ;;
             [cheshire.core :as json]
             [cheshire.parse :as parse]
@@ -45,6 +46,7 @@
 
 (defn home
   [request]
+  (log/info "home was called")
   (if-not (authenticated? request)
     (throw-unauthorized)
     (ok {:message (str "hello " (:identity request))})))
