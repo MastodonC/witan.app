@@ -14,7 +14,7 @@
         ]
     }
   },
-  "id": "witan_app",
+  "id": "witan.app",
   "cpus": 2,
   "mem": 2048,
   "healthChecks": [{
