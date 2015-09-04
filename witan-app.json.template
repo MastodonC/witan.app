@@ -3,19 +3,19 @@
   "container": {
     "type": "DOCKER",
     "docker": {
-        "image": "mastodonc/witan.app:@@TAG@@",
-        "network": "BRIDGE",
-        "portMappings": [
-            {
-                "containerPort": 3000,
-                "hostPort": 3000,
-                "protocol": "tcp"
-            }
-        ]
+      "image": "mastodonc/witan.app:@@TAG@@",
+      "network": "BRIDGE",
+      "portMappings": [
+          {
+              "containerPort": 3000,
+              "hostPort": 3000,
+              "protocol": "tcp"
+          }
+      ]
     }
   },
   "id": "witan.app",
-  "cpus": 2,
+  "cpus": 1,
   "mem": 2048,
   "healthChecks": [{
         "protocol": "TCP",
@@ -23,6 +23,6 @@
         "intervalSeconds": 30,
         "portIndex": 0,
         "timeoutSeconds": 10,
-        "maxConsecutiveFailures": 2
+        "maxConsecutiveFailures": 3
   }]
 }
