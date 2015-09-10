@@ -1,15 +1,20 @@
 (ns witan.app.handler
-  (:require [compojure.route :as route]
+  (:require [buddy.auth.backends.token :refer [token-backend]]
+            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
+            [buddy.auth :refer [authenticated? throw-unauthorized]]
+            [buddy.core.codecs :as codecs]
+            [buddy.core.nonce :as nonce]
+            [buddy.hashers :as hs]
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]
+            [clojure.tools.logging :as log]
             [compojure.core :refer :all]
+            [compojure.route :as route]
+            [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
-            [ring.middleware.cors :refer [wrap-cors]]
-            [buddy.core.nonce :as nonce]
-            [buddy.core.codecs :as codecs]
-            [buddy.auth :refer [authenticated? throw-unauthorized]]
-            [buddy.auth.backends.token :refer [token-backend]]
-            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
-            [clojure.tools.logging :as log])
+            [qbits.alia :as alia]
+            [qbits.hayt :as hayt])
   (:gen-class))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,11 +50,6 @@
     (throw-unauthorized)
     (ok {:message (str "hello " (:identity request))})))
 
-;; Global var that stores valid users with their
-;; respective passwords.
-
-(def authdata {"support@mastodonc.com" "secret"})
-
 ;; Global storage for store generated tokens.
 (def tokens (atom {}))
 
@@ -63,14 +63,57 @@
   (let [body (:body request)
         username (:username body)
         password (:password body)
-        valid? (some-> authdata
-                       (get username)
-                       (= password))]
+        valid? true]
     (if valid?
       (let [token (random-token)]
         (swap! tokens assoc (keyword token) (keyword username))
         (ok {:token token}))
       (ok {:message "login failed"}))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Database connection and configuration            ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn get-config
+  "Gets info from a config file."
+  [url]
+  (-> (slurp url) edn/read-string))
+
+(def ^:const config
+  (let [home-config (io/file (System/getProperty "user.home")
+                             ".witan-app.edn")
+        default-config (io/resource "dev.witan-app.edn")]
+    (try (get-config home-config)
+         (catch java.io.FileNotFoundException e
+           (get-config default-config)))))
+
+(defn cluster [host]
+  (alia/cluster {:contact-points [host]}))
+
+(defn session [host keyspace]
+  (alia/connect (cluster host) keyspace))
+
+(defn find-user [username]
+  (hayt/select :Users (hayt/where {:username username})))
+
+(defn create-user [user password]
+  (let [hash (hs/encrypt password)]
+    (hayt/insert :Users, (hayt/values :username user :password_hash hash))))
+
+(defn add-user! [session username password]
+  (let [existing-users (alia/execute session (find-user username))]
+    (if (empty? existing-users)
+      (alia/execute session (create-user username password))
+      nil)))
+
+(defn password-ok? [existing-user password]
+  (hs/check password (:password_hash existing-user)))
+
+(defn user-valid? [session username password]
+  (let [existing-users (alia/execute session (find-user username))]
+    (if (not (empty? existing-users))
+      (password-ok? (first existing-users) password)
+      false)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Routes and Middlewares                           ;;
