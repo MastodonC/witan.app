@@ -11,7 +11,10 @@
                  [liberator "0.13"]
                  [cheshire "5.5.0"]
                  [buddy/buddy-auth "0.6.2"]
-                 [org.clojure/tools.logging "0.3.1"]]
+                 [buddy/buddy-hashers "0.6.0"]
+                 [org.clojure/tools.logging "0.3.1"]
+                 [cc.qbits/alia "2.8.0"]
+                 [cc.qbits/hayt "3.0.0-rc2"]]
   :plugins [[lein-ring "0.8.13"]]
   :ring {:handler witan.app.handler/app
          :nrepl {:start? true :port 7889}}
