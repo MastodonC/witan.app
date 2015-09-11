@@ -9,8 +9,8 @@
   [method content]
   (mock/header
    (mock/request :post method (json/write-str content))
-     "Content-Type"
-     "application/json; charset=utf-8"))
+   "Content-Type"
+   "application/json; charset=utf-8"))
 
 (defn response-body-as-json
   [response]

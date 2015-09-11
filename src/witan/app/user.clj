@@ -6,12 +6,10 @@
             [qbits.hayt :as hayt]
             [witan.app.config :refer [store-execute config]]))
 
-
 (defn random-token
   []
   (let [randomdata (nonce/random-bytes 16)]
     (codecs/bytes->hex randomdata)))
-
 
 (defn find-user [username]
   (hayt/select :Users (hayt/where {:username username})))
