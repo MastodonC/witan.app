@@ -1,20 +1,23 @@
 (ns witan.app.handler
-  (:require [buddy.auth.backends.token :refer [token-backend]]
+  (:require [buddy.auth :refer [authenticated? throw-unauthorized]]
+            [buddy.auth.backends.token :refer [token-backend]]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
-            [buddy.auth :refer [authenticated? throw-unauthorized]]
-            [buddy.core.codecs :as codecs]
-            [buddy.core.nonce :as nonce]
-            [buddy.hashers :as hs]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
             [clojure.tools.logging :as log]
-            [compojure.core :refer :all]
-            [compojure.route :as route]
-            [ring.middleware.cors :refer [wrap-cors]]
-            [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
-            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
-            [qbits.alia :as alia]
-            [qbits.hayt :as hayt])
+            [compojure
+             [core :refer :all]
+             [route :as route]]
+            [ring.middleware
+             [cors :refer [wrap-cors]]
+             [defaults :refer [api-defaults wrap-defaults]]
+             [json :refer [wrap-json-body wrap-json-response]]]
+            [witan.app.user :as user]
+            [buddy.core
+             [codecs :as codecs]
+             [nonce :as nonce]]
+            [compojure
+             [core :refer :all]]
+            [compojure
+             [core :refer :all]])
   (:gen-class))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,68 +27,6 @@
 (defn ok [d] {:status 200 :body d})
 (defn bad-request [d] {:status 400 :body d})
 (defn unauthorized [d] {:status 401 :body d})
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Token generator helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn random-token
-  []
-  (let [randomdata (nonce/random-bytes 16)]
-    (codecs/bytes->hex randomdata)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Database connection and configuration            ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn get-config
-  "Gets info from a config file."
-  [url]
-  (-> (slurp url) edn/read-string))
-
-(def ^:const config
-  (let [home-config (io/file (System/getProperty "user.home")
-                             ".witan-app.edn")
-        default-config (io/resource "dev.witan-app.edn")]
-    (try (get-config home-config)
-         (catch java.io.FileNotFoundException e
-           (get-config default-config)))))
-
-(defn cluster [host]
-  (alia/cluster {:contact-points [host]}))
-
-(defn session [host keyspace]
-  (alia/connect (cluster host) keyspace))
-
-(defn store-execute [config]
-  (let [cassandra-info (:cassandra-session config)
-        session (session (:host cassandra-info) (:keyspace cassandra-info))]
-    (partial alia/execute session)))
-
-(defn find-user [username]
-  (hayt/select :Users (hayt/where {:username username})))
-
-(defn create-user [user password]
-  (let [hash (hs/encrypt password)]
-    (hayt/insert :Users, (hayt/values :username user :password_hash hash))))
-
-(defn add-user! [username password]
-  (let [exec (store-execute config)
-        existing-users (exec (find-user username))]
-    (if (empty? existing-users)
-      (exec (create-user username password))
-      nil)))
-
-(defn password-ok? [existing-user password]
-  (hs/check password (:password_hash existing-user)))
-
-(defn user-valid? [username password]
-  (let [exec (store-execute config)
-        existing-users (exec (find-user username))]
-    (if (not (empty? existing-users))
-      (password-ok? (first existing-users) password)
-      false)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controllers                                      ;;
@@ -115,9 +56,9 @@
   (let [body (:body request)
         username (:username body)
         password (:password body)
-        valid? (user-valid? username password)]
+        valid? (user/user-valid? username password)]
     (if valid?
-      (let [token (random-token)]
+      (let [token (user/random-token)]
         (swap! tokens assoc (keyword token) (keyword username))
         (ok {:token token}))
       (ok {:message "login failed"}))))
