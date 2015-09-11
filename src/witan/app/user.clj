@@ -21,9 +21,8 @@
 (defn add-user! [username password]
   (let [exec (store-execute config)
         existing-users (exec (find-user username))]
-    (if (empty? existing-users)
-      (exec (create-user username password))
-      nil)))
+    (when (empty? existing-users)
+      (exec (create-user username password)))))
 
 (defn password-ok? [existing-user password]
   (hs/check password (:password_hash existing-user)))
@@ -31,6 +30,6 @@
 (defn user-valid? [username password]
   (let [exec (store-execute config)
         existing-users (exec (find-user username))]
-    (if (not (empty? existing-users))
+    (if-not (empty? existing-users)
       (password-ok? (first existing-users) password)
       false)))
