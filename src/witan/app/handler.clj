@@ -63,8 +63,6 @@
         session (session (:host cassandra-info) (:keyspace cassandra-info))]
     (partial alia/execute session)))
 
-(def exec (store-execute config))
-
 (defn find-user [username]
   (hayt/select :Users (hayt/where {:username username})))
 
@@ -73,7 +71,8 @@
     (hayt/insert :Users, (hayt/values :username user :password_hash hash))))
 
 (defn add-user! [username password]
-  (let [existing-users (exec (find-user username))]
+  (let [exec (store-execute config)
+        existing-users (exec (find-user username))]
     (if (empty? existing-users)
       (exec (create-user username password))
       nil)))
@@ -82,7 +81,8 @@
   (hs/check password (:password_hash existing-user)))
 
 (defn user-valid? [username password]
-  (let [existing-users (exec (find-user username))]
+  (let [exec (store-execute config)
+        existing-users (exec (find-user username))]
     (if (not (empty? existing-users))
       (password-ok? (first existing-users) password)
       false)))
