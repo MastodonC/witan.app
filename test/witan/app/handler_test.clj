@@ -30,10 +30,10 @@
         (is (contains? (response-body-as-json response) :token)))))
 
   (testing "login failure"
-    (with-redefs [user-valid? (fn [username password] false)])
-    (let [response (app (json-post-request "/login" {"username" "blah@blah.blah" "password" "foobar"}))]
-      (is (= (:status response) 200))
-      (is (not (contains? (response-body-as-json response) :token)))))
+    (with-redefs [user-valid? (fn [username password] false)]
+      (let [response (app (json-post-request "/login" {"username" "blah@blah.blah" "password" "foobar"}))]
+        (is (= (:status response) 200))
+        (is (not (contains? (response-body-as-json response) :token))))))
 
   (testing "not-found route"
     (let [response (app (mock/request :get "/invalid"))]
