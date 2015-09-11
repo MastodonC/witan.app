@@ -1,0 +1,2 @@
+{:cassandra-session {:host "cassandra-dcos-node.cassandra.dcos.mesos"
+                     :keyspace "witan"}}

@@ -1,0 +1,2 @@
+{:cassandra-session {:host "localhost"
+                     :keyspace "witan"}}

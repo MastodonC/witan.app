@@ -1,15 +1,16 @@
 (ns witan.app.handler
-  (:require [compojure.route :as route]
-            [compojure.core :refer :all]
-            [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
-            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
-            [ring.middleware.cors :refer [wrap-cors]]
-            [buddy.core.nonce :as nonce]
-            [buddy.core.codecs :as codecs]
-            [buddy.auth :refer [authenticated? throw-unauthorized]]
+  (:require [buddy.auth :refer [authenticated? throw-unauthorized]]
             [buddy.auth.backends.token :refer [token-backend]]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [compojure
+             [core :refer :all]
+             [route :as route]]
+            [ring.middleware
+             [cors :refer [wrap-cors]]
+             [defaults :refer [api-defaults wrap-defaults]]
+             [json :refer [wrap-json-body wrap-json-response]]]
+            [witan.app.user :as user])
   (:gen-class))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -19,16 +20,6 @@
 (defn ok [d] {:status 200 :body d})
 (defn bad-request [d] {:status 400 :body d})
 (defn unauthorized [d] {:status 401 :body d})
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Token generator helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn random-token
-  []
-  (let [randomdata (nonce/random-bytes 16)]
-    (codecs/bytes->hex randomdata)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controllers                                      ;;
@@ -45,11 +36,6 @@
     (throw-unauthorized)
     (ok {:message (str "hello " (:identity request))})))
 
-;; Global var that stores valid users with their
-;; respective passwords.
-
-(def authdata {"support@mastodonc.com" "secret"})
-
 ;; Global storage for store generated tokens.
 (def tokens (atom {}))
 
@@ -63,11 +49,9 @@
   (let [body (:body request)
         username (:username body)
         password (:password body)
-        valid? (some-> authdata
-                       (get username)
-                       (= password))]
+        valid? (user/user-valid? username password)]
     (if valid?
-      (let [token (random-token)]
+      (let [token (user/random-token)]
         (swap! tokens assoc (keyword token) (keyword username))
         (ok {:token token}))
       (ok {:message "login failed"}))))
