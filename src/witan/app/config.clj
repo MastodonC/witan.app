@@ -6,7 +6,7 @@
 (defn get-config
   "Gets info from a config file."
   [url]
-  (-> (slurp url) edn/read-string))
+  (edn/read-string (slurp url)))
 
 (def ^:const config
   (let [home-config (io/file (System/getProperty "user.home")

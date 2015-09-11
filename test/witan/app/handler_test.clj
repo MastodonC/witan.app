@@ -3,6 +3,7 @@
             [ring.mock.request :as mock]
             [ring.util.io :refer [string-input-stream]]
             [witan.app.handler :refer :all]
+            [witan.app.user :as user]
             [clojure.data.json :as json]))
 
 (defn json-post-request
@@ -24,13 +25,13 @@
       (is (= (:body response) "Unauthorized"))))
 
   (testing "login success"
-    (with-redefs [user-valid? (fn [username password] true)]
+    (with-redefs [user/user-valid? (fn [username password] true)]
       (let [response (app (json-post-request "/login" {"username" "support@mastodonc.com" "password" "secret"}))]
         (is (= (:status response) 200))
         (is (contains? (response-body-as-json response) :token)))))
 
   (testing "login failure"
-    (with-redefs [user-valid? (fn [username password] false)]
+    (with-redefs [user/user-valid? (fn [username password] false)]
       (let [response (app (json-post-request "/login" {"username" "blah@blah.blah" "password" "foobar"}))]
         (is (= (:status response) 200))
         (is (not (contains? (response-body-as-json response) :token))))))
