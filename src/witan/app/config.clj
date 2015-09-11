@@ -1,6 +1,5 @@
 (ns witan.app.config
   (:require [clojure.edn :as edn]
-            [compojure.core :refer :all]
             [clojure.java.io :as io]
             [qbits.alia :as alia]))
 
