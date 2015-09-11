@@ -10,14 +10,7 @@
              [cors :refer [wrap-cors]]
              [defaults :refer [api-defaults wrap-defaults]]
              [json :refer [wrap-json-body wrap-json-response]]]
-            [witan.app.user :as user]
-            [buddy.core
-             [codecs :as codecs]
-             [nonce :as nonce]]
-            [compojure
-             [core :refer :all]]
-            [compojure
-             [core :refer :all]])
+            [witan.app.user :as user])
   (:gen-class))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
