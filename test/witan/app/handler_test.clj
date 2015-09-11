@@ -24,11 +24,13 @@
       (is (= (:body response) "Unauthorized"))))
 
   (testing "login success"
-    (let [response (app (json-post-request "/login" {"username" "support@mastodonc.com" "password" "secret"}))]
-      (is (= (:status response) 200))
-      (is (contains? (response-body-as-json response) :token))))
+    (with-redefs [user-valid? (fn [username password] true)]
+      (let [response (app (json-post-request "/login" {"username" "support@mastodonc.com" "password" "secret"}))]
+        (is (= (:status response) 200))
+        (is (contains? (response-body-as-json response) :token)))))
 
   (testing "login failure"
+    (with-redefs [user-valid? (fn [username password] false)])
     (let [response (app (json-post-request "/login" {"username" "blah@blah.blah" "password" "foobar"}))]
       (is (= (:status response) 200))
       (is (not (contains? (response-body-as-json response) :token)))))
