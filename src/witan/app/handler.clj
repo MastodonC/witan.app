@@ -36,6 +36,58 @@
     (codecs/bytes->hex randomdata)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Database connection and configuration            ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn get-config
+  "Gets info from a config file."
+  [url]
+  (-> (slurp url) edn/read-string))
+
+(def ^:const config
+  (let [home-config (io/file (System/getProperty "user.home")
+                             ".witan-app.edn")
+        default-config (io/resource "dev.witan-app.edn")]
+    (try (get-config home-config)
+         (catch java.io.FileNotFoundException e
+           (get-config default-config)))))
+
+(defn cluster [host]
+  (alia/cluster {:contact-points [host]}))
+
+(defn session [host keyspace]
+  (alia/connect (cluster host) keyspace))
+
+(defn store-execute [config]
+  (let [cassandra-info (:cassandra-session config)
+        session (session (:host cassandra-info) (:keyspace cassandra-info))]
+    (partial alia/execute session)))
+
+(def exec (store-execute config))
+
+(defn find-user [username]
+  (hayt/select :Users (hayt/where {:username username})))
+
+(defn create-user [user password]
+  (let [hash (hs/encrypt password)]
+    (hayt/insert :Users, (hayt/values :username user :password_hash hash))))
+
+(defn add-user! [username password]
+  (let [existing-users (exec (find-user username))]
+    (if (empty? existing-users)
+      (exec (create-user username password))
+      nil)))
+
+(defn password-ok? [existing-user password]
+  (hs/check password (:password_hash existing-user)))
+
+(defn user-valid? [username password]
+  (let [existing-users (exec (find-user username))]
+    (if (not (empty? existing-users))
+      (password-ok? (first existing-users) password)
+      false)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controllers                                      ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -63,57 +115,12 @@
   (let [body (:body request)
         username (:username body)
         password (:password body)
-        valid? true]
+        valid? (user-valid? username password)]
     (if valid?
       (let [token (random-token)]
         (swap! tokens assoc (keyword token) (keyword username))
         (ok {:token token}))
       (ok {:message "login failed"}))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Database connection and configuration            ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn get-config
-  "Gets info from a config file."
-  [url]
-  (-> (slurp url) edn/read-string))
-
-(def ^:const config
-  (let [home-config (io/file (System/getProperty "user.home")
-                             ".witan-app.edn")
-        default-config (io/resource "dev.witan-app.edn")]
-    (try (get-config home-config)
-         (catch java.io.FileNotFoundException e
-           (get-config default-config)))))
-
-(defn cluster [host]
-  (alia/cluster {:contact-points [host]}))
-
-(defn session [host keyspace]
-  (alia/connect (cluster host) keyspace))
-
-(defn find-user [username]
-  (hayt/select :Users (hayt/where {:username username})))
-
-(defn create-user [user password]
-  (let [hash (hs/encrypt password)]
-    (hayt/insert :Users, (hayt/values :username user :password_hash hash))))
-
-(defn add-user! [session username password]
-  (let [existing-users (alia/execute session (find-user username))]
-    (if (empty? existing-users)
-      (alia/execute session (create-user username password))
-      nil)))
-
-(defn password-ok? [existing-user password]
-  (hs/check password (:password_hash existing-user)))
-
-(defn user-valid? [session username password]
-  (let [existing-users (alia/execute session (find-user username))]
-    (if (not (empty? existing-users))
-      (password-ok? (first existing-users) password)
-      false)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Routes and Middlewares                           ;;
