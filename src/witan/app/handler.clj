@@ -29,6 +29,64 @@
 ;; If incoming user is not authenticated it raises a not authenticated
 ;; exception, else simple shows a hello world message.
 
+(def dummy-forecasts [{:id "1234"
+                       :name "Population Forecast for Camden"
+                       :type :population
+                       :n-inputs 3
+                       :n-outputs [2 3]
+                       :owner "Camden"
+                       :version 3
+                       :last-modified "Aug 10th, 2015"
+                       :last-modifier "Neil"}
+                      {:id "1233"
+                       :name "Population Forecast for Camden"
+                       :type :population
+                       :n-inputs 3
+                       :n-outputs [2 3]
+                       :owner "Camden"
+                       :version 2
+                       :last-modified "Aug 8th, 2015"
+                       :last-modifier "Simon"
+                       :descendant-id "1234"}
+                      {:id "1232"
+                       :name "Population Forecast for Camden"
+                       :type :population
+                       :n-inputs 3
+                       :n-outputs [2 3]
+                       :owner "Camden"
+                       :version 1
+                       :last-modified "July 4th, 2015"
+                       :last-modifier "GLA"
+                       :descendant-id "1233"}
+                      {:id "5678"
+                       :name "Population Forecast for Bexley"
+                       :type :population
+                       :n-inputs 2
+                       :n-outputs [3 1]
+                       :owner "Bexley"
+                       :version 2
+                       :last-modified "July 22nd, 2015"
+                       :last-modifier "Sarah"}
+                      {:id "5676"
+                       :name "Population Forecast for Bexley"
+                       :type :population
+                       :n-inputs 2
+                       :n-outputs [3 1]
+                       :owner "Bexley"
+                       :version 1
+                       :last-modified "June 14th, 2015"
+                       :last-modifier "Sarah"
+                       :descendant-id "5678"}
+                      {:id "3339"
+                       :name "Population Forecast for Hackney"
+                       :type :population
+                       :n-inputs 3
+                       :n-outputs [2 2]
+                       :owner "Hackney"
+                       :version 1
+                       :last-modified "Feb 14th, 2015"
+                       :last-modifier "Deepak"}])
+
 (defn home
   [request]
   (log/info "home was called")
@@ -41,63 +99,14 @@
   (log/info "returning forecasts")
   (if-not (authenticated? request)
     (throw-unauthorized)
-    (ok [{:id "1234"
-          :name "Population Forecast for Camden"
-          :type :population
-          :n-inputs 3
-          :n-outputs [2 3]
-          :owner "Camden"
-          :version 3
-          :last-modified "Aug 10th, 2015"
-          :last-modifier "Neil"}
-         {:id "1233"
-          :name "Population Forecast for Camden"
-          :type :population
-          :n-inputs 3
-          :n-outputs [2 3]
-          :owner "Camden"
-          :version 2
-          :last-modified "Aug 8th, 2015"
-          :last-modifier "Simon"
-          :descendant-id "1234"}
-         {:id "1232"
-          :name "Population Forecast for Camden"
-          :type :population
-          :n-inputs 3
-          :n-outputs [2 3]
-          :owner "Camden"
-          :version 1
-          :last-modified "July 4th, 2015"
-          :last-modifier "GLA"
-          :descendant-id "1233"}
-         {:id "5678"
-          :name "Population Forecast for Bexley"
-          :type :population
-          :n-inputs 2
-          :n-outputs [3 1]
-          :owner "Bexley"
-          :version 2
-          :last-modified "July 22nd, 2015"
-          :last-modifier "Sarah"}
-         {:id "5676"
-          :name "Population Forecast for Bexley"
-          :type :population
-          :n-inputs 2
-          :n-outputs [3 1]
-          :owner "Bexley"
-          :version 1
-          :last-modified "June 14th, 2015"
-          :last-modifier "Sarah"
-          :descendant-id "5678"}
-         {:id "3339"
-          :name "Population Forecast for Hackney"
-          :type :population
-          :n-inputs 3
-          :n-outputs [2 2]
-          :owner "Hackney"
-          :version 1
-          :last-modified "Feb 14th, 2015"
-          :last-modifier "Deepak"}])))
+    (ok dummy-forecasts)))
+
+(defn forecast
+  [id request]
+  (log/info "returning forecast" id)
+  (if-not (authenticated? request)
+    (throw-unauthorized)
+    (ok (some #(when (= (:id %) id) %) dummy-forecasts))))
 
 ;; Global storage for store generated tokens.
 (def tokens (atom {}))
@@ -129,6 +138,7 @@
 
 (defroutes app-routes
   (GET "/" [] home)
+  (GET "/forecasts/:id" [id] (partial forecast id))
   (GET "/forecasts" [] forecasts)
   (POST "/login" [] login)
   (route/not-found "Not Found"))
