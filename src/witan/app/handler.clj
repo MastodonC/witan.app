@@ -79,12 +79,13 @@
           (assoc-in [:headers "Access-Control-Allow-Methods"] "GET, PUT, PATCH, POST, DELETE, OPTIONS")
           (assoc-in [:headers "Access-Control-Allow-Headers"] "Authorization, Content-Type")))))
 
-(comment
-  (defroutes app-routes
-    (GET "/" [] home)
-    (POST "/login" [] login)
-    (POST "/user" [] signup)
-    (route/not-found "Not Found")))
+(defn print-mw
+  "for debugging purposes"
+  [handler]
+  (fn [request]
+    (println "LOGGING REQUEST")
+    (println (pr-str request))
+    (handler request)))
 
 (sweet/defapi app'
   (sweet/GET* "/" []
@@ -96,7 +97,7 @@
          :middlewares [cors-mw]
          (login username password))
   (sweet/POST* "/user" []
-               :body-params [login-details w/LoginDetails]
+               :body [login-details w/LoginDetails]
                :middlewares [cors-mw]
                :summary "sign up"
                (signup login-details)))
