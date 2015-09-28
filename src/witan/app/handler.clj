@@ -10,16 +10,12 @@
              [cors :refer [wrap-cors]]
              [defaults :refer [api-defaults wrap-defaults]]
              [json :refer [wrap-json-body wrap-json-response]]]
-            [witan.app.user :as user])
+            [witan.app.user :as user]
+            [schema.core :as s]
+            [witan.schema :as w]
+            [compojure.api.sweet :as sweet]
+            [ring.util.http-response :refer :all])
   (:gen-class))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Semantic response helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn ok [d] {:status 200 :body d})
-(defn bad-request [d] {:status 400 :body d})
-(defn unauthorized [d] {:status 401 :body d})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Controllers                                      ;;
@@ -45,29 +41,65 @@
 ;; user into session. `authdata` will be used as source of valid users.
 
 (defn login
-  [request]
-  (let [body (:body request)
-        username (:username body)
-        password (:password body)
-        valid? (user/user-valid? username password)]
+  [username password]
+  (let [valid? (user/user-valid? username password)]
     (if valid?
       (let [token (user/random-token)]
         (swap! tokens assoc (keyword token) (keyword username))
         (ok {:token token}))
       (ok {:message "login failed"}))))
 
+(defn signup
+  [login-details]
+  (let [body (:body login-details)
+        username (:username body)
+        password (:password body)]
+    (if (user/add-user! username password)
+      (let [token (user/random-token)]
+        (swap! tokens assoc (keyword token) (keyword username))
+        (ok {:token token}))
+      (ok {:message "User already present"}))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Routes and Middlewares                           ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; User defined application routes using compojure routing library.
-;; Note: no any middleware for authorization, all authorization system
-;; is totally decoupled from main routes.
+;; copied from here https://github.com/JarrodCTaylor/authenticated-compojure-api/tree/master/src/authenticated_compojure_api/middleware
+(defn token-auth-mw [handler]
+  (fn [request]
+    (if (authenticated? request)
+      (handler request)
+      (unauthorized {:error "Unauthorized"}))))
 
-(defroutes app-routes
-  (GET "/" [] home)
-  (POST "/login" [] login)
-  (route/not-found "Not Found"))
+(defn cors-mw [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (-> response
+          (assoc-in [:headers "Access-Control-Allow-Origin"] "*")
+          (assoc-in [:headers "Access-Control-Allow-Methods"] "GET, PUT, PATCH, POST, DELETE, OPTIONS")
+          (assoc-in [:headers "Access-Control-Allow-Headers"] "Authorization, Content-Type")))))
+
+(comment
+  (defroutes app-routes
+    (GET "/" [] home)
+    (POST "/login" [] login)
+    (POST "/user" [] signup)
+    (route/not-found "Not Found")))
+
+(sweet/defapi app'
+  (sweet/GET* "/" []
+              :middlewares [cors-mw token-auth-mw]
+              {:message "hello"})
+  (sweet/POST* "/login" []
+         :body-params [username :- String, password :- String]
+         :summary "log in"
+         :middlewares [cors-mw]
+         (login username password))
+  (sweet/POST* "/user" []
+               :body-params [login-details w/LoginDetails]
+               :middlewares [cors-mw]
+               :summary "sign up"
+               (signup login-details)))
 
 (defn my-authfn
   [req token]
@@ -80,11 +112,9 @@
   (token-backend {:authfn my-authfn}))
 
 ; the Ring app definition including the authentication backend
-(def app (-> app-routes
+
+(def app (-> app'
              (wrap-authorization auth-backend)
              (wrap-authentication auth-backend)
-             (wrap-json-response {:pretty false})
-             (wrap-json-body {:keywords? true :bigdecimals? true})
-             (wrap-defaults api-defaults)
              (wrap-cors :access-control-allow-origin [#".*"]
                         :access-control-allow-methods [:get :put :post :delete])))
