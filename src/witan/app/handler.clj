@@ -103,7 +103,9 @@
                :body [login-details w/LoginDetails]
                :middlewares [cors-mw]
                :summary "sign "
-               (signup login-details)))
+               (signup login-details))
+  (sweet/ANY* "/*" []
+        (not-found {:message "These aren't the droids you're looking for."})))
 
 (defn my-authfn
   [req token]
