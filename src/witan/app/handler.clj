@@ -41,8 +41,11 @@
 ;; user into session. `authdata` will be used as source of valid users.
 
 (defn login
-  [username password]
-  (let [valid? (user/user-valid? username password)]
+  [login-details]
+  (let [body (:body login-details)
+        username (:username body)
+        password (:password body)
+        valid? (user/user-valid? username password)]
     (if valid?
       (let [token (user/random-token)]
         (swap! tokens assoc (keyword token) (keyword username))
@@ -92,14 +95,14 @@
               :middlewares [cors-mw token-auth-mw]
               {:message "hello"})
   (sweet/POST* "/login" []
-         :body-params [username :- String, password :- String]
+         :body [login-details w/LoginDetails]
          :summary "log in"
          :middlewares [cors-mw]
-         (login username password))
+         (login login-details))
   (sweet/POST* "/user" []
                :body [login-details w/LoginDetails]
                :middlewares [cors-mw]
-               :summary "sign up"
+               :summary "sign "
                (signup login-details)))
 
 (defn my-authfn
