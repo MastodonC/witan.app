@@ -60,7 +60,7 @@
     (if (user/add-user! username password)
       (let [token (user/random-token)]
         (swap! tokens assoc (keyword token) (keyword username))
-        (ok {:token token}))
+        (created {:token token}))
       (ok {:message "User already present"}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
