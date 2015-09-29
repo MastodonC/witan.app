@@ -87,21 +87,27 @@
     (handler request)))
 
 (sweet/defapi app'
-  (sweet/GET* "/" []
-              :middlewares [cors-mw token-auth-mw]
-              {:message "hello"})
-  (sweet/POST* "/login" []
-         :body [login-details w/LoginDetails]
-         :summary "log in"
-         :middlewares [cors-mw]
-         (login login-details))
-  (sweet/POST* "/user" []
-               :body [login-details w/LoginDetails]
-               :middlewares [cors-mw]
-               :summary "sign "
-               (signup login-details))
+  (sweet/swagger-ui)
+  (sweet/swagger-docs
+   {:info {:title "Witan API"
+           :description "Back-end API for the Witan project"}
+    })
+  (sweet/context* "/api" []
+            (sweet/GET* "/" []
+                        :middlewares [cors-mw token-auth-mw]
+                        {:message "hello"})
+            (sweet/POST* "/login" []
+                         :body [login-details w/LoginDetails]
+                         :summary "log in"
+                         :middlewares [cors-mw]
+                         (login login-details))
+            (sweet/POST* "/user" []
+                         :body [login-details w/LoginDetails]
+                         :middlewares [cors-mw]
+                         :summary "sign "
+                         (signup login-details)))
   (sweet/ANY* "/*" []
-        (not-found {:message "These aren't the droids you're looking for."})))
+              (not-found {:message "These aren't the droids you're looking for."})))
 
 (defn my-authfn
   [req token]

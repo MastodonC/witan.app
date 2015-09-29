@@ -8,25 +8,25 @@
 
 (deftest test-app
   (testing "endpoint unauthorized"
-    (let [[status body _] (get* app "/" {})]
+    (let [[status body _] (get* app "/api/" {})]
       (is (= status 401))
       (is (= body {:error "Unauthorized"}))))
 
   (testing "login success"
     (with-redefs [user/user-valid? (fn [username password] true)]
-      (let [[status body _] (post* app "/login" {:body (json {"username" "support@mastodonc.com" "password" "secret"})})]
+      (let [[status body _] (post* app "/api/login" {:body (json {"username" "support@mastodonc.com" "password" "secret"})})]
         (is (= status 200))
         (is (contains? body :token)))))
 
   (testing "login failure"
     (with-redefs [user/user-valid? (fn [username password] false)]
-      (let [[status body _] (post* app "/login" {:body (json {"username" "blah@blah.blah" "password" "foobar"})})]
+      (let [[status body _] (post* app "/api/login" {:body (json {"username" "blah@blah.blah" "password" "foobar"})})]
         (is (= status 200))
         (is (not (contains? body :token))))))
 
   (testing "sign up"
     (with-redefs [user/add-user! (fn [username password] ())]
-      (let [[status body _] (post* app "/user" {:body (json {"username" "test@test.com" "password" "sekrit"})})]
+      (let [[status body _] (post* app "/api/user" {:body (json {"username" "test@test.com" "password" "sekrit"})})]
         (is (= status 201)))
       ))
 
