@@ -24,6 +24,15 @@
         (is (= status 200))
         (is (not (contains? body :token))))))
 
+  (testing "logged in user"
+    (with-redefs [user/user-valid? (fn [username password] true)]
+      (let [[_ login-body _] (post* app "/api/login" {:body (json {"username" "support@mastodonc.com" "password" "secret"})})
+            token (:token login-body)
+            [status body _] (get* app "/api/" {:token token})]
+        (is (= status 200))
+        (is (contains? body :message)))))
+
+
   (testing "sign up"
     (with-redefs [user/add-user! (fn [username password] ())]
       (let [[status body _] (post* app "/api/user" {:body (json {"username" "test@test.com" "password" "sekrit"})})]
