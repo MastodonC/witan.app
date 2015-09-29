@@ -14,7 +14,10 @@
                  [buddy/buddy-hashers "0.6.0"]
                  [org.clojure/tools.logging "0.3.1"]
                  [cc.qbits/alia "2.8.0"]
-                 [cc.qbits/hayt "3.0.0-rc2"]]
+                 [cc.qbits/hayt "3.0.0-rc2"]
+                 [witan.schema "0.0.1-SNAPSHOT"]
+                 [prismatic/schema "1.0.1"]
+                 [kixi/compojure-api "0.24.0-SNAPSHOT"]]
   :plugins [[lein-ring "0.8.13"]]
   :ring {:handler witan.app.handler/app
          :nrepl {:start? true :port 7889}}
