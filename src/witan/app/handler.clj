@@ -17,17 +17,6 @@
             [ring.util.http-response :refer :all])
   (:gen-class))
 
-;; Home page controller (ring handler)
-;; If incoming user is not authenticated it raises a not authenticated
-;; exception, else simple shows a hello world message.
-
-(defn home
-  [request]
-  (log/info "home was called")
-  (if-not (authenticated? request)
-    (throw-unauthorized)
-    (ok {:message (str "hello " (:identity request))})))
-
 ;; Global storage for store generated tokens.
 (def tokens (atom {}))
 
@@ -37,9 +26,8 @@
 ;; user into session. `authdata` will be used as source of valid users.
 
 (defn login
-  [login-details]
-  (let [body (:body login-details)
-        username (:username body)
+  [body]
+  (let [username (:username body)
         password (:password body)
         valid? (user/user-valid? username password)]
     (if valid?
@@ -49,9 +37,8 @@
       (ok {:message "login failed"}))))
 
 (defn signup
-  [login-details]
-  (let [body (:body login-details)
-        username (:username body)
+  [body]
+  (let [username (:username body)
         password (:password body)]
     (if (user/add-user! username password)
       (let [token (user/random-token)]
@@ -95,7 +82,7 @@
   (sweet/context* "/api" []
             (sweet/GET* "/" []
                         :middlewares [cors-mw token-auth-mw]
-                        {:message "hello"})
+                        (ok {:message "hello"}))
             (sweet/POST* "/login" []
                          :body [login-details w/LoginDetails]
                          :summary "log in"
@@ -111,6 +98,7 @@
 
 (defn my-authfn
   [req token]
+  (println "we have a token:" token)
   (when-let [user (get @tokens (keyword token))]
     user))
 

@@ -28,7 +28,7 @@
     (with-redefs [user/user-valid? (fn [username password] true)]
       (let [[_ login-body _] (post* app "/api/login" {:body (json {"username" "support@mastodonc.com" "password" "secret"})})
             token (:token login-body)
-            [status body _] (get* app "/api/" {:token token})]
+            [status body _] (get* app "/api/" {}  {"Authorization" (str "Token " token)})]
         (is (= status 200))
         (is (contains? body :message)))))
 
