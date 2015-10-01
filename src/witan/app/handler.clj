@@ -16,6 +16,10 @@
             [compojure.api.sweet :as sweet]
             [ring.util.http-response :refer :all])
   (:gen-class))
+;; TODO move to witan.schema
+(def User
+  (merge w/LoginDetails
+         {(s/required-key :name) s/Str}))
 
 ;; Global storage for store generated tokens.
 (def tokens (atom {}))
@@ -27,23 +31,21 @@
 
 (defn login
   [body]
-  (let [username (:username body)
-        password (:password body)
-        valid? (user/user-valid? username password)]
-    (if valid?
+  (let [{:keys [username password]} body
+        valid-user (user/user-valid? username password)]
+    (if valid-user
       (let [token (user/random-token)]
         (swap! tokens assoc (keyword token) (keyword username))
-        (ok {:token token}))
+        (ok {:token token :id (:id valid-user)}))
       (ok {:message "login failed"}))))
 
 (defn signup
   [body]
-  (let [username (:username body)
-        password (:password body)]
-    (if (user/add-user! username password)
+  (let [{:keys [username password name]} body]
+    (if-let [new-user (user/add-user! username password)]
       (let [token (user/random-token)]
         (swap! tokens assoc (keyword token) (keyword username))
-        (created {:token token}))
+        (created {:token token :id (:id new-user)}))
       (ok {:message "User already present"}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -92,10 +94,10 @@
                         :middlewares [cors-mw token-auth-mw]
                         (ok {:message "hello"}))
             (sweet/POST* "/user" []
-                           :body [login-details w/LoginDetails]
+                           :body [user User]
                            :middlewares [cors-mw]
                            :summary "sign "
-                           (signup login-details))
+                           (signup user))
             (sweet/GET* "/user/:id" []
                          :summary "Get user by ID"
                          (not-implemented))

@@ -1,9 +1,10 @@
-
 CREATE KEYSPACE witan WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}  AND durable_writes = true;
 
 CREATE TABLE witan.users (
-    username text PRIMARY KEY,
-    password_hash text
+    id uuid PRIMARY KEY,
+    first_name text,
+    name text,
+    username text
 ) WITH bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
     AND comment = ''
@@ -17,6 +18,7 @@ CREATE TABLE witan.users (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
+CREATE INDEX user_username ON witan.users (username);
 
 CREATE TABLE witan.forecasts (
     id uuid PRIMARY KEY,
@@ -43,6 +45,3 @@ CREATE TABLE witan.forecasts (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
-
-
-
