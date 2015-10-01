@@ -38,7 +38,9 @@
   (testing "sign up"
     (with-redefs [user/add-user! (fn [user] ())]
       (let [[status body _] (post* app "/api/user" {:body (json {"username" "test@test.com" "password" "sekrit" "name" "Arthur Dent"})})]
-        (is (= status 201)))
+        (is (= status 201))
+        (is (contains? body :token))
+        (is (contains? body :id)))
       ))
 
   (testing "not-found route"
