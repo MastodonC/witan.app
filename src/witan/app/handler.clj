@@ -30,14 +30,12 @@
 ;; user into session. `authdata` will be used as source of valid users.
 
 (defn login
-  [body]
-  (let [{:keys [username password]} body
-        valid-user (user/user-valid? username password)]
-    (if valid-user
-      (let [token (user/random-token)]
-        (swap! tokens assoc (keyword token) (keyword username))
-        (ok {:token token :id (:id valid-user)}))
-      (ok {:message "login failed"}))))
+  [{:keys [username password] :as body}]
+  (if-let [valid-user (user/user-valid? username password)]
+    (let [token (user/random-token)]
+      (swap! tokens assoc (keyword token) (keyword username))
+      (ok {:token token :id (:id valid-user)}))
+    (ok {:message "login failed"})))
 
 (defn signup
   [{:keys [username password name] :as body}]
