@@ -36,7 +36,7 @@
 
 
   (testing "sign up"
-    (with-redefs [user/add-user! (fn [username password] ())]
+    (with-redefs [user/add-user! (fn [user] ())]
       (let [[status body _] (post* app "/api/user" {:body (json {"username" "test@test.com" "password" "sekrit" "name" "Arthur Dent"})})]
         (is (= status 201)))
       ))
