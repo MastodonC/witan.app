@@ -15,15 +15,15 @@
 (defn find-user-by-username [username]
   (hayt/select :Users (hayt/where {:username username})))
 
-(defn create-user [user password name]
-  (let [hash (hs/encrypt password)]
-    (hayt/insert :Users, (hayt/values :id (uuid/random) :username user :password_hash hash :name name))))
+(defn create-user [user]
+  (let [hash (hs/encrypt (:password user))]
+    (hayt/insert :Users, (hayt/values :id (uuid/random) :username (:username user) :password_hash hash :name (:name user)))))
 
-(defn add-user! [username password]
+(defn add-user! [{:keys [username] :as user}]
   (let [exec (store-execute config)
         existing-users (exec (find-user-by-username username))]
     (when (empty? existing-users)
-      (exec (create-user username password)))))
+      (exec (create-user user)))))
 
 (defn password-ok? [existing-user password]
   (hs/check password (:password_hash existing-user)))

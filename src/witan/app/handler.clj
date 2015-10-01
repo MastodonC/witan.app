@@ -40,13 +40,12 @@
       (ok {:message "login failed"}))))
 
 (defn signup
-  [body]
-  (let [{:keys [username password name]} body]
-    (if-let [new-user (user/add-user! username password)]
-      (let [token (user/random-token)]
-        (swap! tokens assoc (keyword token) (keyword username))
-        (created {:token token :id (:id new-user)}))
-      (ok {:message "User already present"}))))
+  [{:keys [username password name] :as body}]
+  (if-let [new-user (user/add-user! body)]
+    (let [token (user/random-token)]
+      (swap! tokens assoc (keyword token) (keyword username))
+      (created {:token token :id (:id new-user)}))
+    (ok {:message "User already present"})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Routes and Middlewares                           ;;
