@@ -85,6 +85,9 @@
                          :summary "log in"
                          :middlewares [cors-mw]
                          (login login-details))
+            (sweet/POST* "/reset-password" []
+                         :summary "Resets a users password"
+                         (not-implemented))
             (sweet/GET* "/" []
                         :middlewares [cors-mw token-auth-mw]
                         (ok {:message "hello"}))
