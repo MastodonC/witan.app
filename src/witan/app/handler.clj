@@ -93,7 +93,7 @@
             (sweet/POST* "/user" []
                            :body [user User]
                            :middlewares [cors-mw]
-                           :summary "sign "
+                           :summary "sign up"
                            (signup user))
             (sweet/GET* "/user/:id" []
                          :summary "Get user by ID"
