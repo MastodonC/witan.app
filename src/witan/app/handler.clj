@@ -80,19 +80,64 @@
            :description "Back-end API for the Witan project"}
     })
   (sweet/context* "/api" []
-            (sweet/GET* "/" []
-                        :middlewares [cors-mw token-auth-mw]
-                        (ok {:message "hello"}))
             (sweet/POST* "/login" []
                          :body [login-details w/LoginDetails]
                          :summary "log in"
                          :middlewares [cors-mw]
                          (login login-details))
+            (sweet/POST* "/reset-password" []
+                         :summary "Resets a users password"
+                         (not-implemented))
+            (sweet/GET* "/" []
+                        :middlewares [cors-mw token-auth-mw]
+                        (ok {:message "hello"}))
             (sweet/POST* "/user" []
-                         :body [login-details w/LoginDetails]
-                         :middlewares [cors-mw]
-                         :summary "sign "
-                         (signup login-details)))
+                           :body [login-details w/LoginDetails]
+                           :middlewares [cors-mw]
+                           :summary "sign "
+                           (signup login-details))
+            (sweet/GET* "/user/:id" []
+                         :summary "Get user by ID"
+                         (not-implemented))
+            (sweet/GET* "/models" []
+                        :summary "Get models available to a user"
+                        (not-implemented))
+            (sweet/GET* "/models/:id" []
+                        :summary "Get model specified by ID"
+                        (not-implemented))
+            (sweet/GET* "/forecasts" []
+                        :summary "Get forecasts available to a user"
+                        (not-implemented))
+            (sweet/POST* "/forecasts" []
+                        :summary "Create a new forecast"
+                        (not-implemented))
+            (sweet/GET* "/forecasts/:id" []
+                        :summary "Redirects to /forecasts/:id/<version> where <version> is the latest version"
+                        (not-implemented))
+            (sweet/GET* "/forecasts/:id/:version" []
+                        :summary "Returns a forecast of the specified id and version"
+                        (not-implemented))
+            (sweet/POST* "/forecasts/:id" []
+                        :summary "Creates a new version of this forecast with the specified updated"
+                        (not-implemented))
+            (sweet/GET* "/forecasts/:id/:version/output/:type" []
+                        :summary "Downloads an output of the given type"
+                        (not-implemented))
+            (sweet/POST* "/tag" []
+                         :summary "Creates a new tag from a forecast id and version"
+                         (not-implemented))
+            (sweet/POST* "/share-request/:tag-id" []
+                         :summary "Creates a request to update the sharing properties of a tag"
+                         (not-implemented))
+            (sweet/POST* "/data/upload" []
+                         :summary "Upload endpoint for data items"
+                         (not-implemented))
+            (sweet/GET* "/data" []
+                        :summary "Expects a query string. Allows searching of data items"
+                        (not-implemented))
+            (sweet/GET* "/data/download/:uuid" []
+                        :summary "Downloads the data of a given id"
+                        (not-implemented)))
   (sweet/ANY* "/*" []
               (not-found {:message "These aren't the droids you're looking for."})))
 
