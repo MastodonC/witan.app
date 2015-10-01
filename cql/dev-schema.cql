@@ -4,7 +4,8 @@ CREATE TABLE witan.users (
     id uuid PRIMARY KEY,
     first_name text,
     name text,
-    username text
+    username text,
+    password_hash text
 ) WITH bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
     AND comment = ''
