@@ -12,8 +12,14 @@
   (let [randomdata (nonce/random-bytes 16)]
     (codecs/bytes->hex randomdata)))
 
+(defn exec []
+  (store-execute config))
+
 (defn find-user-by-username [username]
   (hayt/select :Users (hayt/where {:username username})))
+
+(defn find-user [id]
+  (hayt/select :Users (hayt/where {:id id})))
 
 (defn create-user [user]
   (let [hash (hs/encrypt (:password user))]
@@ -29,8 +35,10 @@
   (hs/check password (:password_hash existing-user)))
 
 (defn user-valid? [username password]
-  (let [exec (store-execute config)
-        existing-users (exec (find-user-by-username username))]
+  (let [existing-users (exec (find-user-by-username username))]
     (if (and (not (empty? existing-users)) (password-ok? (first existing-users) password))
       (first existing-users)
       false)))
+
+(defn retrieve-user [id]
+  (exec (find-user id)))
