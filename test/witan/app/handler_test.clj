@@ -8,6 +8,11 @@
 
 (def user-id (java.util.UUID/randomUUID))
 
+(defn logged-in-user-token []
+  (with-redefs [user/user-valid? (fn [username password] {:id user-id})]
+    (let [[_ body _] (post* app "/api/login" {:body (json {"username" "test@test.com" "password" "secret"})})]
+      (:token body))))
+
 (deftest test-app
   (testing "endpoint unauthorized"
     (let [[status body _] (get* app "/api/" {})]
@@ -44,6 +49,13 @@
         (is (contains? body :token))
         (is (contains? body :id)))
       ))
+
+  (testing "retrieve user"
+    (with-redefs [user/retrieve-user (fn [id] {:id id :name "Joe" :username "joe@test.com"})]
+      (let [token (logged-in-user-token)
+            _ (println "now logged in" token)
+            [status body _] (get* app "/api/me" {} {"Authorization" (str "Token " token)})]
+        (is (= status 200)))))
 
   (testing "not-found route"
     (let [[status body _] (get* app "/invalid")]
