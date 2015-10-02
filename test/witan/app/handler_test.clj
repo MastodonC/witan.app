@@ -50,10 +50,14 @@
         (is (contains? body :id)))
       ))
 
+  (testing "401 when not logged in"
+    (with-redefs [user/retrieve-user (fn [id] {:id id :name "Joe" :username "joe@test.com"})]
+      (let [[status body _] (get* app "/api/me" {})]
+        (is (= status 401)))))
+
   (testing "retrieve user"
     (with-redefs [user/retrieve-user (fn [id] {:id id :name "Joe" :username "joe@test.com"})]
       (let [token (logged-in-user-token)
-            _ (println "now logged in" token)
             [status body _] (get* app "/api/me" {} {"Authorization" (str "Token " token)})]
         (is (= status 200)))))
 

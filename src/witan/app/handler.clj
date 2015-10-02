@@ -50,13 +50,10 @@
       (created {:token token :id (:id new-user)}))
     (ok {:message "User already present"})))
 
-(defn check-user [token]
-  (let [user (some-> (get @tokens (keyword token))
-                     (user/retrieve-user))]
-    (println "check-user" token)
-    (if user
-      (ok user)
-      (forbidden))))
+(defn check-user [identity]
+  (if-let [user (user/retrieve-user identity)]
+    (ok user)
+    (unauthorized {:error "Unauthorized"})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Routes and Middlewares                           ;;
@@ -68,6 +65,12 @@
     (if (authenticated? request)
       (handler request)
       (unauthorized {:error "Unauthorized"}))))
+
+(defn pass-identity
+  "slightly hacky way to insert identity to somewhere the handler can get it"
+  [handler]
+  (fn [request]
+    (handler (assoc-in request [:query-params :identity] (some-> (:identity request) name)))))
 
 (defn cors-mw [handler]
   (fn [request]
@@ -109,9 +112,11 @@
                            :middlewares [cors-mw]
                            :summary "sign up"
                            (signup user))
-            (sweet/GET* "/user/:id" []
-                         :summary "Get user by ID"
-                         (not-implemented))
+            (sweet/GET* "/me" []
+                        :middlewares [cors-mw token-auth-mw pass-identity]
+                        :query-params [identity :- String]
+                        :summary "Get current logged in user"
+                         (check-user identity))
             (sweet/GET* "/models" []
                         :summary "Get models available to a user"
                         (not-implemented))
@@ -156,7 +161,6 @@
 
 (defn my-authfn
   [req token]
-  (println "we have a token:" token)
   (when-let [user (get @tokens (keyword token))]
     user))
 
