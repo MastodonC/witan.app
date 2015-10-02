@@ -16,6 +16,15 @@
             [compojure.api.sweet :as sweet]
             [ring.util.http-response :refer :all])
   (:gen-class))
+;; TODO move to witan.schema
+(def User
+  (merge w/LoginDetails
+         {(s/required-key :name) s/Str}))
+
+(def LoginReturn
+  (s/either {(s/required-key :token) s/Str
+             (s/required-key :id) s/Str}
+            {:message s/Str}))
 
 ;; Global storage for store generated tokens.
 (def tokens (atom {}))
@@ -26,25 +35,20 @@
 ;; user into session. `authdata` will be used as source of valid users.
 
 (defn login
-  [body]
-  (let [username (:username body)
-        password (:password body)
-        valid? (user/user-valid? username password)]
-    (if valid?
-      (let [token (user/random-token)]
-        (swap! tokens assoc (keyword token) (keyword username))
-        (ok {:token token}))
-      (ok {:message "login failed"}))))
+  [{:keys [username password] :as body}]
+  (if-let [valid-user (user/user-valid? username password)]
+    (let [token (user/random-token)]
+      (swap! tokens assoc (keyword token) (keyword username))
+      (ok {:token token :id (:id valid-user)}))
+    (ok {:message "login failed"})))
 
 (defn signup
-  [body]
-  (let [username (:username body)
-        password (:password body)]
-    (if (user/add-user! username password)
-      (let [token (user/random-token)]
-        (swap! tokens assoc (keyword token) (keyword username))
-        (created {:token token}))
-      (ok {:message "User already present"}))))
+  [{:keys [username password name] :as body}]
+  (if-let [new-user (user/add-user! body)]
+    (let [token (user/random-token)]
+      (swap! tokens assoc (keyword token) (keyword username))
+      (created {:token token :id (:id new-user)}))
+    (ok {:message "User already present"})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Routes and Middlewares                           ;;
@@ -84,6 +88,7 @@
                          :body [login-details w/LoginDetails]
                          :summary "log in"
                          :middlewares [cors-mw]
+                         :return LoginReturn
                          (login login-details))
             (sweet/POST* "/reset-password" []
                          :summary "Resets a users password"
@@ -92,10 +97,10 @@
                         :middlewares [cors-mw token-auth-mw]
                         (ok {:message "hello"}))
             (sweet/POST* "/user" []
-                           :body [login-details w/LoginDetails]
+                           :body [user User]
                            :middlewares [cors-mw]
-                           :summary "sign "
-                           (signup login-details))
+                           :summary "sign up"
+                           (signup user))
             (sweet/GET* "/user/:id" []
                          :summary "Get user by ID"
                          (not-implemented))

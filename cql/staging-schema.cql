@@ -1,8 +1,10 @@
-
 CREATE KEYSPACE witan WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '3'}  AND durable_writes = true;
 
 CREATE TABLE witan.users (
-    username text PRIMARY KEY,
+    id uuid PRIMARY KEY,
+    first_name text,
+    name text,
+    username text,
     password_hash text
 ) WITH bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
@@ -17,4 +19,3 @@ CREATE TABLE witan.users (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
-
