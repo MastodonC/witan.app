@@ -38,7 +38,7 @@
   [{:keys [username password] :as body}]
   (if-let [valid-user (user/user-valid? username password)]
     (let [token (user/random-token)]
-      (swap! tokens assoc (keyword token) (keyword username))
+      (swap! tokens assoc (keyword token) (keyword (:id valid-user)))
       (ok {:token token :id (:id valid-user)}))
     (ok {:message "login failed"})))
 
@@ -46,9 +46,17 @@
   [{:keys [username password name] :as body}]
   (if-let [new-user (user/add-user! body)]
     (let [token (user/random-token)]
-      (swap! tokens assoc (keyword token) (keyword username))
+      (swap! tokens assoc (keyword token) (keyword (:id new-user)))
       (created {:token token :id (:id new-user)}))
     (ok {:message "User already present"})))
+
+(defn check-user [token]
+  (let [user (some-> (get @tokens (keyword token))
+                     (user/retrieve-user))]
+    (println "check-user" token)
+    (if user
+      (ok user)
+      (forbidden))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Routes and Middlewares                           ;;
