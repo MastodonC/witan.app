@@ -21,6 +21,11 @@
   (merge w/LoginDetails
          {(s/required-key :name) s/Str}))
 
+(def LoginReturn
+  (s/either {(s/required-key :token) s/Str
+             (s/required-key :id) s/Str}
+            {:message s/Str}))
+
 ;; Global storage for store generated tokens.
 (def tokens (atom {}))
 
@@ -83,6 +88,7 @@
                          :body [login-details w/LoginDetails]
                          :summary "log in"
                          :middlewares [cors-mw]
+                         :return LoginReturn
                          (login login-details))
             (sweet/POST* "/reset-password" []
                          :summary "Resets a users password"

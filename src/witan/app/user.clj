@@ -31,6 +31,6 @@
 (defn user-valid? [username password]
   (let [exec (store-execute config)
         existing-users (exec (find-user-by-username username))]
-    (if-not (empty? existing-users)
-      (password-ok? (first existing-users) password)
+    (if (and (not (empty? existing-users)) (password-ok? (first existing-users) password))
+      (first existing-users)
       false)))
