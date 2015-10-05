@@ -38,7 +38,7 @@
   [{:keys [username password] :as body}]
   (if-let [valid-user (user/user-valid? username password)]
     (let [token (user/random-token)]
-      (swap! tokens assoc (keyword token) (keyword username))
+      (swap! tokens assoc (keyword token) (:id valid-user))
       (ok {:token token :id (:id valid-user)}))
     (ok {:message "login failed"})))
 
@@ -46,9 +46,14 @@
   [{:keys [username password name] :as body}]
   (if-let [new-user (user/add-user! body)]
     (let [token (user/random-token)]
-      (swap! tokens assoc (keyword token) (keyword username))
+      (swap! tokens assoc (keyword token) (keyword (:id new-user)))
       (created {:token token :id (:id new-user)}))
     (ok {:message "User already present"})))
+
+(defn check-user [identity]
+  (if-let [user (user/retrieve-user identity)]
+    (ok user)
+    (unauthorized {:error "Unauthorized"})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Routes and Middlewares                           ;;
@@ -101,9 +106,10 @@
                            :middlewares [cors-mw]
                            :summary "sign up"
                            (signup user))
-            (sweet/GET* "/user/:id" []
-                         :summary "Get user by ID"
-                         (not-implemented))
+            (sweet/GET* "/me" {:as request}
+                        :middlewares [cors-mw token-auth-mw]
+                        :summary "Get current logged in user"
+                         (check-user (:identity request)))
             (sweet/GET* "/models" []
                         :summary "Get models available to a user"
                         (not-implemented))
@@ -148,7 +154,6 @@
 
 (defn my-authfn
   [req token]
-  (println "we have a token:" token)
   (when-let [user (get @tokens (keyword token))]
     user))
 
