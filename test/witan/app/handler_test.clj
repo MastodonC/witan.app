@@ -19,6 +19,7 @@
       (let [[status body _] (get* app "/api/" {})]
         (is (= status 401))
         (is (= body {:error "Unauthorized"})))))
+
   (testing "/api/login"
     (testing "login success"
       (with-redefs [user/user-valid? (fn [username password] {:id user-id})]
@@ -36,8 +37,7 @@
 
     (testing "logged in user"
       (with-redefs [user/user-valid? (fn [username password] {:id user-id})]
-        (let [[_ login-body _] (post* app "/api/login" {:body (json {"username" "support@mastodonc.com" "password" "secret"})})
-              token (:token login-body)
+        (let [token (logged-in-user-token)
               [status body _] (get* app "/api/" {}  {"Authorization" (str "Token " token)})]
           (is (= status 200))
           (is (contains? body :message))))))
