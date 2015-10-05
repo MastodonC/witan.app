@@ -35,7 +35,7 @@
   (hs/check password (:password_hash existing-user)))
 
 (defn user-valid? [username password]
-  (let [existing-users (exec (find-user-by-username username))]
+  (let [existing-users ((exec) (find-user-by-username username))]
     (if (and (not (empty? existing-users)) (password-ok? (first existing-users) password))
       (first existing-users)
       false)))
