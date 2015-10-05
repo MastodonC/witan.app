@@ -11,6 +11,8 @@
              [defaults :refer [api-defaults wrap-defaults]]
              [json :refer [wrap-json-body wrap-json-response]]]
             [witan.app.user :as user]
+            [witan.app.forecast :as forecast]
+            [witan.app.util :refer [load-extensions!]]
             [schema.core :as s]
             [witan.schema :as w]
             [compojure.api.sweet :as sweet]
@@ -28,7 +30,7 @@
             {:message s/Str}))
 
 ;; Global storage for store generated tokens.
-(def tokens (atom {}))
+(defonce tokens (atom {}))
 
 ;; Authenticate Handler
 ;; Respons to post requests in same url as login and is responsible to
@@ -84,6 +86,12 @@
     (println (pr-str request))
     (handler request)))
 
+(defn debug-resource
+  [resource req]
+  (let [result (resource req)]
+    (println "RESOURCE: " result)
+    result))
+
 (sweet/defapi app'
   (sweet/swagger-ui)
   (sweet/swagger-docs
@@ -120,7 +128,8 @@
                         (not-implemented))
             (sweet/GET* "/forecasts" []
                         :summary "Get forecasts available to a user"
-                        (not-implemented))
+                        :middlewares [token-auth-mw]
+                        forecast/forecasts)
             (sweet/POST* "/forecasts" []
                         :summary "Create a new forecast"
                         (not-implemented))
@@ -164,7 +173,10 @@
 (def auth-backend
   (token-backend {:authfn my-authfn}))
 
-; the Ring app definition including the authentication backend
+;; load extensions
+(load-extensions!)
+
+;; the Ring app definition including the authentication backend
 (def app (-> app'
              (wrap-authorization auth-backend)
              (wrap-authentication auth-backend)

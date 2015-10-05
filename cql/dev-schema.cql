@@ -22,18 +22,16 @@ CREATE TABLE witan.users (
     AND speculative_retry = '99.0PERCENTILE';
 CREATE INDEX user_username ON witan.users (username);
 
-CREATE TABLE witan.forecasts (
+CREATE TABLE witan.forecast_headers (
     id uuid PRIMARY KEY,
-    descendant uuid,
-    description text,
-    lastmodified timestamp,
-    lastmodifier uuid,
-    model uuid,
     name text,
-    ninputs int,
-    noutputs list<int>,
+    description text,
+    created timestamp,
     owner uuid,
-    version int
+    series_id uuid,
+    version int,
+    in_progress boolean,
+    descendant_id uuid
 ) WITH bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
     AND comment = ''
@@ -47,3 +45,4 @@ CREATE TABLE witan.forecasts (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
+CREATE INDEX forecast_header_name ON witan.forecast_headers (name);
