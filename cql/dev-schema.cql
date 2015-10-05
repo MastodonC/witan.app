@@ -1,3 +1,4 @@
+DROP KEYSPACE witan;
 CREATE KEYSPACE witan WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}  AND durable_writes = true;
 
 CREATE TABLE witan.users (
