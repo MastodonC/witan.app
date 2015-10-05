@@ -38,7 +38,7 @@
   [{:keys [username password] :as body}]
   (if-let [valid-user (user/user-valid? username password)]
     (let [token (user/random-token)]
-      (swap! tokens assoc (keyword token) (keyword (:id valid-user)))
+      (swap! tokens assoc (keyword token) (:id valid-user))
       (ok {:token token :id (:id valid-user)}))
     (ok {:message "login failed"})))
 
@@ -70,7 +70,7 @@
   "slightly hacky way to insert identity to somewhere the handler can get it"
   [handler]
   (fn [request]
-    (handler (assoc-in request [:query-params :identity] (some-> (:identity request) name)))))
+    (handler (assoc-in request [:query-params :identity] (:identity request)))))
 
 (defn cors-mw [handler]
   (fn [request]
@@ -114,7 +114,7 @@
                            (signup user))
             (sweet/GET* "/me" []
                         :middlewares [cors-mw token-auth-mw pass-identity]
-                        :query-params [identity :- String]
+                        :query-params [identity :- java.util.UUID]
                         :summary "Get current logged in user"
                          (check-user identity))
             (sweet/GET* "/models" []
