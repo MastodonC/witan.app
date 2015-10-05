@@ -66,12 +66,6 @@
       (handler request)
       (unauthorized {:error "Unauthorized"}))))
 
-(defn pass-identity
-  "slightly hacky way to insert identity to somewhere the handler can get it"
-  [handler]
-  (fn [request]
-    (handler (assoc-in request [:query-params :identity] (:identity request)))))
-
 (defn cors-mw [handler]
   (fn [request]
     (let [response (handler request)]
@@ -112,11 +106,10 @@
                            :middlewares [cors-mw]
                            :summary "sign up"
                            (signup user))
-            (sweet/GET* "/me" []
-                        :middlewares [cors-mw token-auth-mw pass-identity]
-                        :query-params [identity :- java.util.UUID]
+            (sweet/GET* "/me" {:as request}
+                        :middlewares [cors-mw token-auth-mw]
                         :summary "Get current logged in user"
-                         (check-user identity))
+                         (check-user (:identity request)))
             (sweet/GET* "/models" []
                         :summary "Get models available to a user"
                         (not-implemented))
