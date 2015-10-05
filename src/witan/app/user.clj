@@ -26,10 +26,9 @@
     (hayt/insert :Users, (hayt/values :id (uuid/random) :username (:username user) :password_hash hash :name (:name user)))))
 
 (defn add-user! [{:keys [username] :as user}]
-  (let [exec (store-execute config)
-        existing-users (exec (find-user-by-username username))]
+  (let [existing-users ((exec) (find-user-by-username username))]
     (when (empty? existing-users)
-      (exec (create-user user)))))
+      ((exec) (create-user user)))))
 
 (defn password-ok? [existing-user password]
   (hs/check password (:password_hash existing-user)))
@@ -41,4 +40,4 @@
       false)))
 
 (defn retrieve-user [id]
-  (exec (find-user id)))
+  ((exec) (find-user id)))
