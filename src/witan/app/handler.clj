@@ -23,7 +23,7 @@
 
 (def LoginReturn
   (s/either {(s/required-key :token) s/Str
-             (s/required-key :id) s/Str}
+             (s/required-key :id) s/Uuid}
             {:message s/Str}))
 
 ;; Global storage for store generated tokens.
