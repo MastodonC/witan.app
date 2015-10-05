@@ -5,15 +5,12 @@
             [buddy.hashers :as hs]
             [qbits.hayt :as hayt]
             [qbits.alia.uuid :as uuid]
-            [witan.app.config :refer [store-execute config]]))
+            [witan.app.config :refer [exec]]))
 
 (defn random-token
   []
   (let [randomdata (nonce/random-bytes 16)]
     (codecs/bytes->hex randomdata)))
-
-(defn exec []
-  (store-execute config))
 
 (defn find-user-by-username [username]
   (hayt/select :Users (hayt/where {:username username})))

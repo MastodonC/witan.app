@@ -26,3 +26,6 @@
   (let [cassandra-info (:cassandra-session config)
         session (session (:host cassandra-info) (:keyspace cassandra-info))]
     (partial alia/execute session)))
+
+(defn exec []
+  (store-execute config))
