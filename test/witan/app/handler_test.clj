@@ -6,6 +6,8 @@
             [witan.app.user :as user]
             [clojure.data.json :as json]))
 
+(def user-id (java.util.UUID/randomUUID))
+
 (deftest test-app
   (testing "endpoint unauthorized"
     (let [[status body _] (get* app "/api/" {})]
@@ -13,7 +15,7 @@
       (is (= body {:error "Unauthorized"}))))
 
   (testing "login success"
-    (with-redefs [user/user-valid? (fn [username password] {:id "1234"})]
+    (with-redefs [user/user-valid? (fn [username password] {:id user-id})]
       (let [[status body _] (post* app "/api/login" {:body (json {"username" "support@mastodonc.com" "password" "secret"})})]
         (is (= status 200))
         (is (contains? body :token))
@@ -27,7 +29,7 @@
         (is (not (contains? body :id))))))
 
   (testing "logged in user"
-    (with-redefs [user/user-valid? (fn [username password] {:id "1234"})]
+    (with-redefs [user/user-valid? (fn [username password] {:id user-id})]
       (let [[_ login-body _] (post* app "/api/login" {:body (json {"username" "support@mastodonc.com" "password" "secret"})})
             token (:token login-body)
             [status body _] (get* app "/api/" {}  {"Authorization" (str "Token " token)})]
