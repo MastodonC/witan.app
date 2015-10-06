@@ -52,7 +52,7 @@
 
 (defn check-user [identity]
   (if-let [user (user/retrieve-user identity)]
-    (ok user)
+    (ok (select-keys user [:id :username]))
     (unauthorized {:error "Unauthorized"})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
