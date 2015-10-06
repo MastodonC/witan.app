@@ -4,7 +4,7 @@
             [clj-time.core     :as t]
             [clj-time.format   :as tf]
             [clj-time.coerce   :as tc]
-            [witan.app.config :refer [store-execute config]]
+            [witan.app.config :as c]
             [witan.schema :as ws]
             [schema.core :as s])
   (:use [liberator.core :only [defresource]]))
@@ -49,15 +49,13 @@
 
 (defn add-forecast!
   [{:keys [name] :as forecast}]
-  (let [exec (store-execute config)
-        existing-forecasts (exec (find-forecast-by-name name))]
+  (let [existing-forecasts (c/exec (find-forecast-by-name name))]
     (when (empty? existing-forecasts)
-      (exec (create-forecast forecast)))))
+      (c/exec (create-forecast forecast)))))
 
 (defn get-forecasts
   []
-  (let [exec (store-execute config)]
-    (exec (hayt/select :forecast_headers))))
+  (c/exec (hayt/select :forecast_headers)))
 
 ;;;;;;
 

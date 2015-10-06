@@ -5,7 +5,7 @@
             [buddy.hashers :as hs]
             [qbits.hayt :as hayt]
             [qbits.alia.uuid :as uuid]
-            [witan.app.config :refer [exec]]))
+            [witan.app.config :as c]))
 
 (defn random-token
   []
@@ -24,12 +24,12 @@
 )
 
 (defn retrieve-user-by-username [username]
-  (first ((exec) (find-user-by-username username))))
+  (first (c/exec (find-user-by-username username))))
 
 (defn add-user! [{:keys [username] :as user}]
-  (let [existing-users ((exec) (find-user-by-username username))]
+  (let [existing-users (c/exec (find-user-by-username username))]
     (when (empty? existing-users)
-      ((exec) (create-user user))
+      (c/exec (create-user user))
       ; retrieving newly created user
       (retrieve-user-by-username (:username user)))))
 
@@ -43,4 +43,4 @@
       false)))
 
 (defn retrieve-user [id]
-  (first ((exec) (find-user id))))
+  (first (c/exec (find-user id))))
