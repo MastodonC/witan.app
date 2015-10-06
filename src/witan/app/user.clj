@@ -37,4 +37,4 @@
       false)))
 
 (defn retrieve-user [id]
-  ((exec) (find-user id)))
+  (first ((exec) (find-user id))))
