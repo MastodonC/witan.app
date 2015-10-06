@@ -21,6 +21,7 @@
   :plugins [[lein-ring "0.8.13"]]
   :ring {:handler witan.app.handler/app
          :nrepl {:start? true :port 7889}}
+  :uberjar-name "witan-app.jar"
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring-mock "0.1.5"]]}})
