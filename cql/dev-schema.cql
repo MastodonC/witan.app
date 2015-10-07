@@ -46,3 +46,4 @@ CREATE TABLE witan.forecast_headers (
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
 CREATE INDEX forecast_header_name ON witan.forecast_headers (name);
+CREATE INDEX forecast_header_series_id ON witan.forecast_headers (series_id);
