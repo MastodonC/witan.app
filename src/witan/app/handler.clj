@@ -14,7 +14,8 @@
             [schema.core :as s]
             [witan.schema :as w]
             [compojure.api.sweet :as sweet]
-            [ring.util.http-response :refer :all])
+            [ring.util.http-response :refer :all]
+            [clojure.tools.logging :as log])
   (:gen-class))
 ;; TODO move to witan.schema
 (def User
@@ -44,6 +45,7 @@
 
 (defn signup
   [{:keys [username password name] :as body}]
+  (log/info "signup" body)
   (if-let [new-user (user/add-user! body)]
     (let [token (user/random-token)]
       (swap! tokens assoc (keyword token) (keyword (:id new-user)))
