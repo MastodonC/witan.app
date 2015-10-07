@@ -47,3 +47,5 @@ CREATE TABLE witan.forecast_headers (
     AND speculative_retry = '99.0PERCENTILE';
 CREATE INDEX forecast_header_name ON witan.forecast_headers (name);
 CREATE INDEX forecast_header_series_id ON witan.forecast_headers (series_id);
+CREATE INDEX forecast_header_owner ON witan.forecast_headers (owner);
+

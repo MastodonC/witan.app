@@ -38,6 +38,12 @@
   [name]
   (hayt/select :forecast_headers (hayt/where {:name name})))
 
+(defn find-forecast-by-name-and-owner
+  [name owner]
+  (hayt/select :forecast_headers (hayt/where {:name name
+                                              :owner owner})
+               (hayt/allow-filtering)))
+
 (defn find-forecasts-by-series-id
   [series-id]
   (hayt/select :forecast_headers (hayt/where {:series_id series-id})))
@@ -74,8 +80,8 @@
                                   :descendant_id nil)))
 
 (defn add-forecast!
-  [{:keys [name] :as forecast}]
-  (let [existing-forecasts (c/exec (find-forecast-by-name name))
+  [{:keys [name owner] :as forecast}]
+  (let [existing-forecasts (c/exec (find-forecast-by-name-and-owner name owner))
         id (uuid/random)]
     (when (empty? existing-forecasts)
       (c/exec (create-forecast (assoc forecast :id id)))
