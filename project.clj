@@ -1,3 +1,4 @@
+(def slf4j-version "1.7.12")
 (defproject witan.app "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
@@ -17,7 +18,14 @@
                  [cc.qbits/hayt "3.0.0-rc2"]
                  [witan.schema "0.0.1-SNAPSHOT"]
                  [prismatic/schema "1.0.1"]
-                 [kixi/compojure-api "0.24.0-SNAPSHOT"]]
+                 [kixi/compojure-api "0.24.0-SNAPSHOT"]
+                 ;; Logging
+                 [org.clojure/tools.logging      "0.3.1"]
+                 [ch.qos.logback/logback-classic "1.1.3"]
+                 [org.slf4j/jul-to-slf4j         ~slf4j-version]
+                 [org.slf4j/jcl-over-slf4j       ~slf4j-version]
+                 [org.slf4j/log4j-over-slf4j     ~slf4j-version]
+                 [javax.mail/mail                "1.4.7"]]
   :plugins [[lein-ring "0.8.13"]]
   :ring {:handler witan.app.handler/app
          :nrepl {:start? true :port 7889}}
