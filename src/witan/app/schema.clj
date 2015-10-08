@@ -10,7 +10,7 @@
 (defn matches [r]
   (s/pred
    (fn [s]
-     (re-matches r s))))
+          (re-matches r s))))
 
 (defn is-an-email []
   (s/pred
@@ -20,15 +20,6 @@
   "validation for /login"
   {(s/required-key :username) (s/both (length-greater 5) (is-an-email))
    (s/required-key :password) (length-greater 5)})
-
-(def SignUp
-  (merge LoginDetails
-         {(s/required-key :name) s/Str}))
-
-(def LoginReturn
-  (s/either {(s/required-key :token) s/Str
-             (s/required-key :id) s/Uuid}
-            {:message s/Str}))
 
 (def IdType
   s/Uuid)
@@ -44,13 +35,14 @@
 (def ModelPropertyType
   "Types that the model properties can be"
   (s/enum
-   "text"
-   "number"
-   "dropdown"))
+   :text
+   :number
+   :dropdown))
 
 (def ModelProperty
   "Properties that a model can expose"
-  {(s/required-key :name)    s/Str
+  {(s/required-key :id)      IdType
+   (s/required-key :name)    s/Str
    (s/required-key :type)    ModelPropertyType
    (s/optional-key :context) s/Any}) ;; varies depending on the type
 
@@ -61,7 +53,7 @@
 
 (def Model
   "Models are the center-piece of a Forecast"
-  {(s/required-key :model-id)       IdType
+  {(s/required-key :model-id)             IdType
    (s/required-key :name)           s/Str
    (s/required-key :owner)          IdType
    (s/required-key :version-id)     IdType

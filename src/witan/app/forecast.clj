@@ -14,14 +14,17 @@
   "Converts raw cassandra forecast into a ws/Forecast schema"
   [{:keys [in_progress
            forecast_id
-           created] :as forecast}]
+           created
+           current_version_id] :as forecast}]
   (-> forecast
       (dissoc :in_progress
               :forecast_id
-              :created)
+              :created
+              :current_version_id)
       (assoc :in-progress? in_progress
              :forecast-id forecast_id
-             :created (java-Date-to-ISO-Date created))))
+             :created (java-Date-to-ISO-Date created)
+             :version-id current_version_id)))
 
 (defn find-forecast-by-id
   [id]
