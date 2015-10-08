@@ -14,7 +14,7 @@
                  [buddy/buddy-auth "0.6.2"]
                  [buddy/buddy-hashers "0.6.0"]
                  [org.clojure/tools.logging "0.3.1"]
-                 [cc.qbits/alia "2.8.0"]
+                 [cc.qbits/alia "2.10.0"]
                  [cc.qbits/hayt "3.0.0-rc2"]
                  [prismatic/schema "1.0.1"]
                  [kixi/schema-contrib "0.2.0"]

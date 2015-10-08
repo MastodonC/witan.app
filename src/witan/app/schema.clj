@@ -44,14 +44,13 @@
 (def ModelPropertyType
   "Types that the model properties can be"
   (s/enum
-   :text
-   :number
-   :dropdown))
+   "text"
+   "number"
+   "dropdown"))
 
 (def ModelProperty
   "Properties that a model can expose"
-  {(s/required-key :id)      IdType
-   (s/required-key :name)    s/Str
+  {(s/required-key :name)    s/Str
    (s/required-key :type)    ModelPropertyType
    (s/optional-key :context) s/Any}) ;; varies depending on the type
 
@@ -62,13 +61,12 @@
 
 (def Model
   "Models are the center-piece of a Forecast"
-  {(s/required-key :id)             IdType
+  {(s/required-key :model-id)       IdType
    (s/required-key :name)           s/Str
    (s/required-key :owner)          IdType
-   (s/required-key :series-id)      IdType
+   (s/required-key :version-id)     IdType
    (s/required-key :version)        s/Int
    (s/required-key :created)        DateTimeType
-   (s/required-key :descendant-id) (s/maybe IdType)
    (s/optional-key :description)    s/Str
    (s/optional-key :properties)    [ModelProperty]})
 
