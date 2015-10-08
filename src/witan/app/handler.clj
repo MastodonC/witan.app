@@ -14,7 +14,7 @@
             [witan.app.forecast :as forecast]
             [witan.app.util :refer [load-extensions!]]
             [schema.core :as s]
-            [witan.schema :as w]
+            [witan.app.schema :as w]
             [compojure.api.sweet :as sweet]
             [ring.util.http-response :refer :all]
             [clojure.tools.logging :as log])

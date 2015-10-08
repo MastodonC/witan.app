@@ -17,7 +17,6 @@
                  [cc.qbits/alia "2.8.0"]
                  [cc.qbits/hayt "3.0.0-rc2"]
                  [prismatic/schema "1.0.1"]
-                 [kixi/witan.schema "0.0.1-SNAPSHOT"]
                  [kixi/compojure-api "0.24.0-SNAPSHOT"]
                  ;; Logging
                  [org.clojure/tools.logging      "0.3.1"]
