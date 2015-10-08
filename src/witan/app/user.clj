@@ -30,11 +30,11 @@
   (first (c/exec (find-user-by-username username))))
 
 (defn add-user! [{:keys [username] :as user}]
-  (let [existing-users (c/exec (find-user-by-username username))]
+  (let [existing-users (retrieve-user-by-username username)]
     (when (empty? existing-users)
       (c/exec (create-user user))
       ; retrieving newly created user
-      (retrieve-user-by-username (:username user)))))
+      (retrieve-user-by-username username))))
 
 (defn password-ok? [existing-user password]
   (hs/check password (:password_hash existing-user)))

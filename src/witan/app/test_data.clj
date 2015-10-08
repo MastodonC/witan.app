@@ -26,6 +26,6 @@
         f3 (forecast/add-forecast! {:name "My Forecast 3" :description "Description of my forecast" :owner (:id user1)})
 
         ;; versions of these forecasts
-        f1_1 (forecast/update-forecast! {:series-id (:series_id f1) :owner (:id user1)})
-        f1_2 (forecast/update-forecast! {:series-id (:series_id f1) :owner (:id user1)})
-        f3_1 (forecast/update-forecast! {:series-id (:series_id f3) :owner (:id user1)})]))
+        f1_1 (forecast/update-forecast! {:id (:forecast_id f1) :owner (:id user1)})
+        f1_2 (forecast/update-forecast! {:id (:forecast_id f1) :owner (:id user1)})
+        f3_1 (forecast/update-forecast! {:id (:forecast_id f3) :owner (:id user1)})]))

@@ -3,14 +3,55 @@
 DROP KEYSPACE witan;
 CREATE KEYSPACE witan WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}  AND durable_writes = true;
 
-// --------------------------------------------------------------------------------
-// users
+CREATE TABLE witan.forecast_names (
+    name text,
+    owner uuid,
+    PRIMARY KEY (name, owner)
+) WITH CLUSTERING ORDER BY (owner ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'min_threshold': '4', 'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+CREATE TABLE witan.forecast_headers (
+    forecast_id uuid PRIMARY KEY,
+    created timestamp,
+    current_version_id uuid,
+    version int,
+    description text,
+    in_progress boolean,
+    name text,
+    owner uuid
+) WITH bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'min_threshold': '4', 'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+
 CREATE TABLE witan.users (
     id uuid PRIMARY KEY,
     first_name text,
     name text,
-    username text,
-    password_hash text
+    password_hash text,
+    username text
 ) WITH bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
     AND comment = ''
@@ -26,22 +67,22 @@ CREATE TABLE witan.users (
     AND speculative_retry = '99.0PERCENTILE';
 CREATE INDEX user_username ON witan.users (username);
 
-// --------------------------------------------------------------------------------
-// forecast headers 
-CREATE TABLE witan.forecast_headers (
-    id uuid PRIMARY KEY,
-    name text,
-    description text,
-    created timestamp,
-    owner uuid,
-    series_id uuid,
+
+CREATE TABLE witan.forecasts (
+    forecast_id uuid,
     version int,
+    created timestamp,
+    description text,
     in_progress boolean,
-    descendant_id uuid
-) WITH bloom_filter_fp_chance = 0.01
+    name text,
+    owner uuid,
+    version_id uuid,
+    PRIMARY KEY (forecast_id, version)
+) WITH CLUSTERING ORDER BY (version DESC)
+    AND bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
     AND comment = ''
-    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compaction = {'min_threshold': '4', 'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32'}
     AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
     AND dclocal_read_repair_chance = 0.1
     AND default_time_to_live = 0
@@ -51,9 +92,6 @@ CREATE TABLE witan.forecast_headers (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
-CREATE INDEX forecast_header_name ON witan.forecast_headers (name);
-CREATE INDEX forecast_header_series_id ON witan.forecast_headers (series_id);
-CREATE INDEX forecast_header_owner ON witan.forecast_headers (owner);
 
 // --------------------------------------------------------------------------------
 // model properties
@@ -82,7 +120,7 @@ CREATE TABLE witan.model_names (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
-  
+
 // model headers
 CREATE TABLE witan.models (
     name text,
@@ -106,4 +144,3 @@ CREATE TABLE witan.models (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
-
