@@ -5,7 +5,7 @@
             [clj-time.format   :as tf]
             [clj-time.coerce   :as tc]
             [witan.app.config :as c]
-            [witan.schema :as ws]
+            [witan.app.schema :as ws]
             [schema.core :as s])
   (:use [liberator.core :only [defresource]]))
 
