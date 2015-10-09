@@ -19,15 +19,6 @@
             [ring.util.http-response :refer :all]
             [clojure.tools.logging :as log])
   (:gen-class))
-;; TODO move to witan.schema
-(def User
-  (merge w/LoginDetails
-         {(s/required-key :name) s/Str}))
-
-(def LoginReturn
-  (s/either {(s/required-key :token) s/Str
-             (s/required-key :id) s/Uuid}
-            {:message s/Str}))
 
 ;; Global storage for store generated tokens.
 (defonce tokens (atom {}))

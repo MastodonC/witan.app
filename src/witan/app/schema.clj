@@ -21,6 +21,15 @@
   {(s/required-key :username) (s/both (length-greater 5) (is-an-email))
    (s/required-key :password) (length-greater 5)})
 
+(def User
+  (merge LoginDetails
+         {(s/required-key :name) s/Str}))
+
+(def LoginReturn
+  (s/either {(s/required-key :token) s/Str
+             (s/required-key :id) s/Uuid}
+            {:message s/Str}))
+
 (def IdType
   s/Uuid)
 
