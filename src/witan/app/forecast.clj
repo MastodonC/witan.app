@@ -10,7 +10,13 @@
             [schema.core :as s])
   (:use [liberator.core :only [defresource]]))
 
-(defn- ->Forecast
+
+(defn java-Date-to-ISO-Date
+  [datetime]
+  (tf/unparse (tf/formatters :date-hour-minute-second)
+              (tc/from-date datetime)))
+
+(defn- ->ForecastHeaders
   "Converts raw cassandra forecast into a ws/Forecast schema"
   [{:keys [in_progress
            forecast_id
@@ -26,6 +32,22 @@
              :created (java-Date-to-ISO-Date created)
              :version-id current_version_id)))
 
+(defn- ->Forecast
+  "Converts raw cassandra forecast into a ws/Forecast schema"
+  [{:keys [in_progress
+           forecast_id
+           created
+           version_id] :as forecast}]
+  (-> forecast
+      (dissoc :in_progress
+              :forecast_id
+              :created
+              :version_id)
+      (assoc :in-progress? in_progress
+             :forecast-id forecast_id
+             :created (java-Date-to-ISO-Date created)
+             :version-id version_id)))
+
 (defn find-forecast-by-id
   [id]
   (hayt/select :forecast_headers (hayt/where {:forecast_id id})))
@@ -34,6 +56,10 @@
   [name owner]
   (hayt/select :forecast_names (hayt/where {:name name
                                             :owner owner})))
+
+(defn find-forecast-versions-by-id
+  [id]
+  (hayt/select :forecasts (hayt/where {:forecast_id id})))
 
 (defn find-forecast-by-version-id
   [forecast-id version-id]
@@ -75,13 +101,14 @@
 (defn create-forecast-version
   [{:keys [name description owner forecast-id version in_progress id version-id]
     :or {version-id (uuid/random)}}]
+  (println "version owner" owner)
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
                                      :forecast_id forecast-id
                                      :name  name
                                      :description description
                                      :created creation-time
-                                     :owner owner ;; TODO check owner exists?
+                                     :owner owner
                                      :version_id version-id
                                      :version version
                                      :in_progress in_progress))))
@@ -92,6 +119,7 @@
                             :forecast-id forecast-id
                             :version-id version-id
                             :version 0
+                            :owner owner
                             :in_progress false}))
 
 (defn add-forecast!
@@ -109,7 +137,13 @@
 (defn update-forecast!
   [{:keys [id owner]}]
   (if-let [latest-forecast (retrieve-forecast-most-recent-of-series id)]
+<<<<<<< HEAD
     (let [new-version (inc (:version latest-forecast))
+=======
+    (let [_ (println latest-forecast)
+          _ (println owner)
+          new-version (+ (:version latest-forecast) 1)
+>>>>>>> parametrised route to retrieve forecast
           new-version-id (uuid/random)
           new-forecast (assoc latest-forecast
                               :version new-version
@@ -124,6 +158,10 @@
   []
   (c/exec (hayt/select :forecast_headers)))
 
+(defn get-forecast
+  [id]
+  (c/exec (hayt/select :forecasts (hayt/where {:forecast_id id}))))
+
 ;;;;;;
 
 (defresource forecasts
@@ -131,4 +169,11 @@
   :available-media-types ["application/json"]
   :handle-ok (fn [_] (s/validate
                       [ws/Forecast]
-                      (map ->Forecast (get-forecasts)))))
+                      (map ->ForecastHeaders (get-forecasts)))))
+
+(defresource forecast [id]
+  :allowed-methods #{:get}
+  :available-media-types ["application/json"]
+  :handle-ok (fn [_] (s/validate
+                     [ws/Forecast]
+                     (map ->Forecast (get-forecast id)))))

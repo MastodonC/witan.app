@@ -132,8 +132,9 @@
                                 :summary "Create a new forecast"
                                 (not-implemented))
                    (sweet/GET* "/forecasts/:id" []
-                               :summary "Redirects to /forecasts/:id/<version> where <version> is the latest version"
-                               (not-implemented))
+                                :path-params [id :- java.util.UUID]
+                        :summary "retrieves the versions of a forecast"
+                        (forecast/forecast id))
                    (sweet/GET* "/forecasts/:id/:version" []
                                :summary "Returns a forecast of the specified id and version"
                                (not-implemented))
@@ -158,6 +159,7 @@
                    (sweet/GET* "/data/download/:uuid" []
                                :summary "Downloads the data of a given id"
                                (not-implemented))))
+
   (sweet/ANY* "/*" []
               (not-found {:message "These aren't the droids you're looking for."})))
 
