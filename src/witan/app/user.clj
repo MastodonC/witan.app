@@ -20,8 +20,11 @@
 
 (defn create-user [user]
   (let [hash (hs/encrypt (:password user))]
-    (hayt/insert :Users, (hayt/values :id (uuid/random) :username (:username user) :password_hash hash :name (:name user))))
-)
+    (hayt/insert :Users
+                 (hayt/values :id (uuid/random)
+                              :username (:username user)
+                              :password_hash hash
+                              :name (:name user)))))
 
 (defn retrieve-user-by-username [username]
   (first (c/exec (find-user-by-username username))))

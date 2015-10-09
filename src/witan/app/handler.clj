@@ -61,14 +61,6 @@
       (handler request)
       (unauthorized {:error "Unauthorized"}))))
 
-(defn cors-mw [handler]
-  (fn [request]
-    (let [response (handler request)]
-      (-> response
-          (assoc-in [:headers "Access-Control-Allow-Origin"] "*")
-          (assoc-in [:headers "Access-Control-Allow-Methods"] "GET, PUT, PATCH, POST, DELETE, OPTIONS")
-          (assoc-in [:headers "Access-Control-Allow-Headers"] "Authorization, Content-Type")))))
-
 (defn print-mw
   "for debugging purposes"
   [handler]
@@ -87,71 +79,67 @@
   (sweet/swagger-ui)
   (sweet/swagger-docs
    {:info {:title "Witan API"
-           :description "Back-end API for the Witan project"}
-    })
+           :description "Back-end API for the Witan project"}})
   (sweet/context* "/api" []
-            (sweet/POST* "/login" []
-                         :body [login-details w/LoginDetails]
-                         :summary "log in"
-                         :middlewares [cors-mw]
-                         :return w/LoginReturn
-                         (login login-details))
-            (sweet/POST* "/reset-password" []
-                         :summary "Resets a users password"
-                         (not-implemented))
-            (sweet/GET* "/" []
-                        :middlewares [cors-mw token-auth-mw]
-                        (ok {:message "hello"}))
-            (sweet/POST* "/user" []
-                           :body [user w/SignUp]
-                           :middlewares [cors-mw]
-                           :summary "sign up"
-                           :return w/LoginReturn
-                           (signup user))
-            (sweet/GET* "/me" {:as request}
-                        :middlewares [cors-mw token-auth-mw]
-                        :summary "Get current logged in user"
-                         (check-user (:identity request)))
-            (sweet/GET* "/models" []
-                        :summary "Get models available to a user"
-                        (not-implemented))
-            (sweet/GET* "/models/:id" []
-                        :summary "Get model specified by ID"
-                        (not-implemented))
-            (sweet/GET* "/forecasts" []
-                        :summary "Get forecasts available to a user"
-                        :middlewares [token-auth-mw]
-                        forecast/forecasts)
-            (sweet/POST* "/forecasts" []
-                        :summary "Create a new forecast"
-                        (not-implemented))
-            (sweet/GET* "/forecasts/:id" []
-                        :summary "Redirects to /forecasts/:id/<version> where <version> is the latest version"
-                        (not-implemented))
-            (sweet/GET* "/forecasts/:id/:version" []
-                        :summary "Returns a forecast of the specified id and version"
-                        (not-implemented))
-            (sweet/POST* "/forecasts/:id" []
-                        :summary "Creates a new version of this forecast with the specified updated"
-                        (not-implemented))
-            (sweet/GET* "/forecasts/:id/:version/output/:type" []
-                        :summary "Downloads an output of the given type"
-                        (not-implemented))
-            (sweet/POST* "/tag" []
-                         :summary "Creates a new tag from a forecast id and version"
-                         (not-implemented))
-            (sweet/POST* "/share-request/:tag-id" []
-                         :summary "Creates a request to update the sharing properties of a tag"
-                         (not-implemented))
-            (sweet/POST* "/data/upload" []
-                         :summary "Upload endpoint for data items"
-                         (not-implemented))
-            (sweet/GET* "/data" []
-                        :summary "Expects a query string. Allows searching of data items"
-                        (not-implemented))
-            (sweet/GET* "/data/download/:uuid" []
-                        :summary "Downloads the data of a given id"
-                        (not-implemented)))
+                  (sweet/POST* "/login" []
+                               :body [login-details w/LoginDetails]
+                               :summary "log in"
+                               :return w/LoginReturn
+                               (login login-details))
+                  (sweet/POST* "/reset-password" []
+                               :summary "Resets a users password"
+                               (not-implemented))
+                  (sweet/POST* "/user" []
+                               :body [user w/SignUp]
+                               :summary "sign up"
+                               :return w/LoginReturn
+                               (signup user))
+                  (sweet/middlewares
+                   [token-auth-mw]
+                   (sweet/GET* "/" []
+                               (ok {:message "hello"}))
+                   (sweet/GET* "/me" {:as request}
+                               :summary "Get current logged in user"
+                               (check-user (:identity request)))
+                   (sweet/GET* "/models" []
+                               :summary "Get models available to a user"
+                               (not-implemented))
+                   (sweet/GET* "/models/:id" []
+                               :summary "Get model specified by ID"
+                               (not-implemented))
+                   (sweet/GET* "/forecasts" []
+                               :summary "Get forecasts available to a user"
+                               forecast/forecasts)
+                   (sweet/POST* "/forecasts" []
+                                :summary "Create a new forecast"
+                                (not-implemented))
+                   (sweet/GET* "/forecasts/:id" []
+                               :summary "Redirects to /forecasts/:id/<version> where <version> is the latest version"
+                               (not-implemented))
+                   (sweet/GET* "/forecasts/:id/:version" []
+                               :summary "Returns a forecast of the specified id and version"
+                               (not-implemented))
+                   (sweet/POST* "/forecasts/:id" []
+                                :summary "Creates a new version of this forecast with the specified updated"
+                                (not-implemented))
+                   (sweet/GET* "/forecasts/:id/:version/output/:type" []
+                               :summary "Downloads an output of the given type"
+                               (not-implemented))
+                   (sweet/POST* "/tag" []
+                                :summary "Creates a new tag from a forecast id and version"
+                                (not-implemented))
+                   (sweet/POST* "/share-request/:tag-id" []
+                                :summary "Creates a request to update the sharing properties of a tag"
+                                (not-implemented))
+                   (sweet/POST* "/data/upload" []
+                                :summary "Upload endpoint for data items"
+                                (not-implemented))
+                   (sweet/GET* "/data" []
+                               :summary "Expects a query string. Allows searching of data items"
+                               (not-implemented))
+                   (sweet/GET* "/data/download/:uuid" []
+                               :summary "Downloads the data of a given id"
+                               (not-implemented))))
   (sweet/ANY* "/*" []
               (not-found {:message "These aren't the droids you're looking for."})))
 

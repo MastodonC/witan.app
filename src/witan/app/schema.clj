@@ -10,7 +10,7 @@
 (defn matches [r]
   (s/pred
    (fn [s]
-          (re-matches r s))))
+     (re-matches r s))))
 
 (defn is-an-email []
   (s/pred
