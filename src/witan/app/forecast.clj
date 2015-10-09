@@ -41,9 +41,10 @@
                                        :version_id version-id})))
 
 (defn update-forecast-current-version-id
-  [forecast-id current-version-id]
+  [forecast-id current-version-id new-version]
   (hayt/update :forecast_headers
-               (hayt/set-columns {:current_version_id current-version-id})
+               (hayt/set-columns {:current_version_id current-version-id
+                                  :version new-version})
                (hayt/where {:forecast_id forecast-id})))
 
 (defn retrieve-forecast-most-recent-of-series
@@ -117,7 +118,7 @@
                               :in_progress true
                               :forecast-id id)]
       (c/exec (create-forecast-version new-forecast))
-      (c/exec (update-forecast-current-version-id id new-version-id)))))
+      (c/exec (update-forecast-current-version-id id new-version-id new-version)))))
 
 (defn get-forecasts
   []
