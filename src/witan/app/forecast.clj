@@ -82,9 +82,7 @@
        first))
 
 (defn create-new-forecast
-  [{:keys [name description owner forecast-id version-id]
-    :or {forecast-id (uuid/random)
-         version-id (uuid/random)}}]
+  [{:keys [name description owner forecast-id version-id]}]
   (hayt/insert :forecast_headers (hayt/values :name name
                                               :description description
                                               :owner owner
@@ -99,9 +97,7 @@
                                             :owner owner)))
 
 (defn create-forecast-version
-  [{:keys [name description owner forecast-id version in_progress id version-id]
-    :or {version-id (uuid/random)}}]
-  (println "version owner" owner)
+  [{:keys [name description owner forecast-id version in_progress id version-id]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
                                      :forecast_id forecast-id
@@ -137,19 +133,13 @@
 (defn update-forecast!
   [{:keys [id owner]}]
   (if-let [latest-forecast (retrieve-forecast-most-recent-of-series id)]
-<<<<<<< HEAD
     (let [new-version (inc (:version latest-forecast))
-=======
-    (let [_ (println latest-forecast)
-          _ (println owner)
-          new-version (+ (:version latest-forecast) 1)
->>>>>>> parametrised route to retrieve forecast
           new-version-id (uuid/random)
           new-forecast (assoc latest-forecast
                               :version new-version
-                              :version_id new-version-id
+                              :version-id new-version-id
                               :owner owner
-                              :in_progress true
+                              :in-progress true
                               :forecast-id id)]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id id new-version-id new-version)))))
