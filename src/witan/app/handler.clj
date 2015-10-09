@@ -19,15 +19,6 @@
             [ring.util.http-response :refer :all]
             [clojure.tools.logging :as log])
   (:gen-class))
-;; TODO move to witan.schema
-(def User
-  (merge w/LoginDetails
-         {(s/required-key :name) s/Str}))
-
-(def LoginReturn
-  (s/either {(s/required-key :token) s/Str
-             (s/required-key :id) s/Uuid}
-            {:message s/Str}))
 
 ;; Global storage for store generated tokens.
 (defonce tokens (atom {}))
@@ -103,7 +94,7 @@
                          :body [login-details w/LoginDetails]
                          :summary "log in"
                          :middlewares [cors-mw]
-                         :return LoginReturn
+                         :return w/LoginReturn
                          (login login-details))
             (sweet/POST* "/reset-password" []
                          :summary "Resets a users password"
@@ -112,9 +103,10 @@
                         :middlewares [cors-mw token-auth-mw]
                         (ok {:message "hello"}))
             (sweet/POST* "/user" []
-                           :body [user User]
+                           :body [user w/SignUp]
                            :middlewares [cors-mw]
                            :summary "sign up"
+                           :return w/LoginReturn
                            (signup user))
             (sweet/GET* "/me" {:as request}
                         :middlewares [cors-mw token-auth-mw]
