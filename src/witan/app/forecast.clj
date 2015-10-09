@@ -90,7 +90,7 @@
 (defn update-forecast!
   [{:keys [series-id owner inputs]}]
   (if-let [latest-forecast (retrieve-forecast-most-recent-of-series series-id)]
-    (let [new-version (+ (:version latest-forecast) 1)
+    (let [new-version (inc (:version latest-forecast))
           new-id (uuid/random)
           new-forecast (assoc latest-forecast
                               :version new-version
