@@ -21,7 +21,7 @@
   {(s/required-key :username) (s/both (length-greater 5) (is-an-email))
    (s/required-key :password) (length-greater 5)})
 
-(def User
+(def SignUp
   (merge LoginDetails
          {(s/required-key :name) s/Str}))
 
