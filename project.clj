@@ -25,7 +25,8 @@
                  [org.slf4j/jul-to-slf4j         ~slf4j-version]
                  [org.slf4j/jcl-over-slf4j       ~slf4j-version]
                  [org.slf4j/log4j-over-slf4j     ~slf4j-version]
-                 [javax.mail/mail                "1.4.7"]]
+                 [javax.mail/mail                "1.4.7"]
+                 [overtone/at-at "1.2.0"]]
   :plugins [[lein-ring "0.8.13"]]
   :ring {:handler witan.app.handler/app
          :nrepl {:start? true :port 7889}}
