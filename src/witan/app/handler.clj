@@ -17,32 +17,49 @@
             [witan.app.schema :as w]
             [compojure.api.sweet :as sweet]
             [ring.util.http-response :refer :all]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [clj-time.core :as t]
+            [overtone.at-at :as at])
   (:gen-class))
 
 ;; Global storage for store generated tokens.
 (defonce tokens (atom {}))
+
+;; The at-at thread pool
+(defonce at-at-pool (at/mk-pool))
 
 ;; Authenticate Handler
 ;; Respons to post requests in same url as login and is responsible to
 ;; identify the incoming credentials and set the appropiate authenticated
 ;; user into session. `authdata` will be used as source of valid users.
 
+(defn clear-expired-tokens!
+  [tokens]
+  (->> @tokens
+       (filter (fn [[k {:keys [user expires]}]] (t/before? (t/now) expires)))
+       (into {})
+       (reset! tokens)))
+
+(defn add-token!
+  [user-id tokens]
+  (let [token (user/random-token)
+        ttl (t/days 28)]
+    (swap! tokens assoc (keyword token) {:user user-id :expires (t/plus (t/now) ttl)})
+    token))
+
 (defn login
   [{:keys [username password] :as body}]
-  (if-let [valid-user (user/user-valid? username password)]
-    (let [token (user/random-token)]
-      (swap! tokens assoc (keyword token) (:id valid-user))
-      (ok {:token token :id (:id valid-user)}))
+  (if-let [{:keys [id]} (user/user-valid? username password)]
+    (let [token (add-token! id tokens)]
+      (ok {:token token :id id}))
     (ok {:message "login failed"})))
 
 (defn signup
   [{:keys [username password name] :as body}]
   (log/info "signup" body)
-  (if-let [new-user (user/add-user! body)]
-    (let [token (user/random-token)]
-      (swap! tokens assoc (keyword token) (keyword (:id new-user)))
-      (created {:token token :id (:id new-user)}))
+  (if-let [{:keys [id]} (user/add-user! body)]
+    (let [token (add-token! id tokens)]
+      (created {:token token :id id}))
     (ok {:message "User already present"})))
 
 (defn check-user [identity]
@@ -145,8 +162,12 @@
 
 (defn my-authfn
   [req token]
-  (when-let [user (get @tokens (keyword token))]
-    user))
+  (when-let [{:keys [user expires]} (get @tokens (keyword token))]
+    (if (t/before? (t/now) expires)
+      user
+      (do
+        (swap! tokens dissoc (keyword token))
+        false))))
 
 ;; Create an instance of auth backend.
 
@@ -155,6 +176,10 @@
 
 ;; load extensions
 (load-extensions!)
+
+;; at-at jobs
+(let [delay (t/in-millis (t/days 7))]
+  (at/every delay #(clear-expired-tokens! tokens) at-at-pool :initial-delay delay))
 
 ;; the Ring app definition including the authentication backend
 (def app (-> app'
