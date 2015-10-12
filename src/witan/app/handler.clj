@@ -130,7 +130,7 @@
                                forecast/forecasts)
                    (sweet/POST* "/forecasts" []
                                 :summary "Create a new forecast"
-                                (not-implemented))
+                               forecast/forecasts)
                    (sweet/GET* "/forecasts/:id" []
                                 :path-params [id :- java.util.UUID]
                         :summary "retrieves the versions of a forecast"

@@ -114,6 +114,11 @@
    (s/required-key :forecast-id) IdType
    (s/required-key :forecast-version) s/Int})
 
+(def NewForecast
+  "Schema for creating a new forecast"
+  {(s/required-key :name)        s/Str
+   (s/optional-key :description) s/Str})
+
 (def Forecast
   "Forecast"
   {(s/required-key :version-id)            IdType

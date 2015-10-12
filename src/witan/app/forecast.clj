@@ -7,7 +7,8 @@
             [witan.app.config :as c]
             [witan.app.schema :as ws]
             [witan.app.util :as util]
-            [schema.core :as s])
+            [schema.core :as s]
+            [clojure.tools.logging :as log])
   (:use [liberator.core :only [defresource]]))
 
 (defn- ->ForecastHeaders
@@ -149,16 +150,37 @@
 
 ;;;;;;
 
+;;;;;; NOTES:
+;; - We currently don't use `exists?` properly, but we should in the context of
+;;   re-naming forecasts. Currently, duplicate owner+name combinations return
+;;   304.
+
 (defresource forecasts
+  util/json-resource
   :allowed-methods #{:get :post}
   :available-media-types ["application/json"]
-  :handle-ok (fn [_] (s/validate
-                      [ws/Forecast]
-                      (map ->ForecastHeaders (get-forecasts)))))
+  :processable? (util/post!-processable-validation ws/NewForecast)
+  :exists? (fn [ctx] (let [{:keys [name]} (-> ctx :request :body-params)
+                           owner (-> ctx :request :identity)]
+                       (not-empty (c/exec (find-forecast-by-name-and-owner name owner)))))
+  ;;
+  :if-match-exists? false
+  :if-unmodified-since-exists? false
+  :if-none-match-exists? true
+  :if-none-match-star? true
+  :if-none-match? true
+  ;;
+  :post! (fn [ctx]
+           (let [forecast (-> ctx :request :body-params)
+                 owner (-> ctx :request :identity)]
+             (add-forecast! (assoc forecast :owner owner))))
+  :handle-ok  (fn [_] (s/validate
+                       [ws/Forecast]
+                       (map ->Forecast (get-forecasts)))))
 
 (defresource forecast [id]
   :allowed-methods #{:get}
   :available-media-types ["application/json"]
   :handle-ok (fn [_] (s/validate
-                     [ws/Forecast]
-                     (map ->Forecast (get-forecast id)))))
+                      [ws/Forecast]
+                      (map ->Forecast (get-forecast id)))))
