@@ -35,6 +35,10 @@
   [model-id]
   (hayt/select model-table (hayt/where {:model_id model-id})))
 
+(defn create-model-name
+  [name model-id]
+  (hayt/insert model-names-table (hayt/values :name name :model_id model-id)))
+
 (defn create-model
   [{:keys [name description owner model-id version version-id properties]
     :or {model-id (uuid/random)
@@ -55,6 +59,7 @@
   (when (empty? (c/exec (find-model-by-name name)))
     (let [model-id (uuid/random)]
       (c/exec (create-model (assoc model :model_id model-id)))
+      (c/exec (create-model-name name model-id))
       (first (c/exec (find-model-by-model-id model-id))))))
 
 (defn get-models
@@ -69,3 +74,4 @@
   :handle-ok (fn [_] (s/validate
                       [ws/Model]
                       (map ->Model (get-models)))))
+/
