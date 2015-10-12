@@ -12,6 +12,7 @@
              [json :refer [wrap-json-body wrap-json-response]]]
             [witan.app.user :as user]
             [witan.app.forecast :as forecast]
+            [witan.app.model :as model]
             [witan.app.util :refer [load-extensions!]]
             [schema.core :as s]
             [witan.app.schema :as w]
@@ -120,7 +121,7 @@
                                (check-user (:identity request)))
                    (sweet/GET* "/models" []
                                :summary "Get models available to a user"
-                               (not-implemented))
+                               model/models)
                    (sweet/GET* "/models/:id" []
                                :summary "Get model specified by ID"
                                (not-implemented))

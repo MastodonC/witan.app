@@ -5,6 +5,7 @@
             [witan.app.handler :refer :all]
             [witan.app.user :as user]
             [witan.app.forecast :as forecast]
+            [witan.app.model :as model]
             [clojure.data.json :as json]))
 
 (def user-id (java.util.UUID/randomUUID))
@@ -37,6 +38,24 @@
      :id #uuid "7185c4e4-739e-4eb8-8e37-f3f4b618ac1d",
      :version 0,
      :owner #uuid "cac4ba3a-07c8-4e79-9ae0-d97317bb0d45"}))
+
+(defn get-dummy-models []
+  '({:name "My Model 2",
+     :created #inst "2015-10-09T13:52:43.951-00:00",
+     :description "Description of my model",
+     :model_id #uuid "d92e4e09-ede5-48a1-95f4-c3b15b0ba399",
+     :owner #uuid "c9d5bfa6-9517-4d28-8c86-7232c8d92352",
+     :properties [],
+     :version 0,
+     :version_id #uuid "5012d65c-20fe-4fdf-b3cc-2a1e5760f52a"}
+    {:name "My Model 1",
+     :created #inst "2015-10-09T13:52:43.865-00:00",
+     :description "Description of my model",
+     :model_id #uuid "c1197cb3-54c3-4b59-ae20-384c64b95095",
+     :owner #uuid "f6d452f1-3978-4e8a-ab38-58fab1949c7c",
+     :properties [],
+     :version 0,
+     :version_id #uuid "653c149a-86d8-4a3f-a7a8-d898c070177e"}))
 
 (defn auth-header [token] {"Authorization" (str "Token " token)})
 
@@ -99,6 +118,14 @@
       (with-redefs [forecast/get-forecasts get-dummy-forecasts]
         (let [token (logged-in-user-token)
               [status body _] (get* app "/api/forecasts" {} (auth-header token))]
+          (is (= status 200))
+          (is (seq? body))))))
+
+  (testing "/api/models"
+    (testing "get models"
+      (with-redefs [model/get-models get-dummy-models]
+        (let [token (logged-in-user-token)
+              [status body _] (get* app "/api/models" {} (auth-header token))]
           (is (= status 200))
           (is (seq? body))))))
 

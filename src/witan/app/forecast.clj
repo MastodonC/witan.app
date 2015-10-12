@@ -6,13 +6,9 @@
             [clj-time.coerce   :as tc]
             [witan.app.config :as c]
             [witan.app.schema :as ws]
+            [witan.app.util :as util]
             [schema.core :as s])
   (:use [liberator.core :only [defresource]]))
-
-(defn java-Date-to-ISO-Date
-  [datetime]
-  (tf/unparse (tf/formatters :date-hour-minute-second)
-              (tc/from-date datetime)))
 
 (defn- ->Forecast
   "Converts raw cassandra forecast into a ws/Forecast schema"
@@ -28,7 +24,7 @@
       (assoc :descendant-id descendant_id
              :in-progress? in_progress
              :series-id series_id
-             :created (java-Date-to-ISO-Date created))))
+             :created (util/java-Date-to-ISO-Date-Time created))))
 
 (defn find-forecast-by-id
   [id]
