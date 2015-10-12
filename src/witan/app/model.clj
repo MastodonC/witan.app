@@ -11,9 +11,6 @@
             [schema.core :as s])
   (:use [liberator.core :only [defresource]]))
 
-(def model-table :models)
-(def model-names-table :model_names)
-
 (defn ->Model
   "Converts raw cassandra model into a ws/Model schema"
   [{:keys [version_id
@@ -29,22 +26,22 @@
 
 (defn find-model-by-name
   [name]
-  (hayt/select model-names-table (hayt/where {:name name})))
+  (hayt/select :model_names (hayt/where {:name name})))
 
 (defn find-model-by-model-id
   [model-id]
-  (hayt/select model-table (hayt/where {:model_id model-id})))
+  (hayt/select :models (hayt/where {:model_id model-id})))
 
 (defn create-model-name
   [name model-id]
-  (hayt/insert model-names-table (hayt/values :name name :model_id model-id)))
+  (hayt/insert :model_names (hayt/values :name name :model_id model-id)))
 
 (defn create-model
   [{:keys [name description owner model-id version version-id properties]
     :or {model-id (uuid/random)
          version 1
          version-id (uuid/random)}}]
-  (hayt/insert model-table (hayt/values
+  (hayt/insert :models (hayt/values
                             :version_id version-id
                             :name  name
                             :description description
@@ -64,7 +61,7 @@
 
 (defn get-models
   []
-  (c/exec (hayt/select model-table)))
+  (c/exec (hayt/select :models)))
 
 ;;;;;;;
 
