@@ -44,7 +44,10 @@
 (defn add-token!
   [user-id tokens]
   (let [token (user/random-token)
-        ttl (t/days 28)]
+        ttl (t/days 28)
+        existing (some #(if (= user-id (-> % second :user)) %) @tokens)]
+    (when existing ;; remove an existing token for this user
+      (swap! tokens dissoc (first existing)))
     (swap! tokens assoc (keyword token) {:user user-id :expires (t/plus (t/now) ttl)})
     token))
 

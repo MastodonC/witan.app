@@ -104,6 +104,11 @@
         (let [[status body _] (get* app "/api/me" {})]
           (is (= status 401)))))
 
+    (testing "401 with bogus token"
+      (with-redefs [user/retrieve-user (fn [id] {:id id :name "Joe" :username "joe@test.com"})]
+        (let [[status body _] (get* app "/api/me" {} (auth-header "BOGUSTOKEN"))]
+          (is (= status 401)))))
+
     (testing "retrieve user"
       (with-redefs [user/retrieve-user (fn [id] {:id id :name "Joe" :username "joe@test.com"})]
         (let [token (logged-in-user-token)
@@ -116,7 +121,16 @@
         (let [token (logged-in-user-token)
               [status body _] (get* app "/api/forecasts" {} (auth-header token))]
           (is (= status 200))
-          (is (seq? body))))))
+          (is (seq? body)))))
+
+    ;; TODO fix this, for some reason :identity is not being assoc'd into the
+    ;; request -- literally, no idea why.
+    ;;(testing "post forecasts"
+    ;;  (with-redefs []
+    ;;    (let [token (logged-in-user-token)
+    ;;          [status body _] (raw-post* app "/api/forecasts" {:body (json {"name" "My New Forecast 1"})} nil (auth-header token))]
+    ;;      (is (= status 201))))))
+    )
 
   (testing "/api/models"
     (testing "get models"
