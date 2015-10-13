@@ -10,7 +10,7 @@
 (defn matches [r]
   (s/pred
    (fn [s]
-     (re-matches r s))))
+          (re-matches r s))))
 
 (defn is-an-email []
   (s/pred
@@ -61,7 +61,7 @@
 
 (def Model
   "Models are the center-piece of a Forecast"
-  {(s/required-key :model-id)       IdType
+  {(s/required-key :model-id)             IdType
    (s/required-key :name)           s/Str
    (s/required-key :owner)          IdType
    (s/required-key :version-id)     IdType
@@ -116,14 +116,13 @@
 
 (def Forecast
   "Forecast"
-  {(s/required-key :id)            IdType
+  {(s/required-key :version-id)            IdType
    (s/required-key :name)          s/Str
    (s/required-key :owner)         IdType
-   (s/required-key :series-id)     IdType
+   (s/required-key :forecast-id)     IdType
    (s/required-key :version)       s/Int
    (s/required-key :created)       DateTimeType
    (s/required-key :in-progress?)  s/Bool
-   (s/required-key :descendant-id) (s/maybe IdType)
    (s/optional-key :description)   s/Str
    (s/optional-key :tag)           Tag})
 
