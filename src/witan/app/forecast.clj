@@ -131,8 +131,8 @@
       (first (c/exec (find-forecast-by-id id))))))
 
 (defn update-forecast!
-  [{:keys [id owner]}]
-  (if-let [latest-forecast (retrieve-forecast-most-recent-of-series id)]
+  [{:keys [forecast-id owner]}]
+  (if-let [latest-forecast (retrieve-forecast-most-recent-of-series forecast-id)]
     (let [new-version (inc (:version latest-forecast))
           new-version-id (uuid/random)
           new-forecast (assoc latest-forecast
@@ -140,7 +140,7 @@
                               :version-id new-version-id
                               :owner owner
                               :in-progress true
-                              :forecast-id id)]
+                              :forecast-id forecast-id)]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id id new-version-id new-version)))))
 
