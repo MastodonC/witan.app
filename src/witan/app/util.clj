@@ -18,17 +18,6 @@
     (do (json/read-str str) true)
     (catch Exception e false)))
 
-(defn post!-processable-validation
-  "In the context of a POST, checks the body params against a schema"
-  [schema]
-  (fn [ctx]
-    (if (= :post (-> ctx :request :request-method))
-      (let [params (-> ctx :request :body-params)]
-        (nil? (s/check
-               schema
-               params)))
-      true)))
-
 (defn http-post?
   [ctx]
   (= :post (-> ctx :request :request-method)))
@@ -40,6 +29,17 @@
 (defn get-user-id
   [ctx]
   (-> ctx :request :identity))
+
+(defn post!-processable-validation
+  "In the context of a POST, checks the body params against a schema"
+  [schema]
+  (fn [ctx]
+    (if (http-post? ctx)
+      (let [params (get-post-params ctx)]
+        (nil? (s/check
+               schema
+               params)))
+      true)))
 
 ;;;;;;;;;;;;;;;;
 
@@ -62,7 +62,7 @@
 (def json-resource
   {:available-media-types ["application/json"]
    :known-content-type? (fn [ctx]
-                          (if (= :post (-> ctx :request :request-method))
+                          (if (http-post? ctx)
                             (= "application/json" (-> ctx :request :content-type)))
                           true)
    :handle-unprocessable-entity {:error "The schema of the required entity was incorrect."}
