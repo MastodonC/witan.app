@@ -162,21 +162,21 @@
   :available-media-types ["application/json"]
   :processable? (util/post!-processable-validation ws/NewForecast)
   :exists? (fn [ctx]
-             (if (= :post (-> ctx :request :request-method))
-               (let [{:keys [name]} (-> ctx :request :body-params)
-                     owner (-> ctx :request :identity)]
+             (if (util/http-post? ctx)
+               (let [{:keys [name]} (util/get-post-params ctx)
+                     owner (util/get-user-id ctx)]
                  (not-empty (c/exec (find-forecast-by-name-and-owner name owner))))
                true))
   ;;
   :if-match-exists? false
   :if-unmodified-since-exists? false
-  :if-none-match-exists? (fn [c] (= :post (-> c :request :request-method)))
+  :if-none-match-exists? util/http-post?
   :if-none-match-star? true
   :if-none-match? true
   ;;
   :post! (fn [ctx]
-           (let [forecast (-> ctx :request :body-params)
-                 owner (-> ctx :request :identity)]
+           (let [forecast (util/get-post-params ctx)
+                 owner (util/get-user-id ctx)]
              {::new-forecast (add-forecast! (assoc forecast :owner owner))}))
   :handle-created ::new-forecast
   :handle-ok  (fn [_] (s/validate

@@ -29,6 +29,18 @@
                params)))
       true)))
 
+(defn http-post?
+  [ctx]
+  (= :post (-> ctx :request :request-method)))
+
+(defn get-post-params
+  [ctx]
+  (-> ctx :request :body-params))
+
+(defn get-user-id
+  [ctx]
+  (-> ctx :request :identity))
+
 ;;;;;;;;;;;;;;;;
 
 (defn load-extensions!
