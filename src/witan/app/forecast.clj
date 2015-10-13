@@ -57,10 +57,10 @@
   [id]
   (hayt/select :forecasts (hayt/where {:forecast_id id})))
 
-(defn find-forecast-by-version-id
-  [forecast-id version-id]
+(defn find-forecast-by-version
+  [forecast-id version]
   (hayt/select :forecasts (hayt/where {:forecast_id forecast-id
-                                       :version_id version-id})))
+                                       :version version})))
 
 (defn update-forecast-current-version-id
   [forecast-id current-version-id new-version]
@@ -139,7 +139,7 @@
                               :forecast-id forecast-id)]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version))
-      (c/exec (find-forecast-by-version-id forecast-id new-version-id)))))
+      (c/exec (find-forecast-by-version forecast-id new-version)))))
 
 (defn get-forecasts
   []
