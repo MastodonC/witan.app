@@ -56,7 +56,7 @@
 
 (def ModelPropertyValue
   "A model property and value binding"
-  {(s/required-key :property-id) IdType
+  {(s/required-key :name)  s/Str
    (s/required-key :value) s/Any}) ;; varies depending on the ModelProperty type
 
 (def Model
@@ -116,8 +116,10 @@
 
 (def NewForecast
   "Schema for creating a new forecast"
-  {(s/required-key :name)        s/Str
-   (s/optional-key :description) s/Str})
+  {(s/required-key :name)              s/Str
+   (s/required-key :model-id)         (s/either IdType s/Str)
+   (s/optional-key :description)       s/Str
+   (s/optional-key :model-properties) [ModelPropertyValue]})
 
 (def Forecast
   "Forecast"
