@@ -11,21 +11,22 @@
             [clojure.tools.logging :as log])
   (:use [liberator.core :only [defresource]]))
 
-(defn- ->ForecastHeaders
+(defn- ->ForecastHeader
   "Converts raw cassandra forecast into a ws/Forecast schema"
   [{:keys [in_progress
            forecast_id
            created
            current_version_id] :as forecast}]
-  (-> forecast
-      (dissoc :in_progress
-              :forecast_id
-              :created
-              :current_version_id)
-      (assoc :in-progress? in_progress
-             :forecast-id forecast_id
-             :created (util/java-Date-to-ISO-Date-Time created)
-             :version-id current_version_id)))
+  (let [cleaned (-> forecast
+                    (dissoc :in_progress
+                            :forecast_id
+                            :created
+                            :current_version_id)
+                    (assoc :in-progress? in_progress
+                           :forecast-id forecast_id
+                           :created (util/java-Date-to-ISO-Date-Time created)
+                           :version-id current_version_id))]
+    (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn- ->Forecast
   "Converts raw cassandra forecast into a ws/Forecast schema"
@@ -178,11 +179,11 @@
   :post! (fn [ctx]
            (let [forecast (util/get-post-params ctx)
                  owner (util/get-user-id ctx)]
-             {::new-forecast (add-forecast! (assoc forecast :owner owner))}))
+             {::new-forecast (->ForecastHeader (add-forecast! (assoc forecast :owner owner)))}))
   :handle-created ::new-forecast
   :handle-ok  (fn [_] (s/validate
                        [ws/Forecast]
-                       (map ->ForecastHeaders (get-forecasts)))))
+                       (map ->ForecastHeader (get-forecasts)))))
 
 (defresource forecast [id]
   :allowed-methods #{:get}
