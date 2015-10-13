@@ -42,14 +42,14 @@
          version 1
          version-id (uuid/random)}}]
   (hayt/insert :models (hayt/values
-                            :version_id version-id
-                            :name  name
-                            :description description
-                            :created (tf/unparse (tf/formatters :date-time) (t/now))
-                            :owner owner ;; TODO check owner exists?
-                            :model_id model-id
-                            :version version
-                            :properties (map (fn [p] (hayt/user-type p)) properties))))
+                        :version_id version-id
+                        :name  name
+                        :description description
+                        :created (tf/unparse (tf/formatters :date-time) (t/now))
+                        :owner owner ;; TODO check owner exists?
+                        :model_id model-id
+                        :version version
+                        :properties (map (fn [p] (hayt/user-type p)) properties))))
 
 (defn add-model!
   [{:keys [name] :as model}]

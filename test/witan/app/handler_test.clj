@@ -14,7 +14,7 @@
   '({:description "Description of my forecast",
      :name "My Forecast 1",
      :created #inst "2015-10-06T12:44:17.176-00:00",
-     :current_version_id #uuid "ca7928d8-ea7d-4bdb-ab16-4c6ae8912830",
+     :version_id #uuid "ca7928d8-ea7d-4bdb-ab16-4c6ae8912830",
      :in_progress false,
      :forecast_id #uuid "fd44474d-e0f8-4713-bacf-299e503e4f30",
      :version 0,
@@ -24,13 +24,13 @@
      :created #inst "2015-10-06T12:44:17.210-00:00",
      :forecast_id #uuid "768f40f8-cf06-4da6-8b98-5227034f7dd5",
      :in_progress false,
-     :current_version_id #uuid "102fef0c-aa17-41bc-9f4e-cc11d18d7ae5",
+     :version_id #uuid "102fef0c-aa17-41bc-9f4e-cc11d18d7ae5",
      :version 0,
      :owner #uuid "6961ed51-e1d6-4890-b102-ab862893e3ba"}
     {:description "Description of my forecast",
      :name "My Forecast 3",
      :created #inst "2015-10-06T12:44:17.240-00:00",
-     :current_version_id #uuid "197481d6-df2a-4175-a288-d596a9709322",
+     :version_id #uuid "197481d6-df2a-4175-a288-d596a9709322",
      :in_progress false,
      :forecast_id #uuid "7185c4e4-739e-4eb8-8e37-f3f4b618ac1d",
      :version 0,
@@ -104,6 +104,11 @@
         (let [[status body _] (get* app "/api/me" {})]
           (is (= status 401)))))
 
+    (testing "401 with bogus token"
+      (with-redefs [user/retrieve-user (fn [id] {:id id :name "Joe" :username "joe@test.com"})]
+        (let [[status body _] (get* app "/api/me" {} (auth-header "BOGUSTOKEN"))]
+          (is (= status 401)))))
+
     (testing "retrieve user"
       (with-redefs [user/retrieve-user (fn [id] {:id id :name "Joe" :username "joe@test.com"})]
         (let [token (logged-in-user-token)
@@ -116,7 +121,16 @@
         (let [token (logged-in-user-token)
               [status body _] (get* app "/api/forecasts" {} (auth-header token))]
           (is (= status 200))
-          (is (seq? body))))))
+          (is (seq? body)))))
+
+    ;; TODO fix this, for some reason :identity is not being assoc'd into the
+    ;; request -- literally, no idea why.
+    ;;(testing "post forecasts"
+    ;;  (with-redefs []
+    ;;    (let [token (logged-in-user-token)
+    ;;          [status body _] (raw-post* app "/api/forecasts" {:body (json {"name" "My New Forecast 1"})} nil (auth-header token))]
+    ;;      (is (= status 201))))))
+)
 
   (testing "/api/models"
     (testing "get models"

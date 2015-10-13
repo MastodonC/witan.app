@@ -7,7 +7,8 @@
             [witan.app.config :as c]
             [witan.app.schema :as ws]
             [witan.app.util :as util]
-            [schema.core :as s])
+            [schema.core :as s]
+            [clojure.tools.logging :as log])
   (:use [liberator.core :only [defresource]]))
 
 (defn- ->ForecastHeaders
@@ -32,15 +33,16 @@
            forecast_id
            created
            version_id] :as forecast}]
-  (-> forecast
-      (dissoc :in_progress
-              :forecast_id
-              :created
-              :version_id)
-      (assoc :in-progress? in_progress
-             :forecast-id forecast_id
-             :created (util/java-Date-to-ISO-Date-Time created)
-             :version-id version_id)))
+  (let [cleaned (-> forecast
+                    (dissoc :in_progress
+                            :forecast_id
+                            :created
+                            :version_id)
+                    (assoc :in-progress? in_progress
+                           :forecast-id forecast_id
+                           :created (util/java-Date-to-ISO-Date-Time created)
+                           :version-id version_id))]
+    (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn find-forecast-by-id
   [id]
@@ -94,14 +96,14 @@
   [{:keys [name description owner forecast-id version in_progress id version-id]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
-                                     :forecast_id forecast-id
-                                     :name  name
-                                     :description description
-                                     :created creation-time
-                                     :owner owner
-                                     :version_id version-id
-                                     :version version
-                                     :in_progress in_progress))))
+                             :forecast_id forecast-id
+                             :name  name
+                             :description description
+                             :created creation-time
+                             :owner owner
+                             :version_id version-id
+                             :version version
+                             :in_progress in_progress))))
 (defn create-first-version
   [{:keys [forecast-id version-id name description owner]}]
   (create-forecast-version {:name name
@@ -149,16 +151,41 @@
 
 ;;;;;;
 
+;;;;;; NOTES:
+;; - We currently don't use `exists?` properly, but we should in the context of
+;;   re-naming forecasts. Currently, duplicate owner+name combinations return
+;;   304.
+
 (defresource forecasts
+  util/json-resource
   :allowed-methods #{:get :post}
   :available-media-types ["application/json"]
-  :handle-ok (fn [_] (s/validate
-                      [ws/Forecast]
-                      (map ->ForecastHeaders (get-forecasts)))))
+  :processable? (util/post!-processable-validation ws/NewForecast)
+  :exists? (fn [ctx]
+             (if (util/http-post? ctx)
+               (let [{:keys [name]} (util/get-post-params ctx)
+                     owner (util/get-user-id ctx)]
+                 (not-empty (c/exec (find-forecast-by-name-and-owner name owner))))
+               true))
+  ;;
+  :if-match-exists? false
+  :if-unmodified-since-exists? false
+  :if-none-match-exists? util/http-post?
+  :if-none-match-star? true
+  :if-none-match? true
+  ;;
+  :post! (fn [ctx]
+           (let [forecast (util/get-post-params ctx)
+                 owner (util/get-user-id ctx)]
+             {::new-forecast (add-forecast! (assoc forecast :owner owner))}))
+  :handle-created ::new-forecast
+  :handle-ok  (fn [_] (s/validate
+                       [ws/Forecast]
+                       (map ->Forecast (get-forecasts)))))
 
 (defresource forecast [id]
   :allowed-methods #{:get}
   :available-media-types ["application/json"]
   :handle-ok (fn [_] (s/validate
-                     [ws/Forecast]
-                     (map ->Forecast (get-forecast id)))))
+                      [ws/Forecast]
+                      (map ->Forecast (get-forecast id)))))

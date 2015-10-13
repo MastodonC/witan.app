@@ -56,19 +56,19 @@
 
 (def ModelPropertyValue
   "A model property and value binding"
-  {(s/required-key :property-id) IdType
+  {(s/required-key :name)  s/Str
    (s/required-key :value) s/Any}) ;; varies depending on the ModelProperty type
 
 (def Model
   "Models are the center-piece of a Forecast"
-  {(s/required-key :model-id)             IdType
-   (s/required-key :name)           s/Str
-   (s/required-key :owner)          IdType
-   (s/required-key :version-id)     IdType
-   (s/required-key :version)        s/Int
-   (s/required-key :created)        DateTimeType
-   (s/optional-key :description)    s/Str
-   (s/optional-key :properties)    [ModelProperty]})
+  {(s/required-key :model-id)    IdType
+   (s/required-key :name)        s/Str
+   (s/required-key :owner)       IdType
+   (s/required-key :version-id)  IdType
+   (s/required-key :version)     s/Int
+   (s/required-key :created)     DateTimeType
+   (s/optional-key :description) s/Str
+   (s/optional-key :properties)  [ModelProperty]})
 
 (def DataItem
   "A data item"
@@ -101,18 +101,25 @@
 
 (def ModelInfo
   "More in-depth information about a Model"
-  {(s/required-key :model)       Model
+  {(s/required-key :model)      Model
    (s/required-key :inputs)     [ModelInput]
    (s/required-key :outputs)    [ModelOutput]
    (s/optional-key :properties) [ModelPropertyValue]})
 
 (def Tag
   "A tag is an annotated symlink to a forecast id and version"
-  {(s/required-key :id)   IdType
-   (s/required-key :name) s/Str
-   (s/optional-key :description) s/Str
-   (s/required-key :forecast-id) IdType
+  {(s/required-key :id)               IdType
+   (s/required-key :name)             s/Str
+   (s/optional-key :description)      s/Str
+   (s/required-key :forecast-id)      IdType
    (s/required-key :forecast-version) s/Int})
+
+(def NewForecast
+  "Schema for creating a new forecast"
+  {(s/required-key :name)             s/Str
+   (s/required-key :model-id)         (s/either IdType s/Str)
+   (s/optional-key :description)      s/Str
+   (s/optional-key :model-properties) [ModelPropertyValue]})
 
 (def Forecast
   "Forecast"
@@ -128,11 +135,11 @@
 
 (def ForecastInfo
   "Forecast in-depth"
-  {(s/required-key :forecast)      Forecast
-   (s/required-key :model)         ModelInfo})
+  {(s/required-key :forecast) Forecast
+   (s/required-key :model)    ModelInfo})
 
 (def ShareRequest
   "A request to adjust sharing rules for a tag"
   {(s/optional-key :add)     [sc/Email]
-   (s/optional-key :message)  s/Str
+   (s/optional-key :message) s/Str
    (s/optional-key :remove)  [sc/Email]})
