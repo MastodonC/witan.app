@@ -136,7 +136,8 @@
                               :in-progress true
                               :forecast-id forecast-id)]
       (c/exec (create-forecast-version new-forecast))
-      (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version)))))
+      (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version))
+      (c/exec (find-forecast-by-version-id forecast-id new-version-id)))))
 
 (defn get-forecasts
   []
