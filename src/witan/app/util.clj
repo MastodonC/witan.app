@@ -11,13 +11,6 @@
   (tf/unparse (tf/formatters :date-hour-minute-second)
               (tc/from-date datetime)))
 
-(defn is-json?
-  "Is this a json string"
-  [string]
-  (try
-    (do (json/read-str str) true)
-    (catch Exception e false)))
-
 (defn http-post?
   [ctx]
   (= :post (-> ctx :request :request-method)))
