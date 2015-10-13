@@ -30,7 +30,7 @@
 (defn- ->Forecast
   "Converts raw cassandra forecast into a ws/Forecast schema"
   [{:keys [in_progress
-           series_id
+           forecast_id
            created
            version_id] :as forecast}]
   (let [cleaned (-> forecast
