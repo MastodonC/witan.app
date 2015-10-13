@@ -130,7 +130,7 @@
     ;;    (let [token (logged-in-user-token)
     ;;          [status body _] (raw-post* app "/api/forecasts" {:body (json {"name" "My New Forecast 1"})} nil (auth-header token))]
     ;;      (is (= status 201))))))
-    )
+)
 
   (testing "/api/models"
     (testing "get models"
