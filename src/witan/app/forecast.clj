@@ -84,6 +84,7 @@
                                               :owner owner
                                               :forecast_id forecast-id
                                               :current_version_id version-id
+                                              :in_progress false
                                               :version 0)))
 
 
@@ -181,7 +182,7 @@
   :handle-created ::new-forecast
   :handle-ok  (fn [_] (s/validate
                        [ws/Forecast]
-                       (map ->Forecast (get-forecasts)))))
+                       (map ->ForecastHeaders (get-forecasts)))))
 
 (defresource forecast [id]
   :allowed-methods #{:get}
