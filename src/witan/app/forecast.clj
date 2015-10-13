@@ -30,18 +30,19 @@
 (defn- ->Forecast
   "Converts raw cassandra forecast into a ws/Forecast schema"
   [{:keys [in_progress
-           forecast_id
+           series_id
            created
            version_id] :as forecast}]
-  (-> forecast
-      (dissoc :in_progress
-              :forecast_id
-              :created
-              :version_id)
-      (assoc :in-progress? in_progress
-             :forecast-id forecast_id
-             :created (util/java-Date-to-ISO-Date-Time created)
-             :version-id version_id)))
+  (let [cleaned (-> forecast
+                    (dissoc :in_progress
+                            :forecast_id
+                            :created
+                            :version_id)
+                    (assoc :in-progress? in_progress
+                           :forecast-id forecast_id
+                           :created (util/java-Date-to-ISO-Date-Time created)
+                           :version-id version_id))]
+    (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn find-forecast-by-id
   [id]
@@ -95,14 +96,14 @@
   [{:keys [name description owner forecast-id version in_progress id version-id]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
-                                     :forecast_id forecast-id
-                                     :name  name
-                                     :description description
-                                     :created creation-time
-                                     :owner owner
-                                     :version_id version-id
-                                     :version version
-                                     :in_progress in_progress))))
+                             :forecast_id forecast-id
+                             :name  name
+                             :description description
+                             :created creation-time
+                             :owner owner
+                             :version_id version-id
+                             :version version
+                             :in_progress in_progress))))
 (defn create-first-version
   [{:keys [forecast-id version-id name description owner]}]
   (create-forecast-version {:name name
