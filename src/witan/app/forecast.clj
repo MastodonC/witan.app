@@ -10,12 +10,6 @@
             [schema.core :as s])
   (:use [liberator.core :only [defresource]]))
 
-
-(defn java-Date-to-ISO-Date
-  [datetime]
-  (tf/unparse (tf/formatters :date-hour-minute-second)
-              (tc/from-date datetime)))
-
 (defn- ->ForecastHeaders
   "Converts raw cassandra forecast into a ws/Forecast schema"
   [{:keys [in_progress
@@ -29,7 +23,7 @@
               :current_version_id)
       (assoc :in-progress? in_progress
              :forecast-id forecast_id
-             :created (java-Date-to-ISO-Date created)
+             :created (util/java-Date-to-ISO-Date-Time created)
              :version-id current_version_id)))
 
 (defn- ->Forecast
@@ -45,7 +39,7 @@
               :version_id)
       (assoc :in-progress? in_progress
              :forecast-id forecast_id
-             :created (java-Date-to-ISO-Date created)
+             :created (util/java-Date-to-ISO-Date-Time created)
              :version-id version_id)))
 
 (defn find-forecast-by-id
@@ -142,7 +136,7 @@
                               :in-progress true
                               :forecast-id forecast-id)]
       (c/exec (create-forecast-version new-forecast))
-      (c/exec (update-forecast-current-version-id id new-version-id new-version)))))
+      (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version)))))
 
 (defn get-forecasts
   []

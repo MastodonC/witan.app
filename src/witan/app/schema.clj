@@ -44,9 +44,9 @@
 (def ModelPropertyType
   "Types that the model properties can be"
   (s/enum
-   :text
-   :number
-   :dropdown))
+   "text"
+   "number"
+   "dropdown"))
 
 (def ModelProperty
   "Properties that a model can expose"
