@@ -162,6 +162,7 @@
               [status body _] (get* app "/api/forecasts/fd44474d-e0f8-4713-bacf-299e503e4f30/1" {} (auth-header token))]
           (is (= status 200))
           (is (not (seq? body)))
+          (is (= (:version body) 1))
           (is (= (:version-id body) "f960e442-2c85-489e-9807-4eeecd6fd55a")))))
 
     (testing "get forecast latest version"
@@ -170,6 +171,7 @@
               [status body _] (get* app "/api/forecasts/fd44474d-e0f8-4713-bacf-299e503e4f30/latest" {} (auth-header token))]
           (is (= status 200))
           (is (not (seq? body)))
+          (is (= (:version body) 2))
           (is (= (:version-id body) "78b1bf97-0ebe-42ef-8031-384e504cf795")))))
 
     ;; TODO fix this, for some reason :identity is not being assoc'd into the
