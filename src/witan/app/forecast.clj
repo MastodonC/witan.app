@@ -33,7 +33,7 @@
                            :created (util/java-Date-to-ISO-Date-Time created)
                            :version-id current_version_id
                            :model-id model_id
-                           :model-property-values (map coerce-value model_property_values)))]
+                           :model-property-values model_property_values))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn- ->Forecast
