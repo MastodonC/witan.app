@@ -148,8 +148,10 @@
   (c/exec (hayt/select :forecast_headers)))
 
 (defn get-forecast
-  [id]
-  (c/exec (hayt/select :forecasts (hayt/where {:forecast_id id}))))
+  [{:keys [id version]}]
+  (if version
+    (c/exec (find-forecast-by-version id version))
+    (c/exec (find-forecast-versions-by-id id))))
 
 ;;;;;;
 
@@ -161,7 +163,6 @@
 (defresource forecasts
   util/json-resource
   :allowed-methods #{:get :post}
-  :available-media-types ["application/json"]
   :processable? (util/post!-processable-validation ws/NewForecast)
   :exists? (fn [ctx]
              (if (util/http-post? ctx)
@@ -185,9 +186,20 @@
                        [ws/Forecast]
                        (map ->ForecastHeader (get-forecasts)))))
 
-(defresource forecast [id]
+(defresource forecast [{:keys [version] :as args}]
+  util/json-resource
   :allowed-methods #{:get}
-  :available-media-types ["application/json"]
-  :handle-ok (fn [_] (s/validate
-                      [ws/Forecast]
-                      (map ->Forecast (get-forecast id)))))
+  :exists? (fn [ctx]
+             (let [result (get-forecast args)]
+               (if (not-empty result)
+                 (assoc ctx :result result))))
+  :handle-ok (fn [{:keys [result] :as ctx}]
+               (if version
+                 ;; single
+                 (s/validate
+                  ws/Forecast
+                  (->Forecast (first result)))
+                 ;; multiple
+                 (s/validate
+                  [ws/Forecast]
+                  (map ->Forecast result)))))

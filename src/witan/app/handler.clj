@@ -136,11 +136,13 @@
                                 forecast/forecasts)
                    (sweet/GET* "/forecasts/:id" []
                                 :path-params [id :- java.util.UUID]
-                        :summary "retrieves the versions of a forecast"
-                        (forecast/forecast id))
+                                :summary "retrieves the versions of a forecast"
+                                (forecast/forecast {:id id}))
                    (sweet/GET* "/forecasts/:id/:version" []
+                               :path-params [id :- java.util.UUID
+                                             version :- java.lang.Long]
                                :summary "Returns a forecast of the specified id and version"
-                               (not-implemented))
+                               (forecast/forecast {:id id :version version}))
                    (sweet/POST* "/forecasts/:id" []
                                 :summary "Creates a new version of this forecast with the specified updated"
                                 (not-implemented))

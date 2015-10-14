@@ -60,6 +60,7 @@
                           true)
    :handle-unprocessable-entity {:error "The schema of the required entity was incorrect."}
    :handle-malformed {:error "The request body was not valid JSON."}
+   :handle-not-found {:error "The requested resource could not be found."}
    :malformed? (fn [ctx] (if (= :post (-> ctx :request :request-method))
                            (let [params (-> ctx :request :body-params)]
                              (if-not (instance? clojure.lang.PersistentArrayMap params)
