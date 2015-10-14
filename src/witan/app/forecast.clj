@@ -218,10 +218,9 @@
   [{:keys [id version latest-version?]}]
   (if version
     (c/exec (find-forecast-by-version id version))
-    (let [versions (c/exec (find-forecast-versions-by-id id))]
-      (if latest-version?
-        [(first versions)]
-        versions))))
+    (if latest-version?
+      (c/exec (merge (find-forecast-versions-by-id id) (hayt/limit 1)))
+      (c/exec (find-forecast-versions-by-id id)))))
 
 ;;;;;;
 
