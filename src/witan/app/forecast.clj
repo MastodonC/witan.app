@@ -215,10 +215,13 @@
   (c/exec (hayt/select :forecast_headers)))
 
 (defn get-forecast
-  [{:keys [id version]}]
+  [{:keys [id version latest-version?]}]
   (if version
     (c/exec (find-forecast-by-version id version))
-    (c/exec (find-forecast-versions-by-id id))))
+    (let [versions (c/exec (find-forecast-versions-by-id id))]
+      (if latest-version?
+        [(first versions)]
+        versions))))
 
 ;;;;;;
 
@@ -263,7 +266,7 @@
                        [ws/Forecast]
                        (map ->ForecastHeader (get-forecasts)))))
 
-(defresource forecast [{:keys [version] :as args}]
+(defresource forecast [{:keys [version latest-version?] :as args}]
   util/json-resource
   :allowed-methods #{:get}
   :exists? (fn [ctx]
@@ -271,7 +274,7 @@
                (if (not-empty result)
                  (assoc ctx :result result))))
   :handle-ok (fn [{:keys [result] :as ctx}]
-               (if version
+               (if (or version latest-version?)
                  ;; single
                  (s/validate
                   ws/Forecast

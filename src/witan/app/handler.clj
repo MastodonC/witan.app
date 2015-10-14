@@ -138,6 +138,10 @@
                                 :path-params [id :- java.util.UUID]
                                 :summary "retrieves the versions of a forecast"
                                 (forecast/forecast {:id id}))
+                   (sweet/GET* "/forecasts/:id/latest" []
+                               :path-params [id :- java.util.UUID]
+                               :summary "Returns a forecast of the specified id and latest version"
+                               (forecast/forecast {:id id :latest-version? true}))
                    (sweet/GET* "/forecasts/:id/:version" []
                                :path-params [id :- java.util.UUID
                                              version :- java.lang.Long]
