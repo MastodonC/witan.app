@@ -7,6 +7,7 @@
             [witan.app.config :as c]
             [witan.app.schema :as ws]
             [witan.app.util :as util]
+            [witan.app.model :as model]
             [schema.core :as s]
             [clojure.tools.logging :as log])
   (:use [liberator.core :only [defresource]]))
@@ -16,16 +17,23 @@
   [{:keys [in_progress
            forecast_id
            created
-           current_version_id] :as forecast}]
+           current_version_id
+           model_id
+           model_property_values] :as forecast}]
+  (println "forecast-header" forecast)
   (let [cleaned (-> forecast
                     (dissoc :in_progress
                             :forecast_id
                             :created
-                            :current_version_id)
+                            :current_version_id
+                            :model_id
+                            :model_property_values)
                     (assoc :in-progress? in_progress
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
-                           :version-id current_version_id))]
+                           :version-id current_version_id
+                           :model-id model_id
+                           :model-property-values (map coerce-value model_property_values)))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn- ->Forecast
@@ -116,11 +124,23 @@
                             :owner owner
                             :in_progress false}))
 
+(defn map-to-property-values
+  "takes an array of maps with names and values
+   finds corresponding model attributes
+   validates values as having appropriate types
+   transforms into correct structure [{:name x, :value value-to-text, :type actual-type}]"
+  [model-id property-values]
+  (let [model (model/find-model-by-model-id model-id)
+        model-properties (:properties model)]
+    (println model-properties))
+  )
+
 (defn add-forecast!
-  [{:keys [name owner] :as forecast}]
+  [{:keys [name owner model-id model-properties] :as forecast}]
   (let [existing-forecasts (c/exec (find-forecast-by-name-and-owner name owner))
         id (uuid/random)
         version-id (uuid/random)
+        model-property-values (map-to-property-values model-id model-properties)
         new-forecast (assoc forecast :forecast-id id :version-id version-id)]
     (when (empty? existing-forecasts)
       (c/exec (create-new-forecast new-forecast))
