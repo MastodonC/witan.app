@@ -20,7 +20,6 @@
            current_version_id
            model_id
            model_property_values] :as forecast}]
-  (println "forecast-header" forecast)
   (let [cleaned (-> forecast
                     (dissoc :in_progress
                             :forecast_id
@@ -87,7 +86,7 @@
        first))
 
 (defn create-new-forecast
-  [{:keys [name description owner forecast-id version-id model-id]}]
+  [{:keys [name description owner forecast-id version-id model-id model-property-values]}]
   (hayt/insert :forecast_headers (hayt/values :name name
                                               :description description
                                               :owner owner
@@ -95,6 +94,7 @@
                                               :current_version_id version-id
                                               :in_progress false
                                               :model_id model-id
+                                              :model_property_values model-property-values
                                               :version 0)))
 
 
@@ -125,7 +125,35 @@
                             :owner owner
                             :in_progress false}))
 
-(defn map-to-property-values
+(defn is-a-number? [txt]
+  (try (number? (read-string txt))
+       (catch NumberFormatException _ false)))
+
+(defn add-to-result-values
+  [result name type value]
+  (assoc result :values (assoc (:values result) name (hayt/user-type {:name name :type type :value value}))))
+
+(defn add-to-result-errors
+  [result error]
+  (assoc result :errors (conj (:errors result) error)))
+
+(defn check-numeric-value
+  [result property]
+  (if (is-a-number? (:value property))
+    (add-to-result-values result (:name property) "number" (:value property))
+    (add-to-result-errors result (str "Wrong type for" (:name property)))))
+
+(defn check-property-value [model-property-types result property]
+  (let [corresponding-type (some (fn [type] (when (= (:name property) (:name type))
+                                             type)) model-property-types)]
+    (case (:type corresponding-type)
+      "number" (check-numeric-value result property)
+      "text" result
+      "enum" result
+      (add-to-result-errors result "Unknown type")))
+  )
+
+(defn check-property-values
   "takes an array of maps with names and values
    finds corresponding model attributes
    validates values as having appropriate types
@@ -135,17 +163,22 @@
   [model-id property-values]
   (let [model (model/get-model-by-model-id model-id)
         model-properties (:properties model)]
-    (println model-properties))
-  )
+    ;;    {:errors [] :values {"number field" (hayt/user-type {:name "number field" :value "123" :type "number"})}}
+    (reduce (partial check-property-value model-properties)
+            {:errors [] :values {}}
+            property-values)
+    ))
 
 (defn add-forecast!
   [{:keys [name owner model-id model-properties] :as forecast}]
   (let [existing-forecasts (c/exec (find-forecast-by-name-and-owner name owner))
         id (uuid/random)
         version-id (uuid/random)
-        model-property-values (map-to-property-values model-id model-properties)
-        new-forecast (assoc forecast :forecast-id id :version-id version-id)]
-    (when (empty? existing-forecasts)
+        checked-property-values (check-property-values model-id model-properties)
+        new-forecast (assoc forecast :forecast-id id
+                            :version-id version-id
+                            :model-property-values (:values checked-property-values))]
+    (when (and (empty? existing-forecasts) (empty? (:errors checked-property-values)))
       (c/exec (create-new-forecast new-forecast))
       (c/exec (create-first-version new-forecast))
       (c/exec (create-forecast-name new-forecast))
