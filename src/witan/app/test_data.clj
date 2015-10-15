@@ -21,9 +21,9 @@
 
 
         ;; add a few forecasts
-        f1 (forecast/add-forecast! {:name "My Forecast 1" :description "Description of my forecast" :owner (:id user1)})
-        f2 (forecast/add-forecast! {:name "My Forecast 2" :description "Description of my forecast" :owner (:id user2)})
-        f3 (forecast/add-forecast! {:name "My Forecast 3" :description "Description of my forecast" :owner (:id user1)})
+        f1 (forecast/add-forecast! {:name "My Forecast 1" :description "Description of my forecast" :owner (:id user1) :model-id (:model_id m1)})
+        f2 (forecast/add-forecast! {:name "My Forecast 2" :description "Description of my forecast" :owner (:id user2) :model-id (:model_id m1)})
+        f3 (forecast/add-forecast! {:name "My Forecast 3" :description "Description of my forecast" :owner (:id user1) :model-id (:model_id m1)})
 
         ;; versions of these forecasts
         f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1) :owner (:id user1)})
