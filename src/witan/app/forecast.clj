@@ -141,14 +141,18 @@
   [result property]
   (if (is-a-number? (:value property))
     (add-to-result-values result (:name property) "number" (:value property))
-    (add-to-result-errors result (str "Wrong type for" (:name property)))))
+    (add-to-result-errors result (str "Wrong type for " (:name property)))))
+
+(defn add-text-value
+  [result property]
+  (add-to-result-values result (:name property) "text" (:value property)))
 
 (defn check-property-value [model-property-types result property]
   (let [corresponding-type (some (fn [type] (when (= (:name property) (:name type))
                                              type)) model-property-types)]
     (case (:type corresponding-type)
       "number" (check-numeric-value result property)
-      "text" result
+      "text" (add-text-value result property) ;; no validation needed
       "enum" result
       (add-to-result-errors result "Unknown type")))
   )
