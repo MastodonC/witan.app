@@ -87,13 +87,14 @@
        first))
 
 (defn create-new-forecast
-  [{:keys [name description owner forecast-id version-id]}]
+  [{:keys [name description owner forecast-id version-id model-id]}]
   (hayt/insert :forecast_headers (hayt/values :name name
                                               :description description
                                               :owner owner
                                               :forecast_id forecast-id
                                               :current_version_id version-id
                                               :in_progress false
+                                              :model_id model-id
                                               :version 0)))
 
 
@@ -128,9 +129,11 @@
   "takes an array of maps with names and values
    finds corresponding model attributes
    validates values as having appropriate types
-   transforms into correct structure [{:name x, :value value-to-text, :type actual-type}]"
+   transforms
+      from query provided data [{:name x :value x}]
+      into correct structure [{:name x :value value-to-text :type actual-type}]"
   [model-id property-values]
-  (let [model (model/find-model-by-model-id model-id)
+  (let [model (model/get-model-by-model-id model-id)
         model-properties (:properties model)]
     (println model-properties))
   )
