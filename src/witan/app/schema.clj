@@ -52,7 +52,8 @@
   "Properties that a model can expose"
   {(s/required-key :name)    s/Str
    (s/required-key :type)    ModelPropertyType
-   (s/optional-key :context) s/Any}) ;; varies depending on the type
+   (s/optional-key :context) s/Any
+   (s/optional-key :enum_values) [s/Str]}) ;; varies depending on the type
 
 (def ModelPropertyValue
   "A model property and value binding"
