@@ -24,7 +24,6 @@ CREATE TABLE witan.forecast_names (
 
 CREATE TYPE witan.model_property_value (
     name text,
-    type text,
     value text
 );
 

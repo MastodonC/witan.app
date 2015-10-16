@@ -128,8 +128,8 @@
 
 
 (defn add-to-result-values
-  [result name type value]
-  (assoc result :values (assoc (:values result) name (hayt/user-type {:name name :type type :value value}))))
+  [result name value]
+  (assoc result :values (assoc (:values result) name (hayt/user-type {:name name :value value}))))
 
 (defn add-to-result-errors
   [result error]
@@ -137,18 +137,18 @@
 
 (defn check-numeric-value
   [result property]
-  (if (is-a-number? (:value property))
-    (add-to-result-values result (:name property) "number" (:value property))
+  (if (util/is-a-number? (:value property))
+    (add-to-result-values result (:name property) (:value property))
     (add-to-result-errors result (str "Wrong type for " (:name property)))))
 
 (defn add-text-value
   [result property]
-  (add-to-result-values result (:name property) "text" (:value property)))
+  (add-to-result-values result (:name property) (:value property)))
 
 (defn check-dropdown-value
   [result property type]
   (if (some #(= (:value property) %) (:enum_values type))
-    (add-to-result-values result (:name property) "dropdown" (:value property))
+    (add-to-result-values result (:name property) (:value property))
     (add-to-result-errors result (str (:value property) " is not an accepted dropdown value"))))
 
 (defn check-property-value
