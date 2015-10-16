@@ -51,13 +51,17 @@
                         :version version
                         :properties (map (fn [p] (hayt/user-type p)) properties))))
 
+(defn get-model-by-model-id
+  [model-id]
+  (first (c/exec (find-model-by-model-id model-id))))
+
 (defn add-model!
   [{:keys [name] :as model}]
   (when (empty? (c/exec (find-model-by-name name)))
     (let [model-id (uuid/random)]
-      (c/exec (create-model (assoc model :model_id model-id)))
+      (c/exec (create-model (assoc model :model-id model-id)))
       (c/exec (create-model-name name model-id))
-      (first (c/exec (find-model-by-model-id model-id))))))
+      (get-model-by-model-id model-id))))
 
 (defn get-models
   []

@@ -52,7 +52,8 @@
   "Properties that a model can expose"
   {(s/required-key :name)    s/Str
    (s/required-key :type)    ModelPropertyType
-   (s/optional-key :context) s/Any}) ;; varies depending on the type
+   (s/optional-key :context) s/Any
+   (s/optional-key :enum_values) [s/Str]}) ;; varies depending on the type
 
 (def ModelPropertyValue
   "A model property and value binding"
@@ -119,11 +120,11 @@
   {(s/required-key :name)             s/Str
    (s/required-key :model-id)         (s/either IdType s/Str)
    (s/optional-key :description)      s/Str
-   (s/optional-key :model-properties) [ModelPropertyValue]})
+   (s/optional-key :model-properties) [{s/Keyword s/Str}]})
 
 (def Forecast
   "Forecast"
-  {(s/required-key :version-id)            IdType
+  {(s/required-key :version-id)    IdType
    (s/required-key :name)          s/Str
    (s/required-key :owner)         IdType
    (s/required-key :forecast-id)     IdType
@@ -131,7 +132,9 @@
    (s/required-key :created)       DateTimeType
    (s/required-key :in-progress?)  s/Bool
    (s/optional-key :description)   s/Str
-   (s/optional-key :tag)           Tag})
+   (s/optional-key :tag)           Tag
+   (s/optional-key :model-id)      IdType
+   (s/optional-key :model-property-values) s/Any})
 
 (def ForecastInfo
   "Forecast in-depth"

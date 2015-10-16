@@ -34,6 +34,14 @@
                params)))
       true)))
 
+(defn is-a-number? [txt]
+  (try (Double/valueOf txt)
+       (catch NumberFormatException _ false)))
+
+(defmulti to-uuid type)
+(defmethod to-uuid java.lang.String [id] (java.util.UUID/fromString id))
+(defmethod to-uuid :default [id] id)
+
 ;;;;;;;;;;;;;;;;
 
 (defn load-extensions!

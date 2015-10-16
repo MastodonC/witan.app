@@ -7,7 +7,9 @@
             [witan.app.config :as c]
             [witan.app.schema :as ws]
             [witan.app.util :as util]
+            [witan.app.model :as model]
             [schema.core :as s]
+            [clojure.string :as string]
             [clojure.tools.logging :as log])
   (:use [liberator.core :only [defresource]]))
 
@@ -16,16 +18,22 @@
   [{:keys [in_progress
            forecast_id
            created
-           current_version_id] :as forecast}]
+           current_version_id
+           model_id
+           model_property_values] :as forecast}]
   (let [cleaned (-> forecast
                     (dissoc :in_progress
                             :forecast_id
                             :created
-                            :current_version_id)
+                            :current_version_id
+                            :model_id
+                            :model_property_values)
                     (assoc :in-progress? in_progress
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
-                           :version-id current_version_id))]
+                           :version-id current_version_id
+                           :model-id model_id
+                           :model-property-values model_property_values))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn- ->Forecast
@@ -79,13 +87,15 @@
        first))
 
 (defn create-new-forecast
-  [{:keys [name description owner forecast-id version-id]}]
+  [{:keys [name description owner forecast-id version-id model-id model-property-values]}]
   (hayt/insert :forecast_headers (hayt/values :name name
                                               :description description
                                               :owner owner
                                               :forecast_id forecast-id
                                               :current_version_id version-id
                                               :in_progress false
+                                              :model_id model-id
+                                              :model_property_values model-property-values
                                               :version 0)))
 
 
@@ -116,13 +126,70 @@
                             :owner owner
                             :in_progress false}))
 
+
+
+(defn add-to-result-values
+  [result name value]
+  (update result :values assoc name (hayt/user-type {:name name :value value})))
+
+(defn add-to-result-errors
+  [result error]
+  (update result :errors conj error))
+
+(defn check-numeric-value
+  [result property]
+  (if (util/is-a-number? (:value property))
+    (add-to-result-values result (:name property) (:value property))
+    (add-to-result-errors result (str "Wrong type for " (:name property)))))
+
+(defn add-text-value
+  [result property]
+  (add-to-result-values result (:name property) (:value property)))
+
+(defn check-dropdown-value
+  [result property type]
+  (if (some #(= (:value property) %) (:enum_values type))
+    (add-to-result-values result (:name property) (:value property))
+    (add-to-result-errors result (str (:value property) " is not an accepted dropdown value"))))
+
+(defn check-property-value
+  [model-property-types result property]
+  (let [corresponding-type (some (fn [type] (when (= (:name property) (:name type))
+                                             type)) model-property-types)]
+    (if corresponding-type
+      (case (:type corresponding-type)
+        "number" (check-numeric-value result property)
+        "text" (add-text-value result property) ;; no validation needed
+        "dropdown" (check-dropdown-value result property corresponding-type)
+        (add-to-result-errors result (str "Unknown type " (:name property))))
+      (add-to-result-errors result (str "Unknown property " (:name property))))))
+
+(defn check-property-values
+  "takes an array of maps with names and values
+   finds corresponding model attributes
+   validates values as having appropriate types
+   transforms
+      from query provided data [{:name x :value x}]
+      into correct structure"
+  [model-id property-values]
+  (let [model (model/get-model-by-model-id model-id)
+        model-properties (:properties model)]
+    (reduce (partial check-property-value model-properties)
+            {:errors [] :values {}}
+            property-values)))
+
 (defn add-forecast!
-  [{:keys [name owner] :as forecast}]
+  [{:keys [name owner model-id model-properties] :as forecast}]
   (let [existing-forecasts (c/exec (find-forecast-by-name-and-owner name owner))
         id (uuid/random)
         version-id (uuid/random)
-        new-forecast (assoc forecast :forecast-id id :version-id version-id)]
-    (when (empty? existing-forecasts)
+        uuid-model-id (util/to-uuid model-id)
+        checked-property-values (check-property-values uuid-model-id model-properties)
+        new-forecast (assoc forecast :forecast-id id
+                            :version-id version-id
+                            :model-id uuid-model-id
+                            :model-property-values (:values checked-property-values))]
+    (when (and (empty? existing-forecasts) (empty? (:errors checked-property-values)))
       (c/exec (create-new-forecast new-forecast))
       (c/exec (create-first-version new-forecast))
       (c/exec (create-forecast-name new-forecast))
@@ -163,7 +230,14 @@
 (defresource forecasts
   util/json-resource
   :allowed-methods #{:get :post}
-  :processable? (util/post!-processable-validation ws/NewForecast)
+  :processable? (fn [ctx]
+                  (and ((util/post!-processable-validation ws/NewForecast) ctx)
+                       (if (util/http-post? ctx)
+                         (let [{:keys [model-id model-properties]} (util/get-post-params ctx)
+                               uuid-model-id      (util/to-uuid model-id)
+                               checked-properties (check-property-values uuid-model-id model-properties)]
+                           [(empty? (:errors checked-properties)) {:property-errors (:errors checked-properties)}])
+                         true)))
   :exists? (fn [ctx]
              (if (util/http-post? ctx)
                (let [{:keys [name]} (util/get-post-params ctx)
@@ -182,6 +256,9 @@
                  owner (util/get-user-id ctx)]
              {::new-forecast (->ForecastHeader (add-forecast! (assoc forecast :owner owner)))}))
   :handle-created ::new-forecast
+  :handle-unprocessable-entity (fn [ctx] (if (not-empty (:property-errors ctx))
+                                          {:error (str "Property errors: " (string/join ", " (:property-errors ctx)))}
+                                          {:error "Validation error in given forecast."}))
   :handle-ok  (fn [_] (s/validate
                        [ws/Forecast]
                        (map ->ForecastHeader (get-forecasts)))))

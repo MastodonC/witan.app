@@ -28,6 +28,7 @@
                  [javax.mail/mail                "1.4.7"]
                  [overtone/at-at "1.2.0"]]
   :plugins [[lein-ring "0.8.13"]]
+  :jvm-opts ["-Xmx1024m"]
   :ring {:handler witan.app.handler/app
          :nrepl {:start? true :port 7889}}
   :uberjar-name "witan-app.jar"
