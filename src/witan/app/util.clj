@@ -3,8 +3,7 @@
             [clj-time.core     :as t]
             [clj-time.format   :as tf]
             [clj-time.coerce   :as tc]
-            [schema.core :as s]
-            [clojure.tools.logging :as log]))
+            [schema.core :as s]))
 
 (defn java-Date-to-ISO-Date-Time
   "Converts a java.util.Date to an schema-contrib/ISO-Date-Time"
