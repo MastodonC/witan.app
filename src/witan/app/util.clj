@@ -35,6 +35,10 @@
                params)))
       true)))
 
+(defn is-a-number? [txt]
+  (try (number? (read-string txt))
+       (catch NumberFormatException _ false)))
+
 (defn to-uuid
   [id]
   (if (string? id)

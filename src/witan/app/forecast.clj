@@ -125,9 +125,7 @@
                             :owner owner
                             :in_progress false}))
 
-(defn is-a-number? [txt]
-  (try (number? (read-string txt))
-       (catch NumberFormatException _ false)))
+
 
 (defn add-to-result-values
   [result name type value]
