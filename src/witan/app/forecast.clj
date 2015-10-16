@@ -9,6 +9,7 @@
             [witan.app.util :as util]
             [witan.app.model :as model]
             [schema.core :as s]
+            [clojure.string :as string]
             [clojure.tools.logging :as log])
   (:use [liberator.core :only [defresource]]))
 
@@ -235,8 +236,7 @@
                          (let [{:keys [model-id model-properties]} (util/get-post-params ctx)
                                uuid-model-id      (util/to-uuid model-id)
                                checked-properties (check-property-values uuid-model-id model-properties)]
-                           (assoc ctx :property-errors (:errors checked-properties))
-                           (empty? (:errors checked-properties)))
+                           [(empty? (:errors checked-properties)) {:property-errors (:errors checked-properties)}])
                          true)))
   :exists? (fn [ctx]
              (if (util/http-post? ctx)
@@ -256,8 +256,8 @@
                  owner (util/get-user-id ctx)]
              {::new-forecast (->ForecastHeader (add-forecast! (assoc forecast :owner owner)))}))
   :handle-created ::new-forecast
-  :handle-unprocessable-entity (fn [ctx] (if (:property-errors ctx)
-                                          {:error (str "Property errors: " (interpose ", " (:property-errors ctx)))}
+  :handle-unprocessable-entity (fn [ctx] (if (not-empty (:property-errors ctx))
+                                          {:error (str "Property errors: " (string/join ", " (:property-errors ctx)))}
                                           {:error "Validation error in given forecast."}))
   :handle-ok  (fn [_] (s/validate
                        [ws/Forecast]
