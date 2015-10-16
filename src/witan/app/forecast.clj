@@ -147,15 +147,23 @@
   [result property]
   (add-to-result-values result (:name property) "text" (:value property)))
 
-(defn check-property-value [model-property-types result property]
+(defn check-dropdown-value
+  [result property type]
+  (if (some #(= (:value property) %) (:enum_values type))
+    (add-to-result-values result (:name property) "dropdown" (:value property))
+    (add-to-result-errors result (str (:value property) " is not an accepted dropdown value"))))
+
+(defn check-property-value
+  [model-property-types result property]
   (let [corresponding-type (some (fn [type] (when (= (:name property) (:name type))
                                              type)) model-property-types)]
-    (case (:type corresponding-type)
-      "number" (check-numeric-value result property)
-      "text" (add-text-value result property) ;; no validation needed
-      "enum" result
-      (add-to-result-errors result "Unknown type")))
-  )
+    (if corresponding-type
+      (case (:type corresponding-type)
+        "number" (check-numeric-value result property)
+        "text" (add-text-value result property) ;; no validation needed
+        "dropdown" (check-dropdown-value result property corresponding-type)
+        (add-to-result-errors result (str "Unknown type " (:name property))))
+      (add-to-result-errors result (str "Unknown property " (:name property))))))
 
 (defn check-property-values
   "takes an array of maps with names and values
@@ -163,15 +171,13 @@
    validates values as having appropriate types
    transforms
       from query provided data [{:name x :value x}]
-      into correct structure [{:name x :value value-to-text :type actual-type}]"
+      into correct structure"
   [model-id property-values]
   (let [model (model/get-model-by-model-id model-id)
         model-properties (:properties model)]
-    ;;    {:errors [] :values {"number field" (hayt/user-type {:name "number field" :value "123" :type "number"})}}
     (reduce (partial check-property-value model-properties)
             {:errors [] :values {}}
-            property-values)
-    ))
+            property-values)))
 
 (defn add-forecast!
   [{:keys [name owner model-id model-properties] :as forecast}]

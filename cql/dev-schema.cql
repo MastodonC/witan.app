@@ -93,7 +93,8 @@ CREATE TABLE witan.forecasts (
 CREATE TYPE witan.model_property (
       name text,
       type text,
-      context text
+      context text,
+      enum_values list<text>
 );
 
 // model names

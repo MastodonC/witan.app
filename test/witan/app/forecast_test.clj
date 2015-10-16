@@ -21,8 +21,11 @@
     (with-redefs [model/get-model-by-model-id (fn [_]
                                                 {:properties [{:name "text field" :type "text" :context "this is a text field"}]})]
       (let [checked-property-values (check-property-values "fake-model-id" [{:name "text field" :value "wonderful world"}])]
-
         (is (= (:values checked-property-values) {"text field" (hayt/user-type {:name "text field" :value "wonderful world" :type "text"})})))))
-  (testing "number property")
-  (testing "several properties")
-  (testing "no properties"))
+  (testing "dropdown property"
+    (with-redefs [model/get-model-by-model-id (fn [_]
+                                                {:properties [{:name "Boroughs" :type "dropdown" :context "this is a dropdown field" :enum_values ["Barnet" "Camden" "Southwark"]}]})]
+      (testing "allowed dropdown value"
+        (let [checked-property-values (check-property-values "fake-model-id" [{:name "Boroughs" :value "Camden"}])]
+          (is (= (:values checked-property-values) {"Boroughs" (hayt/user-type {:name "Boroughs" :value "Camden" :type "dropdown"})}))
+          (is (empty? (:errors checked-property-values))))))))

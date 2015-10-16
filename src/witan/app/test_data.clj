@@ -15,6 +15,8 @@
         m1 (model/add-model! {:name "My Model 1" :description "Description of my model" :owner (:id user1)})
         m2 (model/add-model! {:name "My Model 2" :description "Description of my model" :owner (:id user2)
                               :properties [{:name "Some field" :type "text" :context "Placeholder value 123"}]})
+        m3 (model/add-model! {:name "My Model 3" :description "Model with enum" :owner (:id user2)
+                              :properties [{:name "Boroughs" :type "dropdown" :context "Choose a borough" :enum_values ["Camden" "Richmond Upon Thames" "Hackney" "Barnet"]}]})
 
         ;; versions of these models
         ;;m1_2 (model/update-model! {:model-id (:model_id m1) :owner (:id user1)})
