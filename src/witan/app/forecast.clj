@@ -184,9 +184,11 @@
   (let [existing-forecasts (c/exec (find-forecast-by-name-and-owner name owner))
         id (uuid/random)
         version-id (uuid/random)
-        checked-property-values (check-property-values model-id model-properties)
+        uuid-model-id (util/to-uuid model-id)
+        checked-property-values (check-property-values uuid-model-id model-properties)
         new-forecast (assoc forecast :forecast-id id
                             :version-id version-id
+                            :model-id uuid-model-id
                             :model-property-values (:values checked-property-values))]
     (when (and (empty? existing-forecasts) (empty? (:errors checked-property-values)))
       (c/exec (create-new-forecast new-forecast))
@@ -229,7 +231,15 @@
 (defresource forecasts
   util/json-resource
   :allowed-methods #{:get :post}
-  :processable? (util/post!-processable-validation ws/NewForecast)
+  :processable? (fn [ctx]
+                  (and ((util/post!-processable-validation ws/NewForecast) ctx)
+                       (if (util/http-post? ctx)
+                         (let [{:keys [model-id model-properties]} (util/get-post-params ctx)
+                               uuid-model-id      (util/to-uuid model-id)
+                               checked-properties (check-property-values uuid-model-id model-properties)]
+                           (assoc ctx :property-errors (:errors checked-properties))
+                           (empty? (:errors checked-properties)))
+                         true)))
   :exists? (fn [ctx]
              (if (util/http-post? ctx)
                (let [{:keys [name]} (util/get-post-params ctx)
@@ -248,6 +258,9 @@
                  owner (util/get-user-id ctx)]
              {::new-forecast (->ForecastHeader (add-forecast! (assoc forecast :owner owner)))}))
   :handle-created ::new-forecast
+  :handle-unprocessable-entity (fn [ctx] (if (:property-errors ctx)
+                                          {:error (str "Property errors: " (interpose ", " (:property-errors ctx)))}
+                                          {:error "Validation error in given forecast."}))
   :handle-ok  (fn [_] (s/validate
                        [ws/Forecast]
                        (map ->ForecastHeader (get-forecasts)))))

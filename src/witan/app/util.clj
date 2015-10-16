@@ -3,7 +3,8 @@
             [clj-time.core     :as t]
             [clj-time.format   :as tf]
             [clj-time.coerce   :as tc]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [clojure.tools.logging :as log]))
 
 (defn java-Date-to-ISO-Date-Time
   "Converts a java.util.Date to an schema-contrib/ISO-Date-Time"
@@ -34,6 +35,11 @@
                params)))
       true)))
 
+(defn to-uuid
+  [id]
+  (if (string? id)
+    (java.util.UUID/fromString id)
+    id))
 ;;;;;;;;;;;;;;;;
 
 (defn load-extensions!
