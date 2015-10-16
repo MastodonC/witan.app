@@ -130,11 +130,11 @@
 
 (defn add-to-result-values
   [result name value]
-  (assoc result :values (assoc (:values result) name (hayt/user-type {:name name :value value}))))
+  (update result :values assoc name (hayt/user-type {:name name :value value})))
 
 (defn add-to-result-errors
   [result error]
-  (assoc result :errors (conj (:errors result) error)))
+  (update result :errors conj error))
 
 (defn check-numeric-value
   [result property]
