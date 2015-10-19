@@ -117,7 +117,18 @@ CREATE TABLE witan.model_names (
     AND speculative_retry = '99.0PERCENTILE';
 
 // model headers
-CREATE TABLE witan.data (
+CREATE TABLE witan.data_by_data_id (
+  data_id uuid PRIMARY KEY,
+  category text,
+  name text,
+  model_id uuid,
+  publisher uuid,
+  version int,
+  s3_url text,
+  created timestamp
+);
+
+CREATE TABLE witan.data_by_model_and_category (
   data_id uuid,
   category text,
   name text,
