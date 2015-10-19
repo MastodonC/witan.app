@@ -15,21 +15,23 @@
         m1 (model/add-model! {:name "My Model 1"
                               :description "Description of my model"
                               :owner (:id user1)
-                              :input-data [{:name "Base population data"}]})
+                              :input-data [{:category "Base population data"}]})
         m2 (model/add-model! {:name "My Model 2"
                               :description "Description of my model"
                               :owner (:id user2)
                               :properties [{:name "Some field" :type "text" :context "Placeholder value 123"}]
-                              :input-data [{:name "Base population data"}]})
+                              :input-data [{:category "Base population data"}]})
         m3 (model/add-model! {:name "My Model 3"
                               :description "Model with enum"
                               :owner (:id user2)
                               :properties [{:name "Boroughs" :type "dropdown" :context "Choose a borough" :enum_values ["Camden" "Richmond Upon Thames" "Hackney" "Barnet"]}]
-                              :input-data [{:name "SHLAA"}
-                                           {:name "Base population data"}]
-                              :output-data [{:name "housing-linked population"}]})
+                              :input-data [{:category "long population"}
+                                           {:category "overlay housing"}
+                                           {:category "trend data"}]
+                              :output-data [{:category "housing-linked population"}]})
         ;; add data
-        d1 (data/add-data! {:name "Base population"
+        d1 (data/add-data! {:category "long population"
+                            :name "London base population"
                             :publisher (:id user1)
                             :s3-url "https://s3.eu-central-1.amazonaws.com/witan-test-data/Long+Pop.csv"
                             :model-id (:model_id m1)})

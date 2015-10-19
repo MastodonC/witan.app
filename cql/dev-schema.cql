@@ -119,17 +119,19 @@ CREATE TABLE witan.model_names (
 // model headers
 CREATE TABLE witan.data (
   data_id uuid,
+  category text,
   name text,
   model_id uuid,
   publisher uuid,
   version int,
   s3_url text,
   created timestamp,
-  PRIMARY KEY (model_id, name)
+  PRIMARY KEY (model_id, category)
 );
 
 CREATE TYPE witan.model_data (
   data_id uuid,
+  category text,
   name text,
   publisher uuid,
   version int,

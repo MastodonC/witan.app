@@ -6,9 +6,10 @@
             [witan.app.config :as c]))
 
 (defn create-data
-  [{:keys [data-id name publisher version s3-url model-id]}]
+  [{:keys [data-id category name publisher version s3-url model-id]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :data (hayt/values :data_id data-id
+                                    :category category
                                     :name name
                                     :model_id model-id
                                     :publisher publisher
@@ -18,10 +19,11 @@
 
 (defn add-data!
   "TODO: for now manually upload and provide s3 url, but need to upload as part of this process"
-  [{:keys [data-id name model-id publisher version s3-url]
+  [{:keys [data-id category name model-id publisher version s3-url]
     :or {data-id (uuid/random)
          version 1}}]
   (c/exec (create-data {:data-id data-id
+                        :category category
                         :name name
                         :publisher publisher
                         :version version
