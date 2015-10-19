@@ -79,9 +79,8 @@
    (s/required-key :created)     DateTimeType
    (s/optional-key :description) s/Str
    (s/optional-key :properties)  [ModelProperty]
-   (s/optional-key :input_data) {s/Str {(s/optional-key :category) ModelInputCategory
-                                        (s/optional-key :default) DataItem}}
-   (s/optional-key :output-data) {s/Str ModelOutputCategory}})
+   (s/optional-key :input_data) {s/Str {(s/optional-key :default) DataItem}}
+   (s/optional-key :output-data) [s/Str]})
 
 (def DataItemEntry
   "Used to isolate a data item ID"
