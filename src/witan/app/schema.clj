@@ -60,6 +60,15 @@
   {(s/required-key :name)  s/Str
    (s/required-key :value) s/Any}) ;; varies depending on the ModelProperty type
 
+(def DataItem
+  "A data item"
+  {(s/required-key :id)        IdType
+   (s/required-key :name)      s/Str
+   (s/required-key :category)  s/Str
+   (s/required-key :publisher) IdType ;; a user or org
+   (s/optional-key :version)   s/Int
+   (s/optional-key :s3_url) s/Str})
+
 (def Model
   "Models are the center-piece of a Forecast"
   {(s/required-key :model-id)    IdType
@@ -73,14 +82,6 @@
    (s/optional-key :input_data) {s/Str {(s/optional-key :category) ModelInputCategory
                                         (s/optional-key :default) DataItem}}
    (s/optional-key :output-data) {s/Str ModelOutputCategory}})
-
-(def DataItem
-  "A data item"
-  {(s/required-key :id)        IdType
-   (s/required-key :name)      s/Str
-   (s/required-key :publisher) IdType ;; a user or org
-   (s/optional-key :version)   s/Int
-   (s/optional-key :s3_url) s/Str})
 
 (def DataItemEntry
   "Used to isolate a data item ID"

@@ -117,6 +117,26 @@ CREATE TABLE witan.model_names (
     AND speculative_retry = '99.0PERCENTILE';
 
 // model headers
+CREATE TABLE witan.data (
+  data_id uuid,
+  name text,
+  model_id uuid,
+  publisher uuid,
+  version int,
+  s3_url text,
+  created timestamp,
+  PRIMARY KEY (model_id, name)
+);
+
+CREATE TYPE witan.model_data (
+  data_id uuid,
+  name text,
+  publisher uuid,
+  version int,
+  s3_url text,
+  created timestamp
+);
+
 CREATE TABLE witan.models (
     name text,
     version_id uuid,
@@ -125,7 +145,9 @@ CREATE TABLE witan.models (
     owner uuid,
     model_id uuid PRIMARY KEY,
     version int,
-    properties list<frozen<witan.model_property>>
+    properties list<frozen<witan.model_property>>,
+    input_data map<text,frozen<model_data>>,
+    output_data map<text, frozen<model_data>>
 ) WITH bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
     AND comment = ''
@@ -139,3 +161,5 @@ CREATE TABLE witan.models (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
+
+// Data items
