@@ -159,8 +159,9 @@ CREATE TABLE witan.models (
     model_id uuid PRIMARY KEY,
     version int,
     properties list<frozen<witan.model_property>>,
-    input_data map<text,frozen<model_data>>,
-    output_data map<text, frozen<model_data>>
+    input_data list<text>,
+    input_data_defaults map<text,frozen<model_data>>,
+    output_data list<text>
 ) WITH bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
     AND comment = ''
