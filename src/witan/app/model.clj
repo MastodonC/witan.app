@@ -37,7 +37,7 @@
   (hayt/insert :model_names (hayt/values :name name :model_id model-id)))
 
 (defn create-model
-  [{:keys [name description owner model-id version version-id properties input-data]
+  [{:keys [name description owner model-id version version-id properties input-data output-data]
     :or {model-id (uuid/random)
          version 1
          version-id (uuid/random)}}]
@@ -53,7 +53,8 @@
                           :properties (map (fn [p] (hayt/user-type p)) properties)
                           :input_data (mapv :category input-data)
                           :input_data_defaults (zipmap (map :category input-defaults)
-                                                       (map (comp hayt/user-type :default) input-defaults))))))
+                                                       (map (comp hayt/user-type :default) input-defaults))
+                          :output_data (mapv :category output-data)))))
 
 (defn update-default-input-data
   [model-id category data input-data-defaults]
