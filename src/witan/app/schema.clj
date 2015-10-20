@@ -58,7 +58,7 @@
 (def ModelPropertyValue
   "A model property and value binding"
   {(s/required-key :name)  s/Str
-   (s/required-key :value) s/Any}) ;; varies depending on the ModelProperty type
+   (s/required-key :value) (s/either s/Str s/Int)}) ;; varies depending on the ModelProperty type
 
 (def DataItem
   "A data item"
@@ -141,7 +141,7 @@
    (s/optional-key :description)   s/Str
    (s/optional-key :tag)           Tag
    (s/optional-key :model-id)      IdType
-   (s/optional-key :model-property-values) s/Any})
+   (s/optional-key :model-property-values) [ModelPropertyValue]})
 
 (def ForecastInfo
   "Forecast in-depth"
