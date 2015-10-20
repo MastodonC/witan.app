@@ -33,5 +33,4 @@
 (defn exec
   [body]
   (let [conn-fn (or @conn (reset! conn (store-execute config)))]
-    (log/debug ">>>>>>>>>>>>>." conn-fn body)
     (conn-fn body)))
