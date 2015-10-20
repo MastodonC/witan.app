@@ -133,6 +133,7 @@
   {(s/required-key :version-id)    IdType
    (s/required-key :name)          s/Str
    (s/required-key :owner)         IdType
+   (s/required-key :owner-name)    s/Str
    (s/required-key :forecast-id)     IdType
    (s/required-key :version)       s/Int
    (s/required-key :created)       DateTimeType

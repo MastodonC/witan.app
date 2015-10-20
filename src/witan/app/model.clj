@@ -105,4 +105,3 @@
   :handle-ok (fn [_] (s/validate
                       [ws/Model]
                       (map ->Model (get-models)))))
-/

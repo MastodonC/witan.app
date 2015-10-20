@@ -36,6 +36,7 @@ CREATE TABLE witan.forecast_headers (
     in_progress boolean,
     name text,
     owner uuid,
+    owner_name text,
     model_id uuid,
     model_property_values map<text,frozen<model_property_value>>
 );
@@ -70,6 +71,7 @@ CREATE TABLE witan.forecasts (
     in_progress boolean,
     name text,
     owner uuid,
+    owner_name text,
     version_id uuid,
     PRIMARY KEY (forecast_id, version)
 ) WITH CLUSTERING ORDER BY (version DESC)
