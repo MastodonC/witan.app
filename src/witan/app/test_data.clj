@@ -2,6 +2,7 @@
   (:require [witan.app.user :as user]
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
+            [witan.app.data :as data]
             [witan.app.config :as c]))
 
 (defn load-test-data!
@@ -10,13 +11,36 @@
   (let [;; add users
         user1 (user/add-user! {:name "Mastodon 1" :username "support@mastodonc.com" :password "secret"})
         user2 (user/add-user! {:name "Mastodon 2" :username "support2@mastodonc.com" :password "secret"})
-
         ;; add models
-        m1 (model/add-model! {:name "My Model 1" :description "Description of my model" :owner (:id user1)})
-        m2 (model/add-model! {:name "My Model 2" :description "Description of my model" :owner (:id user2)
-                              :properties [{:name "Some field" :type "text" :context "Placeholder value 123"}]})
-        m3 (model/add-model! {:name "My Model 3" :description "Model with enum" :owner (:id user2)
-                              :properties [{:name "Boroughs" :type "dropdown" :context "Choose a borough" :enum_values ["Camden" "Richmond Upon Thames" "Hackney" "Barnet"]}]})
+        m1 (model/add-model! {:name "My Model 1"
+                              :description "Description of my model"
+                              :owner (:id user1)
+                              :input-data [{:category "Base population data"}]
+                              :output-data [{:category "wishful thinking"}]})
+        m2 (model/add-model! {:name "My Model 2"
+                              :description "Description of my model"
+                              :owner (:id user2)
+                              :properties [{:name "Some field" :type "text" :context "Placeholder value 123"}]
+                              :input-data [{:category "Base population data"}]
+                              :output-data [{:category "All the population data"}]})
+        m3 (model/add-model! {:name "My Model 3"
+                              :description "Model with enum"
+                              :owner (:id user2)
+                              :properties [{:name "Boroughs" :type "dropdown" :context "Choose a borough" :enum_values ["Camden" "Richmond Upon Thames" "Hackney" "Barnet"]}]
+                              :input-data [{:category "long population"}
+                                           {:category "overlay housing"}
+                                           {:category "trend data"}]
+                              :output-data [{:category "housing-linked population"}]})
+        ;; add data
+        d1 (data/add-data! {:category "long population"
+                            :name "London base population"
+                            :publisher (:id user1)
+                            :s3-url "https://s3.eu-central-1.amazonaws.com/witan-test-data/Long+Pop.csv"})
+
+        ;; update model to have this as default data
+        _ (model/add-default-data-to-model! (:model_id m3)
+                                            "long population"
+                                            d1)
 
         ;; versions of these models
         ;;m1_2 (model/update-model! {:model-id (:model_id m1) :owner (:id user1)})
