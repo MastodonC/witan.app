@@ -73,6 +73,8 @@ CREATE TABLE witan.forecasts (
     owner uuid,
     owner_name text,
     version_id uuid,
+    model_id uuid,
+    model_property_values map<text,frozen<model_property_value>>,
     PRIMARY KEY (forecast_id, version)
 ) WITH CLUSTERING ORDER BY (version DESC)
     AND bloom_filter_fp_chance = 0.01

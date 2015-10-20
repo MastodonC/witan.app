@@ -113,7 +113,11 @@
                                             :owner owner)))
 
 (defn create-forecast-version
+<<<<<<< HEAD
   [{:keys [name description owner owner-name forecast-id version in_progress id version-id]}]
+=======
+  [{:keys [name description owner forecast-id version in_progress id version-id model-id model-property-values]}]
+>>>>>>> model id and model properties in versions
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
                              :forecast_id forecast-id
@@ -124,9 +128,12 @@
                              :owner_name owner-name
                              :version_id version-id
                              :version version
-                             :in_progress in_progress))))
+                             :in_progress in_progress
+                             :model_id model-id
+                             :model_property_values model-property-values))))
+
 (defn create-first-version
-  [{:keys [forecast-id version-id name description owner owner-name]}]
+  [{:keys [forecast-id version-id name description owner owner-name model-id model-property-values]}]
   (create-forecast-version {:name name
                             :description description
                             :forecast-id forecast-id
@@ -134,9 +141,9 @@
                             :version 0
                             :owner owner
                             :owner_name owner-name
-                            :in_progress false}))
-
-
+                            :in_progress false
+                            :model-id model-id
+                            :model-property-values model-property-values}))
 
 (defn add-to-result-values
   [result name value]
@@ -213,13 +220,15 @@
     (let [new-version (inc (:version latest-forecast))
           new-version-id (uuid/random)
           owner-name (-> owner user/retrieve-user :name)
+          corresponding-forecast-header (first (c/exec (find-forecast-by-id forecast-id)))
           new-forecast (assoc latest-forecast
                               :version new-version
                               :version-id new-version-id
                               :owner owner
                               :owner-name owner-name
                               :in-progress true
-                              :forecast-id forecast-id)]
+                              :forecast-id forecast-id
+                              :model-id (:model-id corresponding-forecast-header))]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version))
       (c/exec (find-forecast-by-version forecast-id new-version)))))
