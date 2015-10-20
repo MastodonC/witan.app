@@ -15,7 +15,7 @@
   (:use [liberator.core :only [defresource]]))
 
 (defn- ->ForecastHeader
-  "Converts raw cassandra forecast into a ws/Forecast schema"
+  "Converts raw cassandra forecast_header into a ws/Forecast schema"
   [{:keys [in_progress
            forecast_id
            created
@@ -35,8 +35,6 @@
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
                            :version-id current_version_id
-                           :model-id model_id
-                           :model-property-values model_property_values
                            :owner-name owner_name))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
@@ -46,18 +44,48 @@
            forecast_id
            created
            version_id
-           owner_name] :as forecast}]
+           owner_name
+           model_id
+           model_property_values] :as forecast}]
   (let [cleaned (-> forecast
                     (dissoc :in_progress
                             :forecast_id
                             :created
                             :version_id
-                            :owner_name)
+                            :owner_name
+                            :model_id
+                            :model_property_values)
                     (assoc :in-progress? in_progress
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
                            :version-id version_id
                            :owner-name owner_name))]
+    (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
+
+(defn- ->ForecastInfo
+  "Converts raw cassandra forecast into a ws/ForecastInfo schema"
+  [{:keys [in_progress
+           forecast_id
+           created
+           version_id
+           owner_name
+           model_id
+           model_property_values] :as forecast}]
+  (let [cleaned (-> forecast
+                    (dissoc :in_progress
+                            :forecast_id
+                            :created
+                            :version_id
+                            :owner_name
+                            :model_id
+                            :model_property_values)
+                    (assoc :in-progress? in_progress
+                           :forecast-id forecast_id
+                           :created (util/java-Date-to-ISO-Date-Time created)
+                           :version-id version_id
+                           :owner-name owner_name
+                           :model-id model_id
+                           :model-property-values (vals model_property_values)))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn find-forecast-by-id
@@ -113,11 +141,7 @@
                                             :owner owner)))
 
 (defn create-forecast-version
-<<<<<<< HEAD
-  [{:keys [name description owner owner-name forecast-id version in_progress id version-id]}]
-=======
-  [{:keys [name description owner forecast-id version in_progress id version-id model-id model-property-values]}]
->>>>>>> model id and model properties in versions
+  [{:keys [name description owner owner-name forecast-id version in_progress id version-id model-id model-property-values]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
                              :forecast_id forecast-id
@@ -299,8 +323,8 @@
                (if (or version latest-version?)
                  ;; single
                  (s/validate
-                  ws/Forecast
-                  (->Forecast (first result)))
+                  ws/ForecastInfo
+                  (->ForecastInfo (first result)))
                  ;; multiple
                  (s/validate
                   [ws/Forecast]
