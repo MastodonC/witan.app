@@ -15,12 +15,14 @@
         m1 (model/add-model! {:name "My Model 1"
                               :description "Description of my model"
                               :owner (:id user1)
-                              :input-data [{:category "Base population data"}]})
+                              :input-data [{:category "Base population data"}]
+                              :output-data [{:category "wishful thinking"}]})
         m2 (model/add-model! {:name "My Model 2"
                               :description "Description of my model"
                               :owner (:id user2)
                               :properties [{:name "Some field" :type "text" :context "Placeholder value 123"}]
-                              :input-data [{:category "Base population data"}]})
+                              :input-data [{:category "Base population data"}]
+                              :output-data [{:category "All the population data"}]})
         m3 (model/add-model! {:name "My Model 3"
                               :description "Model with enum"
                               :owner (:id user2)

@@ -8,6 +8,7 @@
             [witan.app.config :as c]
             [witan.app.util :as util]
             [witan.app.schema :as ws]
+            [witan.app.data :as data]
             [schema.core :as s])
   (:use [liberator.core :only [defresource]]))
 
@@ -15,14 +16,23 @@
   "Converts raw cassandra model into a ws/Model schema"
   [{:keys [version_id
            model_id
-           created] :as model}]
+           created
+           input_data
+           input_data_defaults
+           output_data] :as model}]
   (-> model
       (dissoc :version_id
               :model_id
-              :created)
+              :created
+              :input_data
+              :input_data_defaults
+              :output_data)
       (assoc :version-id version_id
              :model-id model_id
-             :created (util/java-Date-to-ISO-Date-Time created))))
+             :created (util/java-Date-to-ISO-Date-Time created)
+             :input-data (mapv #(-> (hash-map :category %1)
+                                    (cond-> (get input_data_defaults %1) (assoc :default (get input_data_defaults %1)))) input_data)
+             :output-data (mapv #(hash-map :category %1) output_data))))
 
 (defn find-model-by-name
   [name]
