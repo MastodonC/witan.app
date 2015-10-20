@@ -40,8 +40,8 @@
 
         ;; update model to have this as default data
         _ (model/add-default-data-to-model! (:model_id m1)
-                                             "long population"
-                                             d1)
+                                            "long population"
+                                            d1)
 
         ;; versions of these models
         ;;m1_2 (model/update-model! {:model-id (:model_id m1) :owner (:id user1)})

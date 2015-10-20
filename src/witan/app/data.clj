@@ -38,17 +38,16 @@
                                          :s3_url s3-url
                                          :created creation-time))))
 
-
 (defn add-data!
   "TODO: for now manually upload and provide s3 url, but need to upload as part of this process"
   [{:keys [data-id category name model-id publisher version s3-url]
     :or {data-id (uuid/random)
          version 1}}]
   (mapv #(c/exec (create-data {:data-id data-id
-                             :category category
-                             :name name
-                             :publisher publisher
-                             :version version
-                             :s3-url s3-url
-                             :model-id model-id} %)) '(:data_by_data_id :data_by_model_and_category))
+                               :category category
+                               :name name
+                               :publisher publisher
+                               :version version
+                               :s3-url s3-url
+                               :model-id model-id} %)) '(:data_by_data_id :data_by_model_and_category))
   (first (c/exec (find-data-by-data-id data-id))))
