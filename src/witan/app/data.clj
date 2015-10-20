@@ -3,8 +3,20 @@
             [qbits.alia.uuid :as uuid]
             [clj-time.core :as t]
             [clj-time.format :as tf]
-            [witan.app.config :as c]))
+            [witan.app.config :as c]
+            [witan.app.util :as util]))
 
+(defn Data->
+  [{:keys [data_id
+           s3_url
+           created] :as data}]
+  (-> data
+      (dissoc :data_id
+              :s3_url
+              :created)
+      (assoc :data-id data_id
+             :s3-url s3_url
+             :created (util/java-Date-to-ISO-Date-Time created))))
 (defn find-data-by-model-and-category
   [model-id category]
   (hayt/select :data_by_model_and_category (hayt/where {:model_id model-id
