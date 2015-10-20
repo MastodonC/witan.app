@@ -27,8 +27,10 @@
         session (session (:host cassandra-info) (:keyspace cassandra-info))]
     (partial alia/execute session)))
 
-(def inner-exec (store-execute config))
+(def conn (atom nil))
 
 (defn exec
   [body]
-  (inner-exec body))
+  (when-not @conn
+    (swap! conn (store-execute config)))
+  (@conn body))
