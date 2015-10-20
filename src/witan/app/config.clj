@@ -1,7 +1,8 @@
 (ns witan.app.config
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [qbits.alia :as alia]))
+            [qbits.alia :as alia]
+            [clojure.tools.logging :as log]))
 
 (defn get-config
   "Gets info from a config file."
@@ -27,6 +28,9 @@
         session (session (:host cassandra-info) (:keyspace cassandra-info))]
     (partial alia/execute session)))
 
+(def conn (atom nil))
+
 (defn exec
   [body]
-  ((store-execute config) body))
+  (let [conn-fn (or @conn (reset! conn (store-execute config)))]
+    (conn-fn body)))
