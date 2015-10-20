@@ -8,6 +8,7 @@
             [witan.app.schema :as ws]
             [witan.app.util :as util]
             [witan.app.model :as model]
+            [witan.app.user :as user]
             [schema.core :as s]
             [clojure.string :as string]
             [clojure.tools.logging :as log])
@@ -20,20 +21,23 @@
            created
            current_version_id
            model_id
-           model_property_values] :as forecast}]
+           model_property_values
+           owner_name] :as forecast}]
   (let [cleaned (-> forecast
                     (dissoc :in_progress
                             :forecast_id
                             :created
                             :current_version_id
                             :model_id
-                            :model_property_values)
+                            :model_property_values
+                            :owner_name)
                     (assoc :in-progress? in_progress
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
                            :version-id current_version_id
                            :model-id model_id
-                           :model-property-values model_property_values))]
+                           :model-property-values model_property_values
+                           :owner-name owner_name))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn- ->Forecast
@@ -41,16 +45,19 @@
   [{:keys [in_progress
            forecast_id
            created
-           version_id] :as forecast}]
+           version_id
+           owner_name] :as forecast}]
   (let [cleaned (-> forecast
                     (dissoc :in_progress
                             :forecast_id
                             :created
-                            :version_id)
+                            :version_id
+                            :owner_name)
                     (assoc :in-progress? in_progress
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
-                           :version-id version_id))]
+                           :version-id version_id
+                           :owner-name owner_name))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn find-forecast-by-id
@@ -87,10 +94,11 @@
        first))
 
 (defn create-new-forecast
-  [{:keys [name description owner forecast-id version-id model-id model-property-values]}]
+  [{:keys [name description owner owner-name forecast-id version-id model-id model-property-values]}]
   (hayt/insert :forecast_headers (hayt/values :name name
                                               :description description
                                               :owner owner
+                                              :owner_name owner-name
                                               :forecast_id forecast-id
                                               :current_version_id version-id
                                               :in_progress false
@@ -105,7 +113,7 @@
                                             :owner owner)))
 
 (defn create-forecast-version
-  [{:keys [name description owner forecast-id version in_progress id version-id]}]
+  [{:keys [name description owner owner-name forecast-id version in_progress id version-id]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
                              :forecast_id forecast-id
@@ -113,17 +121,19 @@
                              :description description
                              :created creation-time
                              :owner owner
+                             :owner_name owner-name
                              :version_id version-id
                              :version version
                              :in_progress in_progress))))
 (defn create-first-version
-  [{:keys [forecast-id version-id name description owner]}]
+  [{:keys [forecast-id version-id name description owner owner-name]}]
   (create-forecast-version {:name name
                             :description description
                             :forecast-id forecast-id
                             :version-id version-id
                             :version 0
                             :owner owner
+                            :owner_name owner-name
                             :in_progress false}))
 
 
@@ -185,10 +195,12 @@
         version-id (uuid/random)
         uuid-model-id (util/to-uuid model-id)
         checked-property-values (check-property-values uuid-model-id model-properties)
+        owner-name (-> owner user/retrieve-user :name)
         new-forecast (assoc forecast :forecast-id id
                             :version-id version-id
                             :model-id uuid-model-id
-                            :model-property-values (:values checked-property-values))]
+                            :model-property-values (:values checked-property-values)
+                            :owner-name owner-name)]
     (when (and (empty? existing-forecasts) (empty? (:errors checked-property-values)))
       (c/exec (create-new-forecast new-forecast))
       (c/exec (create-first-version new-forecast))
@@ -200,10 +212,12 @@
   (if-let [latest-forecast (retrieve-forecast-most-recent-of-series forecast-id)]
     (let [new-version (inc (:version latest-forecast))
           new-version-id (uuid/random)
+          owner-name (-> owner user/retrieve-user :name)
           new-forecast (assoc latest-forecast
                               :version new-version
                               :version-id new-version-id
                               :owner owner
+                              :owner-name owner-name
                               :in-progress true
                               :forecast-id forecast-id)]
       (c/exec (create-forecast-version new-forecast))
