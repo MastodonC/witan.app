@@ -17,22 +17,21 @@
       (assoc :data-id data_id
              :s3-url s3_url
              :created (util/java-Date-to-ISO-Date-Time created))))
-(defn find-data-by-model-and-category
+
+(defn find-data-by-category
   [model-id category]
-  (hayt/select :data_by_model_and_category (hayt/where {:model_id model-id
-                                                        :category category})))
+  (hayt/select :data_by_category (hayt/where {:category category})))
 
 (defn find-data-by-data-id
   [data-id]
   (hayt/select :data_by_data_id (hayt/where {:data_id data-id})))
 
 (defn create-data
-  [{:keys [data-id category name publisher version s3-url model-id]} data-table]
+  [{:keys [data-id category name publisher version s3-url]} data-table]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert data-table (hayt/values :data_id data-id
                                          :category category
                                          :name name
-                                         :model_id model-id
                                          :publisher publisher
                                          :version version
                                          :s3_url s3-url
@@ -40,7 +39,7 @@
 
 (defn add-data!
   "TODO: for now manually upload and provide s3 url, but need to upload as part of this process"
-  [{:keys [data-id category name model-id publisher version s3-url]
+  [{:keys [data-id category name publisher version s3-url]
     :or {data-id (uuid/random)
          version 1}}]
   (mapv #(c/exec (create-data {:data-id data-id
@@ -48,6 +47,5 @@
                                :name name
                                :publisher publisher
                                :version version
-                               :s3-url s3-url
-                               :model-id model-id} %)) '(:data_by_data_id :data_by_model_and_category))
+                               :s3-url s3-url} %)) '(:data_by_data_id :data_by_category))
   (first (c/exec (find-data-by-data-id data-id))))

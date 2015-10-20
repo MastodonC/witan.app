@@ -121,23 +121,20 @@ CREATE TABLE witan.data_by_data_id (
   data_id uuid PRIMARY KEY,
   category text,
   name text,
-  model_id uuid,
   publisher uuid,
   version int,
   s3_url text,
   created timestamp
 );
 
-CREATE TABLE witan.data_by_model_and_category (
+CREATE TABLE witan.data_by_category (
   data_id uuid,
-  category text,
+  category text PRIMARY KEY,
   name text,
-  model_id uuid,
   publisher uuid,
   version int,
   s3_url text,
-  created timestamp,
-  PRIMARY KEY (model_id, category)
+  created timestamp
 );
 
 CREATE TYPE witan.model_data (

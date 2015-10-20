@@ -31,7 +31,7 @@
              :model-id model_id
              :created (util/java-Date-to-ISO-Date-Time created)
              :input-data (mapv #(-> (hash-map :category %1)
-                                    (cond-> (get input_data_defaults %1) (assoc :default (get input_data_defaults %1)))) input_data)
+                                    (cond-> (get input_data_defaults %1) (assoc :default (data/Data-> (get input_data_defaults %1))))) input_data)
              :output-data (mapv #(hash-map :category %1) output_data))))
 
 (defn find-model-by-name
@@ -80,9 +80,9 @@
 (defn add-default-data-to-model!
   [model-id category data]
   (let [model (get-model-by-model-id model-id)
-        input-data-map (:input_data_defaults model)
-        cleaned-data (dissoc data :model_id)]
-    (c/exec (update-default-input-data model-id category cleaned-data input-data-map))))
+        input-data-map (:input_data_defaults model)]
+    (when (some #{category} (:input_data model))
+      (c/exec (update-default-input-data model-id category data input-data-map)))))
 
 
 (defn add-model!
