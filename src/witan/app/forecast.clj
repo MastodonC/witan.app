@@ -45,16 +45,19 @@
   [{:keys [in_progress
            forecast_id
            created
-           version_id] :as forecast}]
+           version_id
+           owner_name] :as forecast}]
   (let [cleaned (-> forecast
                     (dissoc :in_progress
                             :forecast_id
                             :created
-                            :version_id)
+                            :version_id
+                            :owner_name)
                     (assoc :in-progress? in_progress
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
-                           :version-id version_id))]
+                           :version-id version_id
+                           :owner-name owner_name))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn find-forecast-by-id
