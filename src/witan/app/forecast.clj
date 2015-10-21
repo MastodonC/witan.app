@@ -108,6 +108,11 @@
   (hayt/select :forecasts (hayt/where {:forecast_id forecast-id
                                        :version version})))
 
+(defn delete-forecast-by-version
+  [forecast-id version]
+  (hayt/delete :forecasts (hayt/where {:forecast_id forecast-id
+                                       :version version})))
+
 (defn update-forecast-current-version-id
   [forecast-id current-version-id new-version]
   (hayt/update :forecast_headers
@@ -242,8 +247,9 @@
 
 (defn update-forecast!
   [{:keys [forecast-id owner]}]
-  (if-let [latest-forecast (get-most-recent-version forecast-id)]
-    (let [new-version (inc (:version latest-forecast))
+  (if-let [latest-forecast (retrieve-forecast-most-recent-of-series forecast-id)]
+    (let [old-version (:version latest-forecast)
+          new-version (inc old-version)
           new-version-id (uuid/random)
           owner-name (-> owner user/retrieve-user :name)
           new-forecast (assoc latest-forecast
@@ -257,6 +263,8 @@
                               :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)])))]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version))
+      (when (= 0 old-version)
+        (c/exec (delete-forecast-by-version forecast-id 0)))
       (c/exec (find-forecast-by-version forecast-id new-version)))))
 
 (defn get-forecasts
