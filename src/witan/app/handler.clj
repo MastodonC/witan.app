@@ -127,7 +127,8 @@
                                model/models)
                    (sweet/GET* "/models/:id" []
                                :summary "Get model specified by ID"
-                               (not-implemented))
+                               :path-params [id :- java.util.UUID]
+                               (model/model {:id id}))
                    (sweet/GET* "/forecasts" []
                                :summary "Get forecasts available to a user"
                                forecast/forecasts)
