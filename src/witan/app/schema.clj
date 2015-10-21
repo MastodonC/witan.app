@@ -58,7 +58,7 @@
 (def ModelPropertyValue
   "A model property and value binding"
   {(s/required-key :name)  s/Str
-   (s/required-key :value) s/Any}) ;; varies depending on the ModelProperty type
+   (s/required-key :value) (s/either s/Str s/Int)}) ;; varies depending on the ModelProperty type
 
 (def DataItem
   "A data item"
@@ -70,6 +70,14 @@
    (s/optional-key :s3-url)    s/Str
    (s/required-key :created)   DateTimeType})
 
+(def ModelInputCategory
+  "Inputs into the model"
+  s/Str)
+
+(def ModelOutputCategory
+  "Outputs from the model"
+  s/Str)
+
 (def Model
   "Models are the center-piece of a Forecast"
   {(s/required-key :model-id)    IdType
@@ -80,34 +88,20 @@
    (s/required-key :created)     DateTimeType
    (s/optional-key :description) s/Str
    (s/optional-key :properties)  [ModelProperty]
-   (s/optional-key :input-data) [{(s/optional-key :category) s/Str
+   (s/optional-key :input-data) [{(s/required-key :category) ModelInputCategory
                                   (s/optional-key :default) DataItem}]
-   (s/optional-key :output-data) [{(s/optional-key :category) s/Str}]})
-
-(def DataItemEntry
-  "Used to isolate a data item ID"
-  {(s/required-key :data-item) DataItem})
-
-(def ModelInputCategory
-  "Inputs into the model"
-  {(s/required-key :id)   IdType
-   (s/required-key :name) s/Str})
-
-(def ModelOutputCategory
-  "Outputs from the model"
-  {(s/required-key :id)   IdType
-   (s/required-key :name) s/Str})
+   (s/optional-key :output-data) [{(s/required-key :category) ModelOutputCategory}]})
 
 (def ModelInput
   "An input category with a data item"
-  {ModelInputCategory (s/maybe DataItemEntry)})
+  {ModelInputCategory DataItem})
 
 (def ModelOutput
   "An output category with a data item"
-  {ModelOutputCategory (s/maybe (s/cond-pre [DataItemEntry] DataItemEntry))})
+  {ModelOutputCategory [DataItem]})
 
 (def ModelInfo
-  "More in-depth information about a Model"
+  "Forecast data in the context of the model"
   {(s/required-key :model)      Model
    (s/required-key :inputs)     [ModelInput]
    (s/required-key :outputs)    [ModelOutput]
@@ -140,13 +134,12 @@
    (s/required-key :in-progress?)  s/Bool
    (s/optional-key :description)   s/Str
    (s/optional-key :tag)           Tag
-   (s/optional-key :model-id)      IdType
-   (s/optional-key :model-property-values) s/Any})
+   (s/optional-key :model-id)      IdType})
 
 (def ForecastInfo
-  "Forecast in-depth"
-  {(s/required-key :forecast) Forecast
-   (s/required-key :model)    ModelInfo})
+  "Forecast in-depth
+   TODO: should be (merge Forecast ModelInfo"
+  Forecast)
 
 (def ShareRequest
   "A request to adjust sharing rules for a tag"
