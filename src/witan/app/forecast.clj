@@ -164,7 +164,7 @@
                             :version-id version-id
                             :version 0
                             :owner owner
-                            :owner_name owner-name
+                            :owner-name owner-name
                             :in_progress false
                             :model-id model-id
                             :model-property-values model-property-values}))
