@@ -48,7 +48,9 @@
      :name "My Forecast 1",
      :owner #uuid "d8fc0f3c-0535-4959-bf9e-505af9a59ad9",
      :owner_name "User 3",
-     :version_id #uuid "78b1bf97-0ebe-42ef-8031-384e504cf795"}
+     :version_id #uuid "78b1bf97-0ebe-42ef-8031-384e504cf795"
+     :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"
+     :model_property_values {}}
     {:forecast_id #uuid "fd44474d-e0f8-4713-bacf-299e503e4f30",
      :version 1,
      :created #inst "2015-10-14T08:41:21.253-00:00",
@@ -57,7 +59,8 @@
      :name "My Forecast 1",
      :owner #uuid "d8fc0f3c-0535-4959-bf9e-505af9a59ad9",
      :owner_name "User 3",
-     :version_id #uuid "f960e442-2c85-489e-9807-4eeecd6fd55a"}
+     :version_id #uuid "f960e442-2c85-489e-9807-4eeecd6fd55a"
+     :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"}
     {:description "Description of my forecast",
      :name "My Forecast 1",
      :created #inst "2015-10-06T12:44:17.176-00:00",
@@ -66,7 +69,8 @@
      :forecast_id #uuid "fd44474d-e0f8-4713-bacf-299e503e4f30",
      :version 0,
      :owner #uuid "cac4ba3a-07c8-4e79-9ae0-d97317bb0d45",
-     :owner_name "User 1"}))
+     :owner_name "User 1"
+     :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"}))
 
 (defn get-dummy-models []
   '({:name "My Model 2",
@@ -172,7 +176,7 @@
           (is (= (:version-id body) "f960e442-2c85-489e-9807-4eeecd6fd55a")))))
 
     (testing "get forecast latest version"
-      (with-redefs [witan.app.config/exec get-dummy-forecasts]
+      (with-redefs [witan.app.forecast/get-most-recent-version (comp first get-dummy-forecasts)]
         (let [token (logged-in-user-token)
               [status body _] (get* app "/api/forecasts/fd44474d-e0f8-4713-bacf-299e503e4f30/latest" {} (auth-header token))]
           (is (= status 200))
