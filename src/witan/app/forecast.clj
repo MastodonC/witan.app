@@ -113,13 +113,10 @@
                                   :version new-version})
                (hayt/where {:forecast_id forecast-id})))
 
-(defn retrieve-forecast-most-recent-of-series
+(defn get-most-recent-version
   "uses the descending ordering of the versions in the forecast table"
   [id]
-  (->> id
-       find-forecast-by-id
-       c/exec
-       first))
+  (c/exec (merge (find-forecast-versions-by-id id) (hayt/limit 1))))
 
 (defn create-new-forecast
   [{:keys [name description owner owner-name forecast-id version-id model-id model-property-values]}]
@@ -240,7 +237,7 @@
 
 (defn update-forecast!
   [{:keys [forecast-id owner]}]
-  (if-let [latest-forecast (retrieve-forecast-most-recent-of-series forecast-id)]
+  (if-let [latest-forecast (get-most-recent-version forecast-id)]
     (let [new-version (inc (:version latest-forecast))
           new-version-id (uuid/random)
           owner-name (-> owner user/retrieve-user :name)
@@ -266,7 +263,7 @@
   (if version
     (c/exec (find-forecast-by-version id version))
     (if latest-version?
-      (c/exec (merge (find-forecast-versions-by-id id) (hayt/limit 1)))
+      (get-most-recent-version id)
       (c/exec (find-forecast-versions-by-id id)))))
 
 ;;;;;;
