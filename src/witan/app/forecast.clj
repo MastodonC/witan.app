@@ -252,7 +252,7 @@
                               :owner-name owner-name
                               :in-progress true
                               :forecast-id forecast-id
-                              :model-id (:model-id corresponding-forecast-header))]
+                              :model-id (:model_id corresponding-forecast-header))]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version))
       (c/exec (find-forecast-by-version forecast-id new-version)))))
