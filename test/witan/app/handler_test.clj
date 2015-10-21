@@ -90,6 +90,9 @@
      :version 0,
      :version_id #uuid "653c149a-86d8-4a3f-a7a8-d898c070177e"}))
 
+(defn get-dummy-model []
+  {:description "Description of my model", :properties [{:name "Some field", :type "text", :context "Placeholder value 123", :enum_values []}], :version_id #uuid "fa200d2d-816d-4502-b94a-9ba020f2f1f4", :input_data ["Base population data"], :name "My Model 2", :output_data ["All the population data"], :input_data_defaults {}, :created #inst "2015-10-21T10:51:22.093-00:00", :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0", :version 1, :owner #uuid "98f9adcb-bc80-407c-b9c8-736506f6e410"})
+
 (defn auth-header [token] {"Authorization" (str "Token " token)})
 
 (defn logged-in-user-token []
@@ -167,7 +170,7 @@
           (is (seq? body)))))
 
     (testing "get forecast specific version"
-      (with-redefs [witan.app.config/exec (fn [_] [(second (get-dummy-forecasts))])] ;; db would find correct version
+      (with-redefs [witan.app.forecast/get-forecast-by-version (fn [_ _] (second (get-dummy-forecasts)))]
         (let [token (logged-in-user-token)
               [status body _] (get* app "/api/forecasts/fd44474d-e0f8-4713-bacf-299e503e4f30/1" {} (auth-header token))]
           (is (= status 200))
@@ -176,7 +179,7 @@
           (is (= (:version-id body) "f960e442-2c85-489e-9807-4eeecd6fd55a")))))
 
     (testing "get forecast latest version"
-      (with-redefs [witan.app.forecast/get-most-recent-version (comp first get-dummy-forecasts)]
+      (with-redefs [witan.app.forecast/get-most-recent-version (fn [_] (first (get-dummy-forecasts)))]
         (let [token (logged-in-user-token)
               [status body _] (get* app "/api/forecasts/fd44474d-e0f8-4713-bacf-299e503e4f30/latest" {} (auth-header token))]
           (is (= status 200))

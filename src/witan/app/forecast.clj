@@ -62,7 +62,7 @@
                            :owner-name owner_name))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
-(defn- ->ForecastInfo
+(defn ->ForecastInfo
   "Converts raw cassandra forecast into a ws/ForecastInfo schema"
   [{:keys [in_progress
            forecast_id
@@ -85,7 +85,9 @@
                            :version-id version_id
                            :owner-name owner_name
                            :model-id model_id
-                           :model-property-values (vals model_property_values)))]
+                           :property-values (vals model_property_values)
+                           :inputs []
+                           :outputs []))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn find-forecast-by-id
@@ -112,6 +114,10 @@
                (hayt/set-columns {:current_version_id current-version-id
                                   :version new-version})
                (hayt/where {:forecast_id forecast-id})))
+
+(defn get-forecast-by-version
+  [forecast-id version]
+  (first (c/exec (find-forecast-by-version forecast-id version))))
 
 (defn get-most-recent-version
   [id]
@@ -257,10 +263,11 @@
   []
   (c/exec (hayt/select :forecast_headers)))
 
+
 (defn get-forecast
   [{:keys [id version latest-version?]}]
   (cond
-    version         (c/exec (find-forecast-by-version id version))
+    version         (vector (get-forecast-by-version id version))
     latest-version? (vector (get-most-recent-version id))
     :else           (c/exec (find-forecast-versions-by-id id))))
 
