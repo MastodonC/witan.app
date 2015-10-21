@@ -128,7 +128,7 @@
    (s/required-key :name)          s/Str
    (s/required-key :owner)         IdType
    (s/required-key :owner-name)    s/Str
-   (s/required-key :forecast-id)     IdType
+   (s/required-key :forecast-id)   IdType
    (s/required-key :version)       s/Int
    (s/required-key :created)       DateTimeType
    (s/required-key :in-progress?)  s/Bool
@@ -139,7 +139,9 @@
 (def ForecastInfo
   "Forecast in-depth
    TODO: should be (merge Forecast ModelInfo"
-  Forecast)
+  (merge
+   Forecast
+   {(s/optional-key :model-property-values) [ModelPropertyValue]}))
 
 (def ShareRequest
   "A request to adjust sharing rules for a tag"
