@@ -137,9 +137,9 @@
    (s/optional-key :model-id)      IdType})
 
 (def ForecastInfo
-  "Forecast in-depth"
-  {(s/required-key :forecast) Forecast
-   (s/required-key :model)    ModelInfo})
+  "Forecast in-depth
+   TODO: should be (merge Forecast ModelInfo"
+  Forecast)
 
 (def ShareRequest
   "A request to adjust sharing rules for a tag"
