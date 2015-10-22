@@ -26,7 +26,9 @@
                  [org.slf4j/jcl-over-slf4j       ~slf4j-version]
                  [org.slf4j/log4j-over-slf4j     ~slf4j-version]
                  [javax.mail/mail                "1.4.7"]
-                 [overtone/at-at "1.2.0"]]
+                 [overtone/at-at "1.2.0"]
+                 [org.martinklepsch/s3-beam "0.3.1"]
+                 [environ "1.0.1"]]
   :plugins [[lein-ring "0.8.13"]]
   :jvm-opts ["-Xmx1024m"]
   :ring {:handler witan.app.handler/app
