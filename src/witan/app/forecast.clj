@@ -267,8 +267,12 @@
 (defn get-forecast
   [{:keys [id version latest-version?]}]
   (cond
-    version         (vector (get-forecast-by-version id version))
-    latest-version? (vector (get-most-recent-version id))
+    version         (if-let [forecast (get-forecast-by-version id version)]
+                      [forecast]
+                      [])
+    latest-version? (if-let [forecast (get-most-recent-version id)]
+                      [forecast]
+                      [])
     :else           (c/exec (find-forecast-versions-by-id id))))
 
 ;;;;;;
