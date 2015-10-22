@@ -105,3 +105,15 @@
   :handle-ok (fn [_] (s/validate
                       [ws/Model]
                       (map ->Model (get-models)))))
+
+(defresource model [{:keys [id]}]
+  :allowed-methods #{:get}
+  :exists? (fn [ctx]
+             (let [result (get-model-by-model-id id)]
+               [result {:result result}]))
+  :available-media-types ["application/json"]
+  :handle-ok (fn [{:keys [result]}]
+               (s/validate
+                     ws/Model
+                     (->Model result)))
+  )

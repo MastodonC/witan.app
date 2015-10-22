@@ -62,7 +62,7 @@
                            :owner-name owner_name))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
-(defn- ->ForecastInfo
+(defn ->ForecastInfo
   "Converts raw cassandra forecast into a ws/ForecastInfo schema"
   [{:keys [in_progress
            forecast_id
@@ -85,7 +85,9 @@
                            :version-id version_id
                            :owner-name owner_name
                            :model-id model_id
-                           :model-property-values (vals model_property_values)))]
+                           :property-values (vals model_property_values)
+                           :inputs []
+                           :outputs []))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn find-forecast-by-id
@@ -113,13 +115,13 @@
                                   :version new-version})
                (hayt/where {:forecast_id forecast-id})))
 
-(defn retrieve-forecast-most-recent-of-series
-  "uses the descending ordering of the versions in the forecast table"
+(defn get-forecast-by-version
+  [forecast-id version]
+  (first (c/exec (find-forecast-by-version forecast-id version))))
+
+(defn get-most-recent-version
   [id]
-  (->> id
-       find-forecast-by-id
-       c/exec
-       first))
+  (first (c/exec (merge (find-forecast-versions-by-id id) (hayt/limit 1)))))
 
 (defn create-new-forecast
   [{:keys [name description owner owner-name forecast-id version-id model-id model-property-values]}]
@@ -240,11 +242,10 @@
 
 (defn update-forecast!
   [{:keys [forecast-id owner]}]
-  (if-let [latest-forecast (retrieve-forecast-most-recent-of-series forecast-id)]
+  (if-let [latest-forecast (get-most-recent-version forecast-id)]
     (let [new-version (inc (:version latest-forecast))
           new-version-id (uuid/random)
           owner-name (-> owner user/retrieve-user :name)
-          corresponding-forecast-header (first (c/exec (find-forecast-by-id forecast-id)))
           new-forecast (assoc latest-forecast
                               :version new-version
                               :version-id new-version-id
@@ -252,7 +253,8 @@
                               :owner-name owner-name
                               :in-progress true
                               :forecast-id forecast-id
-                              :model-id (:model_id corresponding-forecast-header))]
+                              :model-id (:model_id latest-forecast)
+                              :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)])))]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version))
       (c/exec (find-forecast-by-version forecast-id new-version)))))
@@ -261,13 +263,17 @@
   []
   (c/exec (hayt/select :forecast_headers)))
 
+
 (defn get-forecast
   [{:keys [id version latest-version?]}]
-  (if version
-    (c/exec (find-forecast-by-version id version))
-    (if latest-version?
-      (c/exec (merge (find-forecast-versions-by-id id) (hayt/limit 1)))
-      (c/exec (find-forecast-versions-by-id id)))))
+  (cond
+    version         (if-let [forecast (get-forecast-by-version id version)]
+                      [forecast]
+                      [])
+    latest-version? (if-let [forecast (get-most-recent-version id)]
+                      [forecast]
+                      [])
+    :else           (c/exec (find-forecast-versions-by-id id))))
 
 ;;;;;;
 

@@ -102,10 +102,9 @@
 
 (def ModelInfo
   "Forecast data in the context of the model"
-  {(s/required-key :model)      Model
-   (s/required-key :inputs)     [ModelInput]
+  {(s/required-key :inputs)     [ModelInput]
    (s/required-key :outputs)    [ModelOutput]
-   (s/optional-key :properties) [ModelPropertyValue]})
+   (s/optional-key :property-values) [ModelPropertyValue]})
 
 (def Tag
   "A tag is an annotated symlink to a forecast id and version"
@@ -141,7 +140,7 @@
    TODO: should be (merge Forecast ModelInfo"
   (merge
    Forecast
-   {(s/optional-key :model-property-values) [ModelPropertyValue]}))
+   ModelInfo))
 
 (def ShareRequest
   "A request to adjust sharing rules for a tag"
