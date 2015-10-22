@@ -21,7 +21,6 @@ CREATE TABLE witan.forecast_names (
 
 CREATE TYPE witan.model_property_value (
     name text,
-    type text,
     value text
 );
 
@@ -34,6 +33,7 @@ CREATE TABLE witan.forecast_headers (
     in_progress boolean,
     name text,
     owner uuid,
+    owner_name text,
     model_id uuid,
     model_property_values map<text,frozen<model_property_value>>
 );
@@ -68,7 +68,10 @@ CREATE TABLE witan.forecasts (
     in_progress boolean,
     name text,
     owner uuid,
+    owner_name text,
     version_id uuid,
+    model_id uuid,
+    model_property_values map<text,frozen<model_property_value>>,
     PRIMARY KEY (forecast_id, version)
 ) WITH CLUSTERING ORDER BY (version DESC)
     AND bloom_filter_fp_chance = 0.01
@@ -115,6 +118,36 @@ CREATE TABLE witan.model_names (
     AND speculative_retry = '99.0PERCENTILE';
 
 // model headers
+CREATE TABLE witan.data_by_data_id (
+  data_id uuid PRIMARY KEY,
+  category text,
+  name text,
+  publisher uuid,
+  version int,
+  s3_url text,
+  created timestamp
+);
+
+CREATE TABLE witan.data_by_category (
+  data_id uuid,
+  category text PRIMARY KEY,
+  name text,
+  publisher uuid,
+  version int,
+  s3_url text,
+  created timestamp
+);
+
+CREATE TYPE witan.model_data (
+  data_id uuid,
+  category text,
+  name text,
+  publisher uuid,
+  version int,
+  s3_url text,
+  created timestamp
+);
+
 CREATE TABLE witan.models (
     name text,
     version_id uuid,
@@ -123,7 +156,10 @@ CREATE TABLE witan.models (
     owner uuid,
     model_id uuid PRIMARY KEY,
     version int,
-    properties list<frozen<witan.model_property>>
+    properties list<frozen<witan.model_property>>,
+    input_data list<text>,
+    input_data_defaults map<text,frozen<model_data>>,
+    output_data list<text>
 ) WITH bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
     AND comment = ''
@@ -137,3 +173,5 @@ CREATE TABLE witan.models (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
+
+// Data items
