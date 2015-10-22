@@ -247,7 +247,7 @@
 
 (defn update-forecast!
   [{:keys [forecast-id owner]}]
-  (if-let [latest-forecast (retrieve-forecast-most-recent-of-series forecast-id)]
+  (if-let [latest-forecast (get-most-recent-version forecast-id)]
     (let [old-version (:version latest-forecast)
           new-version (inc old-version)
           new-version-id (uuid/random)
