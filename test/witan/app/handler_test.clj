@@ -170,7 +170,7 @@
           (is (seq? body)))))
 
     (testing "get forecast specific version"
-      (with-redefs [witan.app.forecast/get-forecast-by-version (fn [_ _] (second (get-dummy-forecasts)))]
+      (with-redefs [witan.app.config/exec (fn [_] (vector (second (get-dummy-forecasts))))]
         (let [token (logged-in-user-token)
               [status body _] (get* app "/api/forecasts/fd44474d-e0f8-4713-bacf-299e503e4f30/1" {} (auth-header token))]
           (is (= status 200))
@@ -179,7 +179,7 @@
           (is (= (:version-id body) "f960e442-2c85-489e-9807-4eeecd6fd55a")))))
 
     (testing "get forecast latest version"
-      (with-redefs [witan.app.forecast/get-most-recent-version (fn [_] (first (get-dummy-forecasts)))]
+      (with-redefs [witan.app.config/exec (fn [_] (vector (first (get-dummy-forecasts))))]
         (let [token (logged-in-user-token)
               [status body _] (get* app "/api/forecasts/fd44474d-e0f8-4713-bacf-299e503e4f30/latest" {} (auth-header token))]
           (is (= status 200))

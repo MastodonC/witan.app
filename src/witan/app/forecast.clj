@@ -103,6 +103,10 @@
   [id]
   (hayt/select :forecasts (hayt/where {:forecast_id id})))
 
+(defn find-most-recent-version
+  [forecast-id]
+  (merge (find-forecast-versions-by-id forecast-id) (hayt/limit 1)))
+
 (defn find-forecast-by-version
   [forecast-id version]
   (hayt/select :forecasts (hayt/where {:forecast_id forecast-id
@@ -120,13 +124,9 @@
                                   :version new-version})
                (hayt/where {:forecast_id forecast-id})))
 
-(defn get-forecast-by-version
-  [forecast-id version]
-  (first (c/exec (find-forecast-by-version forecast-id version))))
-
 (defn get-most-recent-version
   [id]
-  (first (c/exec (merge (find-forecast-versions-by-id id) (hayt/limit 1)))))
+  (first (c/exec (find-most-recent-version id))))
 
 (defn create-new-forecast
   [{:keys [name description owner owner-name forecast-id version-id model-id model-property-values]}]
@@ -274,14 +274,11 @@
 
 (defn get-forecast
   [{:keys [id version latest-version?]}]
-  (cond
-    version         (if-let [forecast (get-forecast-by-version id version)]
-                      [forecast]
-                      [])
-    latest-version? (if-let [forecast (get-most-recent-version id)]
-                      [forecast]
-                      [])
-    :else           (c/exec (find-forecast-versions-by-id id))))
+  (c/exec
+   (cond
+     version         (find-forecast-by-version id version)
+     latest-version? (find-most-recent-version id)
+     :else           (find-forecast-versions-by-id id))))
 
 ;;;;;;
 
