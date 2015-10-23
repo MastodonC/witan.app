@@ -164,7 +164,7 @@
                    (sweet/GET* "/data/pre-sign/:name" []
                                :summary "Returns presigned aws URL for upload of input data"
                                :path-params [name :- String]
-                                (s3/sign name))
+                               (ok (s3/sign name)))
                    (sweet/GET* "/data" []
                                :summary "Expects a query string. Allows searching of data items"
                                (not-implemented))
