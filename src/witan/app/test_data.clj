@@ -35,7 +35,8 @@
         d1 (data/add-data! {:category "long population"
                             :name "London base population"
                             :publisher (:id user1)
-                            :s3-url "https://s3.eu-central-1.amazonaws.com/witan-test-data/Long+Pop.csv"})
+                            :file-name "Long+Pop.csv"
+                            :s3-key #uuid "b9e5686a-966b-4fdb-85e4-ab818b8677a9" })
 
         ;; update model to have this as default data
         _ (model/add-default-data-to-model! (:model_id m3)

@@ -127,7 +127,8 @@ CREATE TABLE witan.data_by_data_id (
   name text,
   publisher uuid,
   version int,
-  s3_url text,
+  file_name text,
+  s3_key uuid,
   created timestamp
 );
 
@@ -137,8 +138,14 @@ CREATE TABLE witan.data_by_category (
   name text,
   publisher uuid,
   version int,
-  s3_url text,
+  file_name text,
+  s3_key uuid,
   created timestamp
+);
+
+CREATE TABLE witan.data_names (
+  name text PRIMARY KEY,
+  version int
 );
 
 CREATE TYPE witan.model_data (
@@ -147,7 +154,8 @@ CREATE TYPE witan.model_data (
   name text,
   publisher uuid,
   version int,
-  s3_url text,
+  file_name text,
+  s3_key uuid,
   created timestamp
 );
 
