@@ -75,6 +75,8 @@ CREATE TABLE witan.forecasts (
     version_id uuid,
     model_id uuid,
     model_property_values map<text,frozen<model_property_value>>,
+    inputs map<text,frozen<data_item>>,
+    outputs map<text,frozen<data_item>>
     PRIMARY KEY (forecast_id, version)
 ) WITH CLUSTERING ORDER BY (version DESC)
     AND bloom_filter_fp_chance = 0.01
@@ -148,7 +150,7 @@ CREATE TABLE witan.data_names (
   version int
 );
 
-CREATE TYPE witan.model_data (
+CREATE TYPE witan.data_item (
   data_id uuid,
   category text,
   name text,
@@ -169,7 +171,7 @@ CREATE TABLE witan.models (
     version int,
     properties list<frozen<witan.model_property>>,
     input_data list<text>,
-    input_data_defaults map<text,frozen<model_data>>,
+    input_data_defaults map<text,frozen<data_item>>,
     output_data list<text>
 ) WITH bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'

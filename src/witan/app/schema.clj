@@ -64,7 +64,7 @@
   "new data item being created"
   {(s/required-key :name)      s/Str
    (s/required-key :file-name) s/Str
-   (s/required-key :s3-key)    IdType})
+   (s/required-key :s3-key)    (s/either IdType s/Str)})
 
 (def DataItem
   "A data item"

@@ -9,6 +9,8 @@
             [witan.app.util :as util]
             [witan.app.model :as model]
             [witan.app.user :as user]
+            [witan.app.s3 :as s3]
+            [witan.app.data :as data]
             [schema.core :as s]
             [clojure.string :as string]
             [clojure.tools.logging :as log])
@@ -127,6 +129,10 @@
 (defn get-most-recent-version
   [id]
   (first (c/exec (find-most-recent-version id))))
+
+(defn get-forecast-version
+  [forecast-id version]
+  (first (c/exec (find-forecast-by-version forecast-id version))))
 
 (defn create-new-forecast
   [{:keys [name description owner owner-name forecast-id version-id model-id model-property-values]}]
@@ -267,6 +273,21 @@
         (c/exec (delete-forecast-by-version forecast-id 0)))
       (c/exec (find-forecast-by-version forecast-id new-version)))))
 
+(defn update-input-data
+  [forecast-id version inputs]
+  (hayt/update :forecasts
+               (hayt/set-columns {:inputs inputs})
+               (hayt/where {:forecast_id forecast-id
+                            :version version})))
+
+(defn add-input-data!
+  "updates the forecast with new input data"
+  [forecast category data]
+  (let [current-inputs (:inputs forecast)
+        new-inputs (assoc current-inputs category data)
+        new-inputs-for-db (into {} (for [[k v] new-inputs] [k (hayt/user-type v)]))]
+    (c/exec (update-input-data (:forecast_id forecast) (:version forecast) new-inputs-for-db))))
+
 (defn get-forecasts
   []
   (c/exec (hayt/select :forecast_headers)))
@@ -340,3 +361,31 @@
                  (s/validate
                   [ws/Forecast]
                   (map ->Forecast result)))))
+
+(defresource input-data [{:keys [id version category user-id]}]
+  util/json-resource
+  :allowed-methods #{:post}
+  :exists? (fn [ctx]
+             (let [forecast (get-forecast-version id version)
+                   category-exists (some->> forecast
+                                            :model_id
+                                            (model/get-model-by-model-id)
+                                            :input_data
+                                            (some #{category}))]
+               [category-exists {:forecast forecast}]))
+  :processable? (fn [ctx]
+                  (and (util/post!-processable-validation ws/NewDataItem)
+                       (s3/exists? (:s3-key (util/get-post-params ctx)))))
+  :handle-unprocessable-entity (fn [ctx]  "Please post name, file-name and valid s3-key in body of post.")
+  :post!     (fn [ctx]
+               (let [post-params (util/get-post-params ctx)
+                     data-item (data/add-data! {:category category
+                                                :name (:name post-params)
+                                                :file-name (:file-name post-params)
+                                                :s3-key (util/to-uuid (:s3-key post-params))
+                                                :publisher user-id})
+                     forecast (:forecast ctx)]
+                 (add-input-data! forecast category data-item)
+                 {:data data-item}))
+  :handle-ok (fn [ctx]
+               (data/Data-> (:data ctx))))
