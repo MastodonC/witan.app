@@ -14,6 +14,7 @@
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
             [witan.app.util :refer [load-extensions!]]
+            [witan.app.s3 :as s3]
             [schema.core :as s]
             [witan.app.schema :as w]
             [compojure.api.sweet :as sweet]
@@ -160,9 +161,10 @@
                    (sweet/POST* "/share-request/:tag-id" []
                                 :summary "Creates a request to update the sharing properties of a tag"
                                 (not-implemented))
-                   (sweet/POST* "/data/upload" []
-                                :summary "Upload endpoint for data items"
-                                (not-implemented))
+                   (sweet/GET* "/data/pre-sign/:name" []
+                               :summary "Returns presigned aws URL for upload of input data"
+                               :path-params [name :- String]
+                               (ok (s3/sign name)))
                    (sweet/GET* "/data" []
                                :summary "Expects a query string. Allows searching of data items"
                                (not-implemented))

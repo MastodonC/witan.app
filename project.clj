@@ -3,7 +3,8 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :min-lein-version "2.0.0"
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.apache.httpcomponents/httpcore "4.4.3"]
+                 [org.clojure/clojure "1.7.0"]
                  [compojure "1.4.0"]
                  [ring/ring-defaults "0.1.2"]
                  [ring/ring-json "0.4.0" :exclusions [ring/ring-core]]
@@ -26,7 +27,9 @@
                  [org.slf4j/jcl-over-slf4j       ~slf4j-version]
                  [org.slf4j/log4j-over-slf4j     ~slf4j-version]
                  [javax.mail/mail                "1.4.7"]
-                 [overtone/at-at "1.2.0"]]
+                 [overtone/at-at "1.2.0"]
+                 [amazonica "0.3.35"]
+                 [org.martinklepsch/s3-beam "0.3.1"]]
   :plugins [[lein-ring "0.8.13"]]
   :jvm-opts ["-Xmx1024m"]
   :ring {:handler witan.app.handler/app
