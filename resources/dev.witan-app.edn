@@ -1,2 +1,3 @@
 {:cassandra-session {:host "localhost"
-                     :keyspace "witan"}}
+                     :keyspace "witan"}
+ :s3 {:bucket "witan-test-data"}}
