@@ -3,7 +3,8 @@
             [witan.app.config :as c]
             [clj-time.core :as t]
             [ring.util.codec :as codec]
-            [s3-beam.handler :as s3-beam]))
+            [s3-beam.handler :as s3-beam]
+            [clojure.tools.logging :as log]))
 
 (def bucket
   (-> c/config :s3 :bucket))
@@ -26,4 +27,5 @@
 
 (defn sign
   [name]
-  {:presigned-url ""})
+  (log/info "returning pre-signed url for " name)
+  (s3-beam-format (presigned-url name) name))
