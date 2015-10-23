@@ -26,6 +26,7 @@
         (dissoc :Expires))))
 
 (defn sign
-  [name]
-  (log/info "returning pre-signed url for " name)
-  (s3-beam-format (presigned-url name) name))
+  []
+  (let [s3-key (java.util.UUID/randomUUID)]
+    (log/info "returning pre-signed url for " s3-key)
+    (s3-beam-format (presigned-url s3-key) s3-key)))
