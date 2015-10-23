@@ -30,3 +30,9 @@
   (let [s3-key (java.util.UUID/randomUUID)]
     (log/info "returning pre-signed url for " s3-key)
     (s3-beam-format (presigned-url s3-key) s3-key)))
+
+(defn exists?
+  [key]
+  (try
+    (amazonica/get-object bucket key)
+    (catch com.amazonaws.services.s3.model.AmazonS3Exception _ false)))
