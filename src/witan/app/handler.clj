@@ -161,10 +161,9 @@
                    (sweet/POST* "/share-request/:tag-id" []
                                 :summary "Creates a request to update the sharing properties of a tag"
                                 (not-implemented))
-                   (sweet/GET* "/data/pre-sign/:name" []
+                   (sweet/GET* "/data/pre-sign" []
                                :summary "Returns presigned aws URL for upload of input data"
-                               :path-params [name :- String]
-                               (ok (s3/sign name)))
+                               (ok (s3/sign)))
                    (sweet/GET* "/data" []
                                :summary "Expects a query string. Allows searching of data items"
                                (not-implemented))
