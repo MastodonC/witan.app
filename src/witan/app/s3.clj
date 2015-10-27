@@ -2,8 +2,8 @@
   (:require [amazonica.aws.s3 :as amazonica]
             [witan.app.config :as c]
             [clj-time.core :as t]
+            [clj-time.format :as tf]
             [ring.util.codec :as codec]
-            [s3-beam.handler :as s3-beam]
             [clojure.tools.logging :as log]))
 
 (def bucket
@@ -11,19 +11,13 @@
 
 (defn presigned-url
   [name]
-  (amazonica/generate-presigned-url :bucket-name bucket :key name :expiration (-> 6 t/hours t/from-now) :method "PUT" :region "eu-central-1"))
+  (amazonica/generate-presigned-url {:endpoint "eu-central-1"} :bucket-name bucket :key name :expiration (-> 6 t/hours t/from-now) :method "PUT"))
 
 (defn s3-beam-format
   [url name]
   (let [base-url (str (.getProtocol url) "://" (.getHost url))
         url-keywords (clojure.walk/keywordize-keys (codec/form-decode (.getQuery url)))]
-    (-> (clojure.set/rename-keys url-keywords {:Signature :signature})
-        (assoc :acl "public-read"
-               :success_action_status "201"
-               :action base-url
-               :key name
-               :policy (s3-beam/policy bucket name 3600))
-        (dissoc :Expires))))
+    (assoc url-keywords :Action base-url)))
 
 (defn sign
   []

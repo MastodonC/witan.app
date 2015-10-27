@@ -28,9 +28,8 @@
                  [org.slf4j/log4j-over-slf4j     ~slf4j-version]
                  [javax.mail/mail                "1.4.7"]
                  [overtone/at-at "1.2.0"]
-                 [com.amazonaws/aws-java-sdk-s3 "1.10.27"]
-                 [amazonica "0.3.35" :exclusions [com.amazonaws/aws-java-sdk-s3]]
-                 [org.martinklepsch/s3-beam "0.3.1"]]
+                 [com.amazonaws/aws-java-sdk "1.10.27"]
+                 [amazonica "0.3.35" :exclusions [com.amazonaws/aws-java-sdk]]]
   :plugins [[lein-ring "0.8.13"]]
   :jvm-opts ["-Xmx1024m"]
   :ring {:handler witan.app.handler/app
