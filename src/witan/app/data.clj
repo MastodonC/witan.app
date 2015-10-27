@@ -9,13 +9,16 @@
 (defn Data->
   [{:keys [data_id
            file_name
+           s3_key
            created] :as data}]
   (-> data
       (dissoc :data_id
               :file_name
+              :s3_key
               :created)
       (assoc :data-id data_id
              :file-name file_name
+             :s3-key s3_key
              :created (util/java-Date-to-ISO-Date-Time created))))
 
 (defn find-data-by-category
