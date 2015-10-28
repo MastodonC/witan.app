@@ -374,7 +374,7 @@
                                             (some #{category}))]
                [category-exists {:forecast forecast}]))
   :processable? (fn [ctx]
-                  (and (util/post!-processable-validation ws/NewDataItem)
+                  (and ((util/post!-processable-validation ws/NewDataItem) ctx)
                        (s3/exists? (:s3-key (util/get-post-params ctx)))))
   :handle-unprocessable-entity (fn [ctx]  "Please post name, file-name and valid s3-key in body of post.")
   :post!     (fn [ctx]
