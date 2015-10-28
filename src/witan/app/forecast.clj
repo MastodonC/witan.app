@@ -364,7 +364,7 @@
 
 (defresource input-data [{:keys [id version category user-id]}]
   util/json-resource
-  :allowed-methods #{:post}
+  :allowed-methods #{:get :post}
   :exists? (fn [ctx]
              (let [forecast (get-forecast-version id version)
                    category-exists (some->> forecast
@@ -372,10 +372,14 @@
                                             (model/get-model-by-model-id)
                                             :input_data
                                             (some #{category}))]
-               [category-exists {:forecast forecast}]))
+               (if category-exists
+                 {:forecast forecast :data (get (:inputs forecast) category)}
+                 false)))
   :processable? (fn [ctx]
-                  (and ((util/post!-processable-validation ws/NewDataItem) ctx)
-                       (s3/exists? (:s3-key (util/get-post-params ctx)))))
+                  (if (util/http-post? ctx)
+                      (and ((util/post!-processable-validation ws/NewDataItem) ctx)
+                           (s3/exists? (:s3-key (util/get-post-params ctx))))
+                      true))
   :handle-unprocessable-entity (fn [ctx]  "Please post name, file-name and valid s3-key in body of post.")
   :post!     (fn [ctx]
                (let [post-params (util/get-post-params ctx)
@@ -386,6 +390,9 @@
                                                 :publisher user-id})
                      forecast (:forecast ctx)]
                  (add-input-data! forecast category data-item)
-                 {:data data-item}))
+                 {:new-data data-item}))
   :handle-ok (fn [ctx]
-               (data/Data-> (:data ctx))))
+               (log/info (:data ctx) (:new-data ctx))
+               (if (util/http-post? ctx)
+                 (data/Data-> (:new-data ctx))
+                 (data/Data-> (:data ctx)))))
