@@ -60,7 +60,7 @@
   [{:keys [data-id category name file-name publisher s3-key]
     :or {data-id (uuid/random)}}]
   (let [version (or (get-current-version-name name) 1)]
-    (mapv #(c/exec (create-data {:data-id data-id
+    (run! #(c/exec (create-data {:data-id data-id
                                  :category category
                                  :name name
                                  :file-name file-name
