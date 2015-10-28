@@ -15,7 +15,7 @@
 
 (defn s3-beam-format
   [url name]
-  (let [base-url (str (.getProtocol url) "://" (.getHost url))
+  (let [base-url (str (.getProtocol url) "://" (.getHost url) "/" name)
         url-keywords (clojure.walk/keywordize-keys (codec/form-decode (.getQuery url)))]
     (assoc url-keywords :Action base-url)))
 
