@@ -60,6 +60,12 @@
   {(s/required-key :name)  s/Str
    (s/required-key :value) (s/either s/Str s/Int)}) ;; varies depending on the ModelProperty type
 
+(def NewDataItem
+  "new data item being created"
+  {(s/required-key :name)      s/Str
+   (s/required-key :file-name) s/Str
+   (s/required-key :s3-key)    (s/either IdType s/Str)})
+
 (def DataItem
   "A data item"
   {(s/required-key :data-id)   IdType
@@ -67,7 +73,8 @@
    (s/required-key :category)  s/Str
    (s/required-key :publisher) IdType ;; a user or org
    (s/optional-key :version)   s/Int
-   (s/optional-key :s3-url)    s/Str
+   (s/optional-key :file-name) s/Str
+   (s/optional-key :s3-key)    IdType
    (s/required-key :created)   DateTimeType})
 
 (def ModelInputCategory
