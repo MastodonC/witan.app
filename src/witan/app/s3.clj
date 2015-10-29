@@ -28,5 +28,5 @@
 (defn exists?
   [key]
   (try
-    (amazonica/get-object bucket key)
+    (boolean (amazonica/get-object-metadata bucket key))
     (catch com.amazonaws.services.s3.model.AmazonS3Exception _ false)))
