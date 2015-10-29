@@ -56,7 +56,9 @@
                             :version_id
                             :owner_name
                             :model_id
-                            :model_property_values)
+                            :model_property_values
+                            :inputs
+                            :outputs)
                     (assoc :in-progress? in_progress
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
