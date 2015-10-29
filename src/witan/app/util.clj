@@ -8,8 +8,9 @@
 (defn java-Date-to-ISO-Date-Time
   "Converts a java.util.Date to an schema-contrib/ISO-Date-Time"
   [datetime]
-  (tf/unparse (tf/formatters :date-hour-minute-second)
-              (tc/from-date datetime)))
+  (when datetime
+    (tf/unparse (tf/formatters :date-hour-minute-second)
+                (tc/from-date datetime))))
 
 (defn http-post?
   [ctx]
