@@ -138,16 +138,18 @@
 
 (defn create-new-forecast
   [{:keys [name description owner owner-name forecast-id version-id model-id model-property-values]}]
-  (hayt/insert :forecast_headers (hayt/values :name name
-                                              :description description
-                                              :owner owner
-                                              :owner_name owner-name
-                                              :forecast_id forecast-id
-                                              :current_version_id version-id
-                                              :in_progress false
-                                              :model_id model-id
-                                              :model_property_values model-property-values
-                                              :version 0)))
+  (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
+    (hayt/insert :forecast_headers (hayt/values :name name
+                                                :description description
+                                                :created creation-time
+                                                :owner owner
+                                                :owner_name owner-name
+                                                :forecast_id forecast-id
+                                                :current_version_id version-id
+                                                :in_progress false
+                                                :model_id model-id
+                                                :model_property_values model-property-values
+                                                :version 0))))
 
 
 (defn create-forecast-name
@@ -211,7 +213,7 @@
 (defn check-property-value
   [model-property-types result property]
   (let [corresponding-type (some (fn [type] (when (= (:name property) (:name type))
-                                             type)) model-property-types)]
+                                              type)) model-property-types)]
     (if corresponding-type
       (case (:type corresponding-type)
         "number" (check-numeric-value result property)
@@ -340,11 +342,13 @@
              {::new-forecast (->ForecastHeader (add-forecast! (assoc forecast :owner owner)))}))
   :handle-created ::new-forecast
   :handle-unprocessable-entity (fn [ctx] (if (not-empty (:property-errors ctx))
-                                          {:error (str "Property errors: " (string/join ", " (:property-errors ctx)))}
-                                          {:error "Validation error in given forecast."}))
-  :handle-ok  (fn [_] (s/validate
-                       [ws/Forecast]
-                       (map ->ForecastHeader (get-forecasts)))))
+                                           {:error (str "Property errors: " (string/join ", " (:property-errors ctx)))}
+                                           {:error "Validation error in given forecast."}))
+  :handle-ok  (fn [_]
+                (log/info (get-forecasts))
+                (s/validate
+                 [ws/Forecast]
+                 (map ->ForecastHeader (get-forecasts)))))
 
 (defresource forecast [{:keys [version latest-version?] :as args}]
   util/json-resource
@@ -379,9 +383,9 @@
                  false)))
   :processable? (fn [ctx]
                   (if (util/http-post? ctx)
-                      (and ((util/post!-processable-validation ws/NewDataItem) ctx)
-                           (s3/exists? (:s3-key (util/get-post-params ctx))))
-                      true))
+                    (and ((util/post!-processable-validation ws/NewDataItem) ctx)
+                         (s3/exists? (:s3-key (util/get-post-params ctx))))
+                    true))
   :handle-unprocessable-entity (fn [ctx]  "Please post name, file-name and valid s3-key in body of post.")
   :post!     (fn [ctx]
                (let [post-params (util/get-post-params ctx)
