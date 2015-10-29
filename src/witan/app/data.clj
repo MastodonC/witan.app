@@ -4,7 +4,8 @@
             [clj-time.core :as t]
             [clj-time.format :as tf]
             [witan.app.config :as c]
-            [witan.app.util :as util]))
+            [witan.app.util :as util])
+  (:use [liberator.core :only [defresource]]))
 
 (defn Data->
   [{:keys [data_id
@@ -22,7 +23,7 @@
              :created (util/java-Date-to-ISO-Date-Time created))))
 
 (defn find-data-by-category
-  [model-id category]
+  [category]
   (hayt/select :data_by_category (hayt/where {:category category})))
 
 (defn find-data-by-data-id
@@ -42,6 +43,10 @@
   [name]
   (some-> (first (c/exec (find-data-name name)))
           :version))
+
+(defn get-data-by-category
+  [category]
+  (c/exec (find-data-by-category category)))
 
 (defn create-data
   [{:keys [data-id category name publisher version file-name s3-key]} data-table]
@@ -69,3 +74,9 @@
                                  :s3-key s3-key} %)) '(:data_by_data_id :data_by_category))
     (c/exec (update-version-number-name name version))
     (first (c/exec (find-data-by-data-id data-id)))))
+
+(defresource data [{:keys [category]}]
+  util/json-resource
+  :allow-methods #{:get}
+  :handle-ok (fn [ctx]
+               (map Data-> (get-data-by-category category))))
