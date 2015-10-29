@@ -397,8 +397,7 @@
                      forecast (:forecast ctx)]
                  (add-input-data! forecast category data-item)
                  {:new-data data-item}))
+  :handle-created (fn [ctx]
+                    (data/Data-> (:new-data ctx)))
   :handle-ok (fn [ctx]
-               (log/info (:data ctx) (:new-data ctx))
-               (if (util/http-post? ctx)
-                 (data/Data-> (:new-data ctx))
-                 (data/Data-> (:data ctx)))))
+               (data/Data-> (:data ctx))))
