@@ -36,7 +36,12 @@
                             :name "London base population"
                             :publisher (:id user1)
                             :file-name "Long+Pop.csv"
-                            :s3-key #uuid "b9e5686a-966b-4fdb-85e4-ab818b8677a9" })
+                            :s3-key #uuid "4348bec5-12db-48bc-be28-2c4323f91197" })
+        d2 (data/add-data! {:category "Base population data"
+                            :name "base population Camden"
+                            :publisher (:id user2)
+                            :file-name "base-population.csv"
+                            :s3-key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd"})
 
         ;; update model to have this as default data
         _ (model/add-default-data-to-model! (:model_id m3)
@@ -54,4 +59,8 @@
         ;; versions of these forecasts
         f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1) :owner (:id user1)})
         f1_2 (forecast/update-forecast! {:forecast-id (:forecast_id f1) :owner (:id user1)})
-        f3_1 (forecast/update-forecast! {:forecast-id (:forecast_id f3) :owner (:id user1)})]))
+        f3_1 (forecast/update-forecast! {:forecast-id (:forecast_id f3) :owner (:id user1)})
+
+        ;; add input data to forecast
+        _ (forecast/add-input-data! (first f1_1) "Base population data" d2)
+        ]))

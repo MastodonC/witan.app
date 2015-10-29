@@ -143,8 +143,7 @@
    (s/optional-key :model-id)      IdType})
 
 (def ForecastInfo
-  "Forecast in-depth
-   TODO: should be (merge Forecast ModelInfo"
+  "Forecast in-depth"
   (merge
    Forecast
    ModelInfo))
