@@ -166,7 +166,8 @@
                                 :path-params [id :- java.util.UUID
                                               version :- java.lang.Long
                                               category :- String]
-                                (forecast/input-data {:id id :version version :category category}))                               (sweet/POST* "/tag" []
+                                (forecast/input-data {:id id :version version :category category}))
+                   (sweet/POST* "/tag" []
                                 :summary "Creates a new tag from a forecast id and version"
                                 (not-implemented))
                    (sweet/POST* "/share-request/:tag-id" []
