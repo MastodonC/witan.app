@@ -15,6 +15,7 @@
             [witan.app.model :as model]
             [witan.app.util :refer [load-extensions!]]
             [witan.app.s3 :as s3]
+            [witan.app.data :as data]
             [schema.core :as s]
             [witan.app.schema :as w]
             [compojure.api.sweet :as sweet]
@@ -176,9 +177,10 @@
                    (sweet/GET* "/data/pre-sign" []
                                :summary "Returns presigned aws URL for upload of input data"
                                (ok (s3/sign)))
-                   (sweet/GET* "/data" []
-                               :summary "Expects a query string. Allows searching of data items"
-                               (not-implemented))
+                   (sweet/GET* "/data/:category" []
+                               :summary "get available data inputs by category"
+                               :path-params [category :- String]
+                               (data/data {:category category}))
                    (sweet/GET* "/data/download/:uuid" []
                                :summary "Downloads the data of a given id"
                                (not-implemented))))
