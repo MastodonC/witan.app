@@ -4,7 +4,8 @@
             [clj-time.core :as t]
             [clj-time.format :as tf]
             [witan.app.config :as c]
-            [witan.app.util :as util])
+            [witan.app.util :as util]
+            [witan.app.s3 :as s3])
   (:use [liberator.core :only [defresource]]))
 
 (defn Data->
@@ -46,7 +47,7 @@
 
 (defn get-data-by-category
   [category]
-  (c/exec (find-data-by-category category)))
+  (map #(assoc % :s3-url (.toString (s3/presigned-download-url (:s3_key %)))) (c/exec (find-data-by-category category))))
 
 (defn create-data
   [{:keys [data-id category name publisher version file-name s3-key]} data-table]
