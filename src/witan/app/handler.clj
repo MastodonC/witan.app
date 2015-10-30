@@ -157,18 +157,7 @@
                    (sweet/GET* "/forecasts/:id/:version/output/:type" []
                                :summary "Downloads an output of the given type"
                                (not-implemented))
-                   (sweet/POST* "/forecasts/:id/:version/input/:category" {:as request}
-                                :summary "Save details of input data item"
-                                :path-params [id :- java.util.UUID
-                                              version :- java.lang.Long
-                                              category :- String]
-                                (forecast/input-data {:id id :version version :category category :user-id (:identity request)}))
-                   (sweet/GET* "/forecasts/:id/:version/input/:category" []
-                                :summary "get input data item"
-                                :path-params [id :- java.util.UUID
-                                              version :- java.lang.Long
-                                              category :- String]
-                                (forecast/input-data {:id id :version version :category category}))
+
                    (sweet/POST* "/tag" []
                                 :summary "Creates a new tag from a forecast id and version"
                                 (not-implemented))

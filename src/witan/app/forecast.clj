@@ -279,21 +279,6 @@
         (c/exec (delete-forecast-by-version forecast-id 0)))
       (c/exec (find-forecast-by-version forecast-id new-version)))))
 
-(defn update-input-data
-  [forecast-id version inputs]
-  (hayt/update :forecasts
-               (hayt/set-columns {:inputs inputs})
-               (hayt/where {:forecast_id forecast-id
-                            :version version})))
-
-(defn add-input-data!
-  "updates the forecast with new input data"
-  [forecast category data]
-  (let [current-inputs (:inputs forecast)
-        new-inputs (assoc current-inputs category data)
-        new-inputs-for-db (into {} (for [[k v] new-inputs] [k (hayt/user-type v)]))]
-    (c/exec (update-input-data (:forecast_id forecast) (:version forecast) new-inputs-for-db))))
-
 (defn get-forecasts
   []
   (c/exec (hayt/select :forecast_headers)))
@@ -355,7 +340,6 @@
                                            {:error (str "Property errors: " (string/join ", " (:property-errors ctx)))}
                                            {:error "Validation error in given forecast."}))
   :handle-ok  (fn [_]
-                (log/info (get-forecasts))
                 (s/validate
                  [ws/Forecast]
                  (map ->ForecastHeader (get-forecasts)))))
@@ -398,39 +382,3 @@
                       (update-forecast! {:forecast-id id
                                          :owner user-id
                                          :inputs added-data}))))
-
-
-
-(defresource input-data [{:keys [id version category user-id]}]
-  util/json-resource
-  :allowed-methods #{:get :post}
-  :exists? (fn [ctx]
-             (let [forecast (get-forecast-version id version)
-                   category-exists (some->> forecast
-                                            :model_id
-                                            (model/get-model-by-model-id)
-                                            :input_data
-                                            (some #{category}))]
-               (if category-exists
-                 {:forecast forecast :data (get (:inputs forecast) category)}
-                 false)))
-  :processable? (fn [ctx]
-                  (if (util/http-post? ctx)
-                    (and ((util/post!-processable-validation ws/NewDataItem) ctx)
-                         (s3/exists? (:s3-key (util/get-post-params ctx))))
-                    true))
-  :handle-unprocessable-entity (fn [ctx]  "Please post name, file-name and valid s3-key in body of post.")
-  :post!     (fn [ctx]
-               (let [post-params (util/get-post-params ctx)
-                     data-item (data/add-data! {:category category
-                                                :name (:name post-params)
-                                                :file-name (:file-name post-params)
-                                                :s3-key (util/to-uuid (:s3-key post-params))
-                                                :publisher user-id})
-                     forecast (:forecast ctx)]
-                 (add-input-data! forecast category data-item)
-                 {:new-data data-item}))
-  :handle-created (fn [ctx]
-                    (data/Data-> (:new-data ctx)))
-  :handle-ok (fn [ctx]
-               (data/Data-> (:data ctx))))
