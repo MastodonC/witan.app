@@ -221,6 +221,13 @@
           (is (= status 200))
           (is (:data-id body))))))
 
+  (testing "/api/forecasts/:forecast-id/versions"
+    (with-redefs [data/add-data! (fn [_] )
+                  forecast/update-forecast! (fn [forecast-id owner inputs] (first (get-dummy-forecasts)))
+                  s3/exists? (fn [_] true)]
+      (let [token (logged-in-user-token)
+            [status body _] (post* app "/api/forecasts/b7b35c0b-bbf0-4a52-ab40-6264ed0f364d/versions" {:body (json {"Base population data" {"name" "base population" "file-name" "file.csv" "s3-key" "653ceaad-cf3b-467c-966c-04b57f443708"}})})])))
+
   (testing "/api/data/:category"
     (with-redefs [data/get-data-by-category (fn [_] (get-dummy-data))]
       (let [token (logged-in-user-token)

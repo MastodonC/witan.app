@@ -150,9 +150,10 @@
                                              version :- java.lang.Long]
                                :summary "Returns a forecast of the specified id and version"
                                (forecast/forecast {:id id :version version}))
-                   (sweet/POST* "/forecasts/:id" []
-                                :summary "Creates a new version of this forecast with the specified updated"
-                                (not-implemented))
+                   (sweet/POST* "/forecasts/:id/versions" {:as request}
+                                :path-params [id :- java.util.UUID]
+                                :summary "Creates a new version of this forecast with the specified updates and run it"
+                                (forecast/version {:id id :user-id (:identity request)}))
                    (sweet/GET* "/forecasts/:id/:version/output/:type" []
                                :summary "Downloads an output of the given type"
                                (not-implemented))

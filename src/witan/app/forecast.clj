@@ -158,7 +158,7 @@
                                             :owner owner)))
 
 (defn create-forecast-version
-  [{:keys [name description owner owner-name forecast-id version in_progress id version-id model-id model-property-values]}]
+  [{:keys [name description owner owner-name forecast-id version in-progress id version-id model-id model-property-values inputs]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
                              :forecast_id forecast-id
@@ -171,7 +171,8 @@
                              :version version
                              :in_progress in_progress
                              :model_id model-id
-                             :model_property_values model-property-values))))
+                             :model_property_values model-property-values
+                             :inputs inputs))))
 
 (defn create-first-version
   [{:keys [forecast-id version-id name description owner owner-name model-id model-property-values]}]
@@ -256,7 +257,7 @@
       (first (c/exec (find-forecast-by-id id))))))
 
 (defn update-forecast!
-  [{:keys [forecast-id owner]}]
+  [{:keys [forecast-id owner inputs]}]
   (if-let [latest-forecast (get-most-recent-version forecast-id)]
     (let [old-version (:version latest-forecast)
           new-version (inc old-version)
@@ -270,7 +271,8 @@
                               :in-progress true
                               :forecast-id forecast-id
                               :model-id (:model_id latest-forecast)
-                              :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)])))]
+                              :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
+                              :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)])))]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version))
       (when (= 0 old-version)
@@ -304,6 +306,14 @@
      version         (find-forecast-by-version id version)
      latest-version? (find-most-recent-version id)
      :else           (find-forecast-versions-by-id id))))
+
+(defn all-categories-exist-in-model?
+  [forecast categories]
+  (some->> forecast
+           :model_id
+           (model/get-model-by-model-id)
+           :input_data
+           (fn [model-categories] (every? #(some #{(name %)} model-categories) categories))))
 
 ;;;;;;
 
@@ -367,6 +377,29 @@
                  (s/validate
                   [ws/Forecast]
                   (map ->Forecast result)))))
+
+(defresource version [{:keys [id user-id]}]
+  util/json-resource
+  :allowed-methods #{:post}
+  :processable? (fn [ctx]
+                  (let [forecast (get-most-recent-version id)
+                        inputs (:inputs (util/get-post-params ctx))]
+                    (and forecast
+                         ((util/post!-processable-validation ws/UpdateForecast) ctx)
+                         (all-categories-exist-in-model? forecast (keys inputs))
+                         (every? (fn [[category data-item]] (s3/exists? (:s3-key data-item))) inputs))))
+  :handle-created (fn [ctx]
+                    (let [given-inputs (:inputs (util/get-post-params ctx))
+                          added-data (map (fn [[category data-item]] [(name category) (data/add-data! {:category (name category)
+                                                                                                  :name (:name data-item)
+                                                                                                  :file-name (:file-name data-item)
+                                                                                                  :s3-key (util/to-uuid (:s3-key data-item))
+                                                                                                  :publisher user-id})]) given-inputs)]
+                      (update-forecast! {:forecast-id id
+                                         :owner user-id
+                                         :inputs added-data}))))
+
+
 
 (defresource input-data [{:keys [id version category user-id]}]
   util/json-resource
