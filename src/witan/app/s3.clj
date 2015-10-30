@@ -9,7 +9,7 @@
 (def bucket
   (-> c/config :s3 :bucket))
 
-(defn presigned-url
+(defn presigned-upload-url
   [name]
   (amazonica/generate-presigned-url {:endpoint "eu-central-1"} :bucket-name bucket :key name :expiration (-> 30 t/minutes t/from-now) :method "PUT"))
 
@@ -27,7 +27,7 @@
   []
   (let [s3-key (str (java.util.UUID/randomUUID))]
     (log/info "returning pre-signed url for " s3-key)
-    (s3-beam-format (presigned-url s3-key) s3-key)))
+    (s3-beam-format (presigned-upload-url s3-key) s3-key)))
 
 (defn exists?
   [key]
