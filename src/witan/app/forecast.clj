@@ -169,7 +169,7 @@
                              :owner_name owner-name
                              :version_id version-id
                              :version version
-                             :in_progress in_progress
+                             :in_progress in-progress
                              :model_id model-id
                              :model_property_values model-property-values
                              :inputs inputs))))
