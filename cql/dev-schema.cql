@@ -95,13 +95,14 @@ CREATE TABLE witan.data_by_data_id (
 
 CREATE TABLE witan.data_by_category (
   data_id uuid,
-  category text PRIMARY KEY,
+  category text,
   name text,
   publisher uuid,
   version int,
   file_name text,
   s3_key uuid,
-  created timestamp
+  created timestamp,
+  PRIMARY KEY (category, data_id)
 );
 
 CREATE TABLE witan.data_names (

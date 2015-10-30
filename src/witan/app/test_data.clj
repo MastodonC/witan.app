@@ -42,6 +42,11 @@
                             :publisher (:id user2)
                             :file-name "base-population.csv"
                             :s3-key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd"})
+        d3 (data/add-data! {:category "Base population data"
+                            :name "base population Ealing"
+                            :publisher (:id user1)
+                            :file-name "base-population.csv"
+                            :s3-key #uuid "33a7b684-79cb-4fb5-870d-adc15a87ae84"})
 
         ;; update model to have this as default data
         _ (model/add-default-data-to-model! (:model_id m3)
