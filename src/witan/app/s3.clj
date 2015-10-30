@@ -11,7 +11,11 @@
 
 (defn presigned-url
   [name]
-  (amazonica/generate-presigned-url {:endpoint "eu-central-1"} :bucket-name bucket :key name :expiration (-> 6 t/hours t/from-now) :method "PUT"))
+  (amazonica/generate-presigned-url {:endpoint "eu-central-1"} :bucket-name bucket :key name :expiration (-> 30 t/minutes t/from-now) :method "PUT"))
+
+(defn presigned-download-url
+  [name]
+  (amazonica/generate-presigned-url {:endpoint "eu-central-1"} :bucket-name bucket :key name :expiration (-> 30 t/minutes t/from-now) :method "GET"))
 
 (defn s3-beam-format
   [url name]
