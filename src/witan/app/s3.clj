@@ -14,8 +14,10 @@
   (amazonica/generate-presigned-url {:endpoint "eu-central-1"} :bucket-name bucket :key name :expiration (-> 30 t/minutes t/from-now) :method "PUT"))
 
 (defn presigned-download-url
-  [name]
-  (amazonica/generate-presigned-url {:endpoint "eu-central-1"} :bucket-name bucket :key name :expiration (-> 30 t/minutes t/from-now) :method "GET"))
+  [name file-name]
+  (let [header-overrides (com.amazonaws.services.s3.model.ResponseHeaderOverrides.)
+        _ (when file-name (.setContentDisposition header-overrides (str "attachment; filename=" file-name)))]
+    (amazonica/generate-presigned-url {:endpoint "eu-central-1"} :bucket-name bucket :key name :expiration (-> 30 t/minutes t/from-now) :method "GET" :response-headers header-overrides)))
 
 (defn s3-beam-format
   [url name]
