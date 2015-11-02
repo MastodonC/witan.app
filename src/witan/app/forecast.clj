@@ -183,7 +183,7 @@
                             :version 0
                             :owner owner
                             :owner-name owner-name
-                            :in_progress false
+                            :in-progress false
                             :model-id model-id
                             :model-property-values model-property-values}))
 
