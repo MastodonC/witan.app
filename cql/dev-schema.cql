@@ -63,7 +63,7 @@ CREATE TABLE witan.forecasts (
     inputs map<text,frozen<data_item>>,
     outputs map<text,frozen<data_item>>,
     PRIMARY KEY (forecast_id, version)
-);
+) WITH CLUSTERING ORDER BY (version DESC);
 
 // --------------------------------------------------------------------------------
 // model properties

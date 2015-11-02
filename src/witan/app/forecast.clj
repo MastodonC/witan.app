@@ -158,7 +158,7 @@
                                             :owner owner)))
 
 (defn create-forecast-version
-  [{:keys [name description owner owner-name forecast-id version in_progress id version-id model-id model-property-values]}]
+  [{:keys [name description owner owner-name forecast-id version in-progress id version-id model-id model-property-values inputs]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
                              :forecast_id forecast-id
@@ -169,9 +169,10 @@
                              :owner_name owner-name
                              :version_id version-id
                              :version version
-                             :in_progress in_progress
+                             :in_progress in-progress
                              :model_id model-id
-                             :model_property_values model-property-values))))
+                             :model_property_values model-property-values
+                             :inputs inputs))))
 
 (defn create-first-version
   [{:keys [forecast-id version-id name description owner owner-name model-id model-property-values]}]
@@ -256,7 +257,7 @@
       (first (c/exec (find-forecast-by-id id))))))
 
 (defn update-forecast!
-  [{:keys [forecast-id owner]}]
+  [{:keys [forecast-id owner inputs]}]
   (if-let [latest-forecast (get-most-recent-version forecast-id)]
     (let [old-version (:version latest-forecast)
           new-version (inc old-version)
@@ -270,27 +271,13 @@
                               :in-progress true
                               :forecast-id forecast-id
                               :model-id (:model_id latest-forecast)
-                              :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)])))]
+                              :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
+                              :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)])))]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version))
       (when (= 0 old-version)
         (c/exec (delete-forecast-by-version forecast-id 0)))
       (c/exec (find-forecast-by-version forecast-id new-version)))))
-
-(defn update-input-data
-  [forecast-id version inputs]
-  (hayt/update :forecasts
-               (hayt/set-columns {:inputs inputs})
-               (hayt/where {:forecast_id forecast-id
-                            :version version})))
-
-(defn add-input-data!
-  "updates the forecast with new input data"
-  [forecast category data]
-  (let [current-inputs (:inputs forecast)
-        new-inputs (assoc current-inputs category data)
-        new-inputs-for-db (into {} (for [[k v] new-inputs] [k (hayt/user-type v)]))]
-    (c/exec (update-input-data (:forecast_id forecast) (:version forecast) new-inputs-for-db))))
 
 (defn get-forecasts
   []
@@ -304,6 +291,14 @@
      version         (find-forecast-by-version id version)
      latest-version? (find-most-recent-version id)
      :else           (find-forecast-versions-by-id id))))
+
+(defn all-categories-exist-in-model?
+  [forecast categories]
+  (some->> forecast
+           :model_id
+           (model/get-model-by-model-id)
+           :input_data
+           (fn [model-categories] (every? #(some #{(name %)} model-categories) categories))))
 
 ;;;;;;
 
@@ -345,7 +340,6 @@
                                            {:error (str "Property errors: " (string/join ", " (:property-errors ctx)))}
                                            {:error "Validation error in given forecast."}))
   :handle-ok  (fn [_]
-                (log/info (get-forecasts))
                 (s/validate
                  [ws/Forecast]
                  (map ->ForecastHeader (get-forecasts)))))
@@ -368,36 +362,23 @@
                   [ws/Forecast]
                   (map ->Forecast result)))))
 
-(defresource input-data [{:keys [id version category user-id]}]
+(defresource version [{:keys [id user-id]}]
   util/json-resource
-  :allowed-methods #{:get :post}
-  :exists? (fn [ctx]
-             (let [forecast (get-forecast-version id version)
-                   category-exists (some->> forecast
-                                            :model_id
-                                            (model/get-model-by-model-id)
-                                            :input_data
-                                            (some #{category}))]
-               (if category-exists
-                 {:forecast forecast :data (get (:inputs forecast) category)}
-                 false)))
+  :allowed-methods #{:post}
   :processable? (fn [ctx]
-                  (if (util/http-post? ctx)
-                    (and ((util/post!-processable-validation ws/NewDataItem) ctx)
-                         (s3/exists? (:s3-key (util/get-post-params ctx))))
-                    true))
-  :handle-unprocessable-entity (fn [ctx]  "Please post name, file-name and valid s3-key in body of post.")
-  :post!     (fn [ctx]
-               (let [post-params (util/get-post-params ctx)
-                     data-item (data/add-data! {:category category
-                                                :name (:name post-params)
-                                                :file-name (:file-name post-params)
-                                                :s3-key (util/to-uuid (:s3-key post-params))
-                                                :publisher user-id})
-                     forecast (:forecast ctx)]
-                 (add-input-data! forecast category data-item)
-                 {:new-data data-item}))
+                  (let [forecast (get-most-recent-version id)
+                        inputs (:inputs (util/get-post-params ctx))]
+                    (and forecast
+                         ((util/post!-processable-validation ws/UpdateForecast) ctx)
+                         (all-categories-exist-in-model? forecast (keys inputs))
+                         (every? (fn [[category data-item]] (s3/exists? (:s3-key data-item))) inputs))))
   :handle-created (fn [ctx]
-                    (data/Data-> (:new-data ctx)))
-  :handle-ok (fn [ctx]
-               (data/Data-> (:data ctx))))
+                    (let [given-inputs (:inputs (util/get-post-params ctx))
+                          added-data (map (fn [[category data-item]] [(name category) (data/add-data! {:category (name category)
+                                                                                                  :name (:name data-item)
+                                                                                                  :file-name (:file-name data-item)
+                                                                                                  :s3-key (util/to-uuid (:s3-key data-item))
+                                                                                                  :publisher user-id})]) given-inputs)]
+                      (update-forecast! {:forecast-id id
+                                         :owner user-id
+                                         :inputs added-data}))))

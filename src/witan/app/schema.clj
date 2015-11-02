@@ -128,6 +128,10 @@
    (s/optional-key :description)      s/Str
    (s/optional-key :model-properties) [{s/Keyword s/Str}]})
 
+(def UpdateForecast
+  "Schema for creating a new version"
+  {(s/optional-key :inputs) {(s/either s/Keyword ModelInputCategory) NewDataItem}})
+
 (def Forecast
   "Forecast"
   {(s/required-key :version-id)    IdType
