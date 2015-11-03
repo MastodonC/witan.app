@@ -74,24 +74,29 @@
            version_id
            owner_name
            model_id
-           model_property_values] :as forecast}]
-  (let [cleaned (-> forecast
-                    (dissoc :in_progress
-                            :forecast_id
-                            :created
-                            :version_id
-                            :owner_name
-                            :model_id
-                            :model_property_values)
-                    (assoc :in-progress? in_progress
-                           :forecast-id forecast_id
-                           :created (util/java-Date-to-ISO-Date-Time created)
-                           :version-id version_id
-                           :owner-name owner_name
-                           :model-id model_id
-                           :property-values (vals model_property_values)
-                           :inputs []
-                           :outputs []))]
+           model_property_values
+           inputs
+           outputs] :as forecast}]
+  (let [divide-data-map (partial map (fn [[k v]] (hash-map k (data/Data-> v))))
+        inputs  (divide-data-map inputs)
+        outputs (divide-data-map outputs)
+        cleaned         (-> forecast
+                            (dissoc :in_progress
+                                    :forecast_id
+                                    :created
+                                    :version_id
+                                    :owner_name
+                                    :model_id
+                                    :model_property_values)
+                            (assoc :in-progress? in_progress
+                                   :forecast-id forecast_id
+                                   :created (util/java-Date-to-ISO-Date-Time created)
+                                   :version-id version_id
+                                   :owner-name owner_name
+                                   :model-id model_id
+                                   :property-values (vals model_property_values)
+                                   :inputs inputs
+                                   :outputs outputs))]
     (apply dissoc cleaned (for [[k v] cleaned :when (nil? v)] k))))
 
 (defn find-forecast-by-id
@@ -380,7 +385,8 @@
                                                                                                   :name (:name data-item)
                                                                                                   :file-name (:file-name data-item)
                                                                                                   :s3-key (util/to-uuid (:s3-key data-item))
-                                                                                                  :publisher user-id})]) given-inputs)]
-                      (update-forecast! {:forecast-id id
-                                         :owner user-id
-                                         :inputs added-data}))))
+                                                                                                       :publisher user-id})]) given-inputs)
+                          new-forecast (first (update-forecast! {:forecast-id id
+                                                                 :owner user-id
+                                                                 :inputs added-data}))]
+                      (s/validate ws/ForecastInfo (->ForecastInfo new-forecast)))))
