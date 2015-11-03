@@ -385,7 +385,8 @@
                                                                                                   :name (:name data-item)
                                                                                                   :file-name (:file-name data-item)
                                                                                                   :s3-key (util/to-uuid (:s3-key data-item))
-                                                                                                  :publisher user-id})]) given-inputs)]
-                      (update-forecast! {:forecast-id id
-                                         :owner user-id
-                                         :inputs added-data}))))
+                                                                                                       :publisher user-id})]) given-inputs)
+                          new-forecast (first (update-forecast! {:forecast-id id
+                                                                 :owner user-id
+                                                                 :inputs added-data}))]
+                      (s/validate ws/ForecastInfo (->ForecastInfo new-forecast)))))
