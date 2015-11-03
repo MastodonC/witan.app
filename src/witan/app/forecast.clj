@@ -122,10 +122,12 @@
                                        :version version})))
 
 (defn update-forecast-current-version-id
-  [forecast-id current-version-id new-version]
+  [{:keys [forecast-id version-id version in-progress]}]
   (hayt/update :forecast_headers
-               (hayt/set-columns {:current_version_id current-version-id
-                                  :version new-version})
+               (hayt/set-columns {:current_version_id version-id
+                                  :version version
+                                  :in_progress in-progress
+                                  :created (tf/unparse (tf/formatters :date-time) (t/now))})
                (hayt/where {:forecast_id forecast-id})))
 
 (defn get-most-recent-version
@@ -274,7 +276,7 @@
                               :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
                               :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)])))]
       (c/exec (create-forecast-version new-forecast))
-      (c/exec (update-forecast-current-version-id forecast-id new-version-id new-version))
+      (c/exec (update-forecast-current-version-id new-forecast))
       (when (= 0 old-version)
         (c/exec (delete-forecast-by-version forecast-id 0)))
       (c/exec (find-forecast-by-version forecast-id new-version)))))
