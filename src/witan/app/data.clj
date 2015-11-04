@@ -35,15 +35,26 @@
   [name]
   (hayt/select :data_names (hayt/where {:name name})))
 
+(defn find-data-by-s3-key
+  [s3-key]
+  (hayt/select :data_by_s3_key (hayt/where {:s3_key s3-key})))
+
 (defn update-version-number-name
   [name version]
   (hayt/update :data_names (hayt/set-columns {:version version})
-                           (hayt/where {:name name})))
+               (hayt/where {:name name})))
 
 (defn get-current-version-name
   [name]
   (some-> (first (c/exec (find-data-name name)))
           :version))
+
+(defn get-data-by-s3-key
+  [s3-key]
+  (-> s3-key
+      (find-data-by-s3-key)
+      (c/exec)
+      (first)))
 
 (defn get-data-by-category
   [category]
@@ -72,7 +83,7 @@
                                  :file-name file-name
                                  :publisher publisher
                                  :version version
-                                 :s3-key s3-key} %)) '(:data_by_data_id :data_by_category))
+                                 :s3-key s3-key} %)) '(:data_by_data_id :data_by_category :data_by_s3_key))
     (c/exec (update-version-number-name name version))
     (first (c/exec (find-data-by-data-id data-id)))))
 

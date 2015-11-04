@@ -105,6 +105,18 @@ CREATE TABLE witan.data_by_category (
   PRIMARY KEY (category, data_id)
 );
 
+CREATE TABLE witan.data_by_s3_key (
+  data_id uuid,
+  category text,
+  name text,
+  publisher uuid,
+  version int,
+  file_name text,
+  s3_key uuid,
+  created timestamp,
+  PRIMARY KEY (s3_key, data_id)
+);
+
 CREATE TABLE witan.data_names (
   name text PRIMARY KEY,
   version int
