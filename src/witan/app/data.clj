@@ -42,7 +42,7 @@
 (defn update-version-number-name
   [name version]
   (hayt/update :data_names (hayt/set-columns {:version version})
-               (hayt/where {:name name})))
+                           (hayt/where {:name name})))
 
 (defn get-current-version-name
   [name]
