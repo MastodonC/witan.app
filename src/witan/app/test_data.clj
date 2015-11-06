@@ -1,9 +1,9 @@
 (ns witan.app.test-data
-  (:require [witan.app.user :as user]
+  (:require [witan.app.config :as c]
+            [witan.app.data :as data]
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
-            [witan.app.data :as data]
-            [witan.app.config :as c]))
+            [witan.app.user :as user]))
 
 (defn load-test-data!
   "Add a bunch of test data into Cassandra"
@@ -24,6 +24,7 @@
                               :input-data [{:category "Base population data"}]
                               :output-data [{:category "All the population data"}]})
         m3 (model/add-model! {:name "My Model 3"
+                     
                               :description "Model with enum"
                               :owner (:id user2)
                               :properties [{:name "Boroughs" :type "dropdown" :context "Choose a borough" :enum_values ["Camden" "Richmond Upon Thames" "Hackney" "Barnet"]}]

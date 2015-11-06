@@ -29,12 +29,28 @@
                  [javax.mail/mail                "1.4.7"]
                  [overtone/at-at "1.2.0"]
                  [com.amazonaws/aws-java-sdk "1.10.27"]
-                 [amazonica "0.3.35" :exclusions [com.amazonaws/aws-java-sdk]]]
-  :plugins [[lein-ring "0.8.13"]]
+                 [amazonica "0.3.35" :exclusions [com.amazonaws/aws-java-sdk]]
+                 [witan.models "0.1.0-SNAPSHOT"]
+                 ]
+  :plugins [[lein-ring "0.8.13"]
+            [s3-wagon-private "1.1.2"]]
   :jvm-opts ["-Xmx1024m"]
   :ring {:handler witan.app.handler/app
          :nrepl {:start? true :port 7889}}
   :uberjar-name "witan-app.jar"
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring-mock "0.1.5"]]}})
+                        [ring-mock "0.1.5"]]}}
+
+  ;; You need to arrange for the environment variables:
+  ;;   MC_AWS_USERNAME   to be your AWS access key
+  ;;   MC_AWS_PASSPHRASE to be your AWS secret key
+  ;; there is a sample.lein-credentials file which you can fill in and
+  ;; source from your shell
+  :repositories [["releases" {:url "s3p://mc-maven-repo/releases"
+                              :username :env/mc_aws_username
+                              :passphrase :env/mc_aws_passphrase}]
+                 ["snapshots" {:url "s3p://mc-maven-repo/snapshots"
+                               :username :env/mc_aws_username
+                               :passphrase :env/mc_aws_passphrase}]]
+  )
