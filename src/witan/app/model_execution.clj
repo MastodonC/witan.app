@@ -18,7 +18,7 @@ TODO: will need to get own config files")
   [key]
   (let [obj (amazonica/get-object :bucket-name bucket :key key)]
     (with-open
-      [input-stream (:input-stream obj)]
+     [input-stream (:input-stream obj)]
       (csv/parse-csv (slurp input-stream)))))
 
 (defn get-inputs
@@ -28,12 +28,11 @@ TODO: will need to get own config files")
         input-defaults (:input_data_defaults model)
         given-inputs (:inputs forecast)]
     (into {} (map (fn [category] (let  [given-data (get given-inputs category)
-                                       default-data (get input-defaults category)]
-                                  (cond
-                                    given-data   [category (:s3-key given-data)]
-                                    default-data [category (:s3-key default-data)]
-                                    :else (throw (Exception. (str "Incomplete input data for model: " (:name model)))))
-)) input-list))))
+                                        default-data (get input-defaults category)]
+                                   (cond
+                                     given-data   [category (:s3-key given-data)]
+                                     default-data [category (:s3-key default-data)]
+                                     :else (throw (Exception. (str "Incomplete input data for model: " (:name model))))))) input-list))))
 
 (defn download-data
   "download all inputs"
@@ -41,7 +40,7 @@ TODO: will need to get own config files")
   (let [inputs (get-inputs forecast model)]
     (map (fn [[category s3-key]] [category (download s3-key)]))))
 
-(defmulti execute-model (fn [_ model] [ (:name model) (:version model)]))
+(defmulti execute-model (fn [_ model] [(:name model) (:version model)]))
 (defmethod execute-model ["Housing Linked Model" 1]
   [forecast model]
   (let [data (get-inputs forecast model)]
