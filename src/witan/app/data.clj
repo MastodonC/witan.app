@@ -58,7 +58,7 @@
 
 (defn get-data-by-category
   [category]
-  (map #(assoc % :s3-url (.toString (s3/presigned-download-url (:s3_key %) (:file_name %)))) (c/exec (find-data-by-category category))))
+  (map #(assoc % :s3-url (str (s3/presigned-download-url (:s3_key %) (:file_name %)))) (c/exec (find-data-by-category category))))
 
 (defn create-data
   [{:keys [data-id category name publisher version file-name s3-key]} data-table]

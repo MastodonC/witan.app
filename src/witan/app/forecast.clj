@@ -282,7 +282,7 @@
                               :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)])))]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id new-forecast))
-      (when (= 0 old-version)
+      (when (zero? old-version)
         (c/exec (delete-forecast-by-version forecast-id 0)))
       (c/exec (find-forecast-by-version forecast-id new-version)))))
 
