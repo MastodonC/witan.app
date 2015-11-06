@@ -1,10 +1,13 @@
 (def slf4j-version "1.7.12")
+(def cider-nrepl-version "0.9.1")
+
 (defproject witan.app "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :min-lein-version "2.0.0"
   :dependencies [[org.apache.httpcomponents/httpcore "4.4.3"]
                  [org.clojure/clojure "1.7.0"]
+                 [org.clojure/tools.cli     "0.3.1"]
                  [compojure "1.4.0"]
                  [ring/ring-defaults "0.1.2"]
                  [ring/ring-json "0.4.0" :exclusions [ring/ring-core]]
@@ -33,15 +36,34 @@
                  [clojure-csv/clojure-csv "2.0.1"]
                  [witan.models "0.1.0-SNAPSHOT"]
                  [clj-http "2.0.0"]
-                 [slugger "1.0.1"]]
+                 [slugger "1.0.1"]
+                 [com.stuartsierra/component "0.3.0"]
+                 
+                 ;; do this here to avoid clashes
+                 ;; with local profiles.clj. We need
+                 ;; to choose a consistent version so
+                 ;; we can remote repl with completion.
+                 [cider/cider-nrepl              ~cider-nrepl-version]
+                 [org.clojure/tools.namespace    "0.2.10"]
+                 [org.clojure/tools.nrepl        "0.2.12"]]
+  
   :plugins [[lein-ring "0.8.13"]
             [s3-wagon-private "1.1.2"]]
+
+  :java-source-paths ["java-src"]
+  :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
+
   :jvm-opts ["-Xmx1024m"]
-  :ring {:handler witan.app.handler/app
-         :nrepl {:start? true :port 7889}}
+  
+  :repl-options {:init-ns user}
+  
   :uberjar-name "witan-app.jar"
+
+  :main ^:skip-aot witan.Bootstrap
+
   :profiles
-  {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
+  {:dev {:source-paths ["dev"]
+         :dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring-mock "0.1.5"]]}}
 
   ;; You need to arrange for the environment variables:
