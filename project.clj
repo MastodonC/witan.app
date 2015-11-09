@@ -52,5 +52,4 @@
                               :passphrase :env/mc_aws_passphrase}]
                  ["snapshots" {:url "s3p://mc-maven-repo/snapshots"
                                :username :env/mc_aws_username
-                               :passphrase :env/mc_aws_passphrase}]]
-  )
+                               :passphrase :env/mc_aws_passphrase}]])

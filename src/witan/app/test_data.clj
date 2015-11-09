@@ -65,7 +65,9 @@
         ;; versions of these forecasts
         f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1) :owner (:id user1) :inputs {"Base population data" d2}})
         f1_2 (forecast/update-forecast! {:forecast-id (:forecast_id f1) :owner (:id user1)})
-        f3_1 (forecast/update-forecast! {:forecast-id (:forecast_id f3) :owner (:id user1)})
+        f3_1 (forecast/update-forecast! {:forecast-id (:forecast_id f3)
+                                         :owner (:id user1)
+                                         :inputs {"Base population data" d3}})
 
         ;; conclude f3
         f3_1_done (forecast/conclude-forecast! {:forecast-id (:forecast_id f3_1)
