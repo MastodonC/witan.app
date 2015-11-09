@@ -98,7 +98,9 @@
    (s/optional-key :input-data) [{(s/required-key :category)    ModelInputCategory
                                   (s/optional-key :description) s/Str
                                   (s/optional-key :default)     DataItem}]
-   (s/optional-key :output-data) [{(s/required-key :category) ModelOutputCategory}]})
+   (s/optional-key :output-data) [{(s/required-key :category) ModelOutputCategory}]
+   (s/optional-key :fixed-input-data) [{(s/optional-key :category) ModelInputCategory
+                                        (s/optional-key :data) DataItem}]})
 
 (def ModelInput
   "An input category with a data item"

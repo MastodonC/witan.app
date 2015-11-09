@@ -138,5 +138,6 @@ CREATE TABLE witan.models (
     properties list<frozen<witan.model_property>>,
     input_data list<frozen<witan.model_category>>,
     input_data_defaults map<text,frozen<data_item>>,
-    output_data list<text>
+    output_data list<text>,
+    fixed_input_data map<text,frozen<data_item>>
 );

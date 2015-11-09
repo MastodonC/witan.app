@@ -60,6 +60,16 @@
   [category]
   (map #(assoc % :s3-url (str (s3/presigned-download-url (:s3_key %) (:file_name %)))) (c/exec (find-data-by-category category))))
 
+(defn data-to-db
+  [{:keys [data-id category name publisher version file-name s3-key] :as data}]
+  (-> data
+      (dissoc :data-id
+              :file-name
+              :s3-key)
+      (assoc :data_id data-id
+             :file_name file-name
+             :s3_key s3-key)))
+
 (defn create-data
   [{:keys [data-id category name publisher version file-name s3-key]} data-table]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]

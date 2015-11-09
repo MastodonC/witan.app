@@ -27,12 +27,13 @@ TODO: will need to get own config files")
   (let [input-list (:input_data model)
         input-defaults (:input_data_defaults model)
         given-inputs (:inputs forecast)]
-    (into {} (map (fn [category] (let  [given-data (get given-inputs category)
+    (merge (:fixed_input_data model)
+     (into {} (map (fn [category] (let  [given-data (get given-inputs category)
                                         default-data (get input-defaults category)]
                                    (cond
                                      given-data   [category (:s3-key given-data)]
                                      default-data [category (:s3-key default-data)]
-                                     :else (throw (Exception. (str "Incomplete input data for model: " (:name model))))))) input-list))))
+                                     :else (throw (Exception. (str "Incomplete input data for model: " (:name model))))))) input-list)))))
 
 (defn download-data
   "download all inputs"

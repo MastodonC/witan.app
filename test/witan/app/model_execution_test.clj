@@ -5,6 +5,7 @@
 (def base-population-default-id #uuid "bf1c8571-4290-49c0-878e-0c2493ccf98e")
 (def development-data-id #uuid "a2e9ef7c-079a-4846-a6b0-acffba2c600a")
 (def high-trend-data-id #uuid "b66ea9ff-f161-4171-9872-cfbb32bd04c2")
+(def low-trend-data-id #uuid "ceecdc02-cbaa-427c-b051-221a91c2fe19")
 
 (def dummy-forecast
   {:description "Description of my forecast"
@@ -51,6 +52,14 @@
                                                  :name "London base population"
                                                  :publisher #uuid "f132d30c-adf9-4385-8f26-baa4525a4bf0"
                                                  :version 1}}
+   :fixed_input_data {"Low Trend Data" {:category "Low Trend Data"
+                                        :name "Low Trend Data GLA"
+                                        :publisher #uuid "62d61b07-b658-430f-90b4-2e763e1df0ff"
+                                        :version 1
+                                        :data-id low-trend-data-id
+                                        :file-name "low-trend.csv"
+                                        :s3-key #uuid "6b6f285c-b7d6-4846-bca1-55a76ee671b9"
+                                        :created "2015-11-11T13:17:20"} }
    :created #inst "2015-10-30T17:50:43.410-00:00"
    :model_id #uuid "8dc43736-2e15-4c12-8f19-e58e833981e2"
    :version 1
@@ -61,7 +70,8 @@
     (let [given-inputs (get-inputs dummy-forecast dummy-model)]
       (is (== (:data_id (get "Base population data" given-inputs) base-population-default-id)))
       (is (== (:data_id (get "High trend data" given-inputs) high-trend-data-id)))
-      (is (== (:data_id (get "Development data" given-inputs) development-data-id)))))
+      (is (== (:data_id (get "Development data" given-inputs) development-data-id)))
+      (is (== (:data_id (get "Low Trend Data" given-inputs) low-trend-data-id)))))
   (testing "missing data error"
     (let [incomplete-forecast (assoc dummy-forecast :inputs (dissoc (:inputs dummy-forecast "Development data")))]
       (comment (is (thrown-with-msg? Exception

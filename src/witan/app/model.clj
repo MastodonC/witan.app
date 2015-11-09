@@ -9,7 +9,8 @@
             [witan.app.util :as util]
             [witan.app.schema :as ws]
             [witan.app.data :as data]
-            [schema.core :as s])
+            [schema.core :as s]
+            [clojure.tools.logging :as log])
   (:use [liberator.core :only [defresource]]))
 
 (defn ->Model
@@ -19,20 +20,23 @@
            created
            input_data
            input_data_defaults
-           output_data] :as model}]
+           output_data
+           fixed_input_data] :as model}]
   (-> model
       (dissoc :version_id
               :model_id
               :created
               :input_data
               :input_data_defaults
-              :output_data)
+              :output_data
+              :fixed_input_data)
       (assoc :version-id version_id
              :model-id model_id
              :created (util/java-Date-to-ISO-Date-Time created)
              :input-data (mapv #(cond-> % (get input_data_defaults (:category %1))
                                         (assoc :default (data/Data-> (get input_data_defaults (:category %1))))) input_data)
-             :output-data (mapv #(hash-map :category %1) output_data))))
+             :output-data (mapv #(hash-map :category %1) output_data)
+             :fixed-input-data (mapv (fn [[category data]] (hash-map :category category :data (data/Data-> data))) fixed_input_data))))
 
 (defn find-model-by-name
   [name]
@@ -47,7 +51,7 @@
   (hayt/insert :model_names (hayt/values :name name :model_id model-id)))
 
 (defn create-model
-  [{:keys [name description owner model-id version version-id properties input-data output-data]
+  [{:keys [name description owner model-id version version-id properties input-data output-data fixed-input-data]
     :or {model-id (uuid/random)
          version 1
          version-id (uuid/random)}}]
@@ -63,8 +67,10 @@
                           :properties (map (fn [p] (hayt/user-type p)) properties)
                           :input_data (map hayt/user-type input-data)
                           :input_data_defaults (zipmap (map :category input-defaults)
-                                                       (map (comp hayt/user-type :default) input-defaults))
-                          :output_data (mapv :category output-data)))))
+                                                       (map (comp hayt/user-type data/data-to-db :default) input-defaults))
+                          :output_data (mapv :category output-data)
+                          :fixed_input_data  (zipmap (map :category fixed-input-data)
+                                                     (map (comp hayt/user-type data/data-to-db :data) fixed-input-data))))))
 
 (defn update-default-input-data
   [model-id category data input-data-defaults]
@@ -102,7 +108,8 @@
 (defresource models
   :allowed-methods #{:get :post}
   :available-media-types ["application/json"]
-  :handle-ok (fn [_] (s/validate
+  :handle-ok (fn [_]
+               (s/validate
                       [ws/Model]
                       (map ->Model (get-models)))))
 
@@ -115,5 +122,4 @@
   :handle-ok (fn [{:keys [result]}]
                (s/validate
                      ws/Model
-                     (->Model result)))
-  )
+                     (->Model result))))
