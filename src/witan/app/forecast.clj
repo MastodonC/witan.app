@@ -127,13 +127,20 @@
                                        :version version})))
 
 (defn update-forecast-current-version-id
-  [{:keys [forecast-id version-id version in-progress]}]
+  [{:keys [forecast-id version-id version in-progress?]}]
   (hayt/update :forecast_headers
                (hayt/set-columns {:current_version_id version-id
                                   :version version
-                                  :in_progress in-progress
+                                  :in_progress in-progress?
                                   :created (tf/unparse (tf/formatters :date-time) (t/now))})
                (hayt/where {:forecast_id forecast-id})))
+
+(defn update-forecast-outputs
+  [{:keys [forecast-id version outputs]}]
+  (hayt/update :forecasts
+               (hayt/set-columns {:outputs outputs
+                                  :in_progress false})
+               (hayt/where {:forecast_id forecast-id :version version})))
 
 (defn get-most-recent-version
   [id]
@@ -165,7 +172,7 @@
                                             :owner owner)))
 
 (defn create-forecast-version
-  [{:keys [name description owner owner-name forecast-id version in-progress id version-id model-id model-property-values inputs]}]
+  [{:keys [name description owner owner-name forecast-id version in-progress? id version-id model-id model-property-values inputs]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
                              :forecast_id forecast-id
@@ -176,7 +183,7 @@
                              :owner_name owner-name
                              :version_id version-id
                              :version version
-                             :in_progress in-progress
+                             :in_progress in-progress?
                              :model_id model-id
                              :model_property_values model-property-values
                              :inputs inputs))))
@@ -190,7 +197,7 @@
                             :version 0
                             :owner owner
                             :owner-name owner-name
-                            :in-progress false
+                            :in-progress? false
                             :model-id model-id
                             :model-property-values model-property-values}))
 
@@ -275,7 +282,7 @@
                               :version-id new-version-id
                               :owner owner
                               :owner-name owner-name
-                              :in-progress true
+                              :in-progress? true
                               :forecast-id forecast-id
                               :model-id (:model_id latest-forecast)
                               :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
@@ -284,7 +291,14 @@
       (c/exec (update-forecast-current-version-id new-forecast))
       (when (zero? old-version)
         (c/exec (delete-forecast-by-version forecast-id 0)))
-      (c/exec (find-forecast-by-version forecast-id new-version)))))
+      (first (c/exec (find-forecast-by-version forecast-id new-version))))))
+
+(defn conclude-forecast!
+  [{:keys [forecast-id version] :as args}]
+  (c/exec (update-forecast-outputs args))
+  (let [forecast (->Forecast (first (c/exec (find-forecast-by-version forecast-id version))))]
+    (c/exec (update-forecast-current-version-id forecast))
+    forecast))
 
 (defn get-forecasts
   []
@@ -392,7 +406,7 @@
                                                                      :s3-key (util/to-uuid (:s3-key data-item))
                                                                      :publisher user-id}))]
                                           [(name category) data])) given-inputs)
-                          new-forecast (first (update-forecast! {:forecast-id id
-                                                                 :owner user-id
-                                                                 :inputs added-data}))]
+                          new-forecast (update-forecast! {:forecast-id id
+                                                          :owner user-id
+                                                          :inputs added-data})]
                       (s/validate ws/ForecastInfo (->ForecastInfo new-forecast)))))
