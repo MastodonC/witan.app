@@ -30,8 +30,8 @@
       (assoc :version-id version_id
              :model-id model_id
              :created (util/java-Date-to-ISO-Date-Time created)
-             :input-data (mapv #(-> (hash-map :category %1)
-                                    (cond-> (get input_data_defaults %1) (assoc :default (data/Data-> (get input_data_defaults %1))))) input_data)
+             :input-data (mapv #(cond-> % (get input_data_defaults (:category %1))
+                                        (assoc :default (data/Data-> (get input_data_defaults (:category %1))))) input_data)
              :output-data (mapv #(hash-map :category %1) output_data))))
 
 (defn find-model-by-name
@@ -61,7 +61,7 @@
                           :model_id model-id
                           :version version
                           :properties (map (fn [p] (hayt/user-type p)) properties)
-                          :input_data (mapv :category input-data)
+                          :input_data (map hayt/user-type input-data)
                           :input_data_defaults (zipmap (map :category input-defaults)
                                                        (map (comp hayt/user-type :default) input-defaults))
                           :output_data (mapv :category output-data)))))
@@ -81,7 +81,7 @@
   [model-id category data]
   (let [model (get-model-by-model-id model-id)
         input-data-map (:input_data_defaults model)]
-    (when (some #{category} (:input_data model))
+    (when (some #(if (= (:category %) category) %) (:input_data model))
       (c/exec (update-default-input-data model-id category data input-data-map)))))
 
 

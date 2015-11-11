@@ -5,6 +5,18 @@
             [witan.app.model :as model]
             [witan.app.user :as user]))
 
+(def input-category-a  {:category "long population"
+                        :description "This a description of the long population input"})
+
+(def input-category-b  {:category "overlay housing"
+                        :description "This a description of the overlay housing input"})
+
+(def input-category-c  {:category "trend data"
+                        :description "This a description of the trend data input"})
+
+(def output-category-a {:category "housing-linked population"
+                        :description "This a description of the housing-linked population output"})
+
 (defn load-test-data!
   "Add a bunch of test data into Cassandra"
   []
@@ -15,62 +27,72 @@
         m1 (model/add-model! {:name "My Model 1"
                               :description "Description of my model"
                               :owner (:id user1)
-                              :input-data [{:category "Base population data"}]
-                              :output-data [{:category "wishful thinking"}]})
+                              :input-data [input-category-a]
+                              :output-data [output-category-a]})
         m2 (model/add-model! {:name "My Model 2"
                               :description "Description of my model"
                               :owner (:id user2)
                               :properties [{:name "Some field" :type "text" :context "Placeholder value 123"}]
-                              :input-data [{:category "Base population data"}]
-                              :output-data [{:category "All the population data"}]})
+                              :input-data [input-category-b]
+                              :output-data [output-category-a]})
         m3 (model/add-model! {:name "My Model 3"
-                     
                               :description "Model with enum"
                               :owner (:id user2)
                               :properties [{:name "Boroughs" :type "dropdown" :context "Choose a borough" :enum_values ["Camden" "Richmond Upon Thames" "Hackney" "Barnet"]}]
-                              :input-data [{:category "long population"}
-                                           {:category "overlay housing"}
-                                           {:category "trend data"}]
-                              :output-data [{:category "housing-linked population"}]})
+                              :input-data [input-category-a
+                                           input-category-b
+                                           input-category-c]
+                              :output-data [output-category-a]})
         ;; add data
-        d1 (data/add-data! {:category "long population"
-                            :name "London base population"
+        d1 (data/add-data! {:category  (:category input-category-a)
+                            :name      "London base population"
                             :publisher (:id user1)
                             :file-name "Long+Pop.csv"
-                            :s3-key #uuid "4348bec5-12db-48bc-be28-2c4323f91197" })
-        d2 (data/add-data! {:category "Base population data"
-                            :name "base population Camden"
+                            :s3-key    #uuid "4348bec5-12db-48bc-be28-2c4323f91197" })
+        d2 (data/add-data! {:category  (:category input-category-b)
+                            :name      "base population Camden"
                             :publisher (:id user2)
                             :file-name "base-population.csv"
-                            :s3-key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd"})
-        d3 (data/add-data! {:category "Base population data"
-                            :name "base population Ealing"
+                            :s3-key    #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd"})
+        d3 (data/add-data! {:category  (:category input-category-b)
+                            :name      "base population Ealing"
                             :publisher (:id user1)
                             :file-name "base-population.csv"
-                            :s3-key #uuid "33a7b684-79cb-4fb5-870d-adc15a87ae84"})
+                            :s3-key    #uuid "33a7b684-79cb-4fb5-870d-adc15a87ae84"})
 
         ;; update model to have this as default data
         _ (model/add-default-data-to-model! (:model_id m3)
-                                            "long population"
+                                            (:category input-category-a)
                                             d1)
 
         ;; versions of these models
         ;;m1_2 (model/update-model! {:model-id (:model_id m1) :owner (:id user1)})
 
         ;; add a few forecasts
-        f1 (forecast/add-forecast! {:name "My Forecast 1" :description "Description of my forecast" :owner (:id user1) :model-id (:model_id m1)})
-        f2 (forecast/add-forecast! {:name "My Forecast 2" :description "Description of my forecast" :owner (:id user2) :model-id (:model_id m1)})
-        f3 (forecast/add-forecast! {:name "My Forecast 3" :description "Description of my forecast" :owner (:id user1) :model-id (:model_id m2) :model-properties [{:name "Some field" :value "ole"}]})
+        f1 (forecast/add-forecast! {:name        "My Projection 1"
+                                    :description "Description of my projection"
+                                    :owner       (:id user1)
+                                    :model-id    (:model_id m1)})
+        f2 (forecast/add-forecast! {:name             "My Projection 2"
+                                    :description      "Description of my projection"
+                                    :owner            (:id user2)
+                                    :model-id         (:model_id m2)
+                                    :model-properties [{:name "Some field" :value "ole"}]})
+        f3 (forecast/add-forecast! {:name             "My Projection 3"
+                                    :description      "Description of my projection"
+                                    :owner            (:id user1)
+                                    :model-id         (:model_id m3)
+                                    :model-properties [{:name "Boroughs" :value "Camden"}]})
 
         ;; versions of these forecasts
         f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1) :owner (:id user1) :inputs {"Base population data" d2}})
         f1_2 (forecast/update-forecast! {:forecast-id (:forecast_id f1) :owner (:id user1)})
-        f3_1 (forecast/update-forecast! {:forecast-id (:forecast_id f3)
-                                         :owner (:id user1)
-                                         :inputs {"Base population data" d3}})
+        ;;f3_1 (forecast/update-forecast! {:forecast-id (:forecast_id f3)
+          ;;                               :owner (:id user1)
+            ;;                             :inputs {(:category input-category-b) d3}})
 
         ;; conclude f3
-        f3_1_done (forecast/conclude-forecast! {:forecast-id (:forecast_id f3_1)
-                                                :version (:version f3_1)
+        f1_1_done (forecast/conclude-forecast! {:forecast-id (:forecast_id f1_1)
+                                                :version (:version f1_1)
                                                 :outputs nil}) ;; TODO nil outputs for now but needs to be something legit
         ]))

@@ -95,8 +95,9 @@
    (s/required-key :created)     DateTimeType
    (s/optional-key :description) s/Str
    (s/optional-key :properties)  [ModelProperty]
-   (s/optional-key :input-data) [{(s/required-key :category) ModelInputCategory
-                                  (s/optional-key :default) DataItem}]
+   (s/optional-key :input-data) [{(s/required-key :category)    ModelInputCategory
+                                  (s/optional-key :description) s/Str
+                                  (s/optional-key :default)     DataItem}]
    (s/optional-key :output-data) [{(s/required-key :category) ModelOutputCategory}]})
 
 (def ModelInput
