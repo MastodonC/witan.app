@@ -74,6 +74,11 @@ CREATE TYPE witan.model_property (
       enum_values list<text>
 );
 
+CREATE TYPE witan.model_category (
+      category text,
+      description text,
+);
+
 // model names
 CREATE TABLE witan.model_names (
     name text,
@@ -131,7 +136,7 @@ CREATE TABLE witan.models (
     model_id uuid PRIMARY KEY,
     version int,
     properties list<frozen<witan.model_property>>,
-    input_data list<text>,
+    input_data list<frozen<witan.model_category>>,
     input_data_defaults map<text,frozen<data_item>>,
     output_data list<text>
 );
