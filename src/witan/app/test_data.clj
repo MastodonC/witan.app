@@ -23,26 +23,7 @@
   (let [;; add users
         user1 (user/add-user! {:name "Mastodon 1" :username "support@mastodonc.com" :password "secret"})
         user2 (user/add-user! {:name "Mastodon 2" :username "support2@mastodonc.com" :password "secret"})
-        ;; add models
-        m1 (model/add-model! {:name "My Model 1"
-                              :description "Description of my model"
-                              :owner (:id user1)
-                              :input-data [input-category-a]
-                              :output-data [output-category-a]})
-        m2 (model/add-model! {:name "My Model 2"
-                              :description "Description of my model"
-                              :owner (:id user2)
-                              :properties [{:name "Some field" :type "text" :context "Placeholder value 123"}]
-                              :input-data [input-category-b]
-                              :output-data [output-category-a]})
-        m3 (model/add-model! {:name "My Model 3"
-                              :description "Model with enum"
-                              :owner (:id user2)
-                              :properties [{:name "Boroughs" :type "dropdown" :context "Choose a borough" :enum_values ["Camden" "Richmond Upon Thames" "Hackney" "Barnet"]}]
-                              :input-data [input-category-a
-                                           input-category-b
-                                           input-category-c]
-                              :output-data [output-category-a]})
+
         ;; add data
         d1 (data/add-data! {:category  (:category input-category-a)
                             :name      "London base population"
@@ -59,6 +40,35 @@
                             :publisher (:id user1)
                             :file-name "base-population.csv"
                             :s3-key    #uuid "33a7b684-79cb-4fb5-870d-adc15a87ae84"})
+        d4 (data/add-data! {:category input-category-c
+                            :name "Low Trend Data GLA"
+                            :publisher (:id user1)
+                            :file-name "low-trend.csv"
+                            :s3-key #uuid "6b6f285c-b7d6-4846-bca1-55a76ee671b9"})
+
+        ;; add models
+        m1 (model/add-model! {:name "My Model 1"
+                              :description "Description of my model"
+                              :owner (:id user1)
+                              :input-data [input-category-a]
+                              :output-data [output-category-a]
+                              :fixed-input-data [{:category input-category-c :data (data/Data-> d4)}]})
+        m2 (model/add-model! {:name "My Model 2"
+                              :description "Description of my model"
+                              :owner (:id user2)
+                              :properties [{:name "Some field" :type "text" :context "Placeholder value 123"}]
+                              :input-data [input-category-b]
+                              :output-data [output-category-a]})
+        m3 (model/add-model! {:name "My Model 3"
+                              :description "Model with enum"
+                              :owner (:id user2)
+                              :properties [{:name "Boroughs" :type "dropdown" :context "Choose a borough" :enum_values ["Camden" "Richmond Upon Thames" "Hackney" "Barnet"]}]
+                              :input-data [input-category-a
+                                           input-category-b
+                                           input-category-c]
+                              :output-data [output-category-a]})
+
+
 
         ;; update model to have this as default data
         _ (model/add-default-data-to-model! (:model_id m3)
@@ -95,4 +105,4 @@
         f3_1_done (forecast/conclude-forecast! {:forecast-id (:forecast_id f3_1)
                                                 :version (:version f3_1)
                                                 :outputs nil}) ;; TODO nil outputs for now but needs to be something legit
-        ]))
+                              ]))
