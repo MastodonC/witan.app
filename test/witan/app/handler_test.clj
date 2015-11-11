@@ -93,7 +93,7 @@
      :properties [],
      :version 0,
      :version_id #uuid "5012d65c-20fe-4fdf-b3cc-2a1e5760f52a"
-     :input_data ["Base population data"]}
+     :input_data [{:category "Base population data"}]}
     {:name "My Model 1",
      :created #inst "2015-10-09T13:52:43.865-00:00",
      :description "Description of my model",
