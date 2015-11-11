@@ -24,16 +24,17 @@ TODO: will need to get own config files")
 (defn get-inputs
   "determine which s3 keys to download: given data or input defaults"
   [forecast model]
-  (let [input-list (:input_data model)
+  (let [input-list (map :category (:input_data model))
         input-defaults (:input_data_defaults model)
-        given-inputs (:inputs forecast)]
-    (merge (:fixed_input_data model)
-     (into {} (map (fn [category] (let  [given-data (get given-inputs category)
-                                        default-data (get input-defaults category)]
-                                   (cond
-                                     given-data   [category (:s3-key given-data)]
-                                     default-data [category (:s3-key default-data)]
-                                     :else (throw (Exception. (str "Incomplete input data for model: " (:name model))))))) input-list)))))
+        given-inputs (:inputs forecast)
+        fixed-inputs (:fixed_input_data model)]
+    (merge fixed-inputs
+           (into {} (map (fn [category] (let  [given-data (get given-inputs category)
+                                              default-data (get input-defaults category)]
+                                         (cond
+                                           given-data   [category (:s3-key given-data)]
+                                           default-data [category (:s3-key default-data)]
+                                           :else (throw (Exception. (str "Incomplete input data for model: " (:name model))))))) input-list)))))
 
 (defn download-data
   "download all inputs"

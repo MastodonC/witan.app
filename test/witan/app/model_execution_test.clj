@@ -7,6 +7,17 @@
 (def high-trend-data-id #uuid "b66ea9ff-f161-4171-9872-cfbb32bd04c2")
 (def low-trend-data-id #uuid "ceecdc02-cbaa-427c-b051-221a91c2fe19")
 
+(def input-category-a {:category "Development data"
+                       :description "This is a description of the development data input"})
+(def input-category-b {:category "Base population data"
+                       :description "These are the base population figures"})
+
+(def input-category-c {:category "Low Trend Data"
+                       :description "trend data description here"})
+
+(def output-category {:category "Output Data"
+                      :description "this is an expected output"})
+
 (def dummy-forecast
   {:description "Description of my forecast"
    :model_property_values {}
@@ -16,7 +27,7 @@
    :name "My Forecast 1"
    :created #inst "2015-10-30T17:51:21.244-00:00"
    :inputs {"Development data" {:data_id development-data-id
-                                :category "Development data"
+                                :category input-category-a
                                 :name "boo"
                                 :publisher #uuid "03b1039b-bd0e-4f24-a503-44b5c3f81130"
                                 :version 1
@@ -25,7 +36,7 @@
                                 :created #inst "2015-10-30T17:51:21.235-00:00"}
             "High trend data" {:s3_key #uuid "33a7b684-79cb-4fb5-870d-adc15a87ae84"
                                :data_id high-trend-data-id
-                               :category "Base population data"
+                               :category input-category-b
                                :created #inst "2015-11-06T12:59:01.552-00:00"
                                :file_name "base-population.csv"
                                :name "base population Ealing"
@@ -41,18 +52,18 @@
   {:description "Description of my model"
    :properties []
    :version_id #uuid "49db8f19-5843-4fe0-b815-e7d3a9d85823"
-   :input_data ["Base population data" "Development data" "High trend data"]
+   :input_data [input-category-a input-category-b]
    :name "Housing Linked Model"
-   :output_data ["wishful thinking"]
+   :output_data [output-category]
    :input_data_defaults {"Base population data" {:s3_key #uuid "4348bec5-12db-48bc-be28-2c4323f91197"
                                                  :data_id base-population-default-id
-                                                 :category "Base population data"
+                                                 :category input-category-a
                                                  :created #inst "2015-11-06T12:59:01.517-00:00"
                                                  :file_name "Long+Pop.csv"
                                                  :name "London base population"
                                                  :publisher #uuid "f132d30c-adf9-4385-8f26-baa4525a4bf0"
                                                  :version 1}}
-   :fixed_input_data {"Low Trend Data" {:category "Low Trend Data"
+   :fixed_input_data {"Low Trend Data" {:category input-category-c
                                         :name "Low Trend Data GLA"
                                         :publisher #uuid "62d61b07-b658-430f-90b4-2e763e1df0ff"
                                         :version 1
