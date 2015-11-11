@@ -58,6 +58,7 @@ CREATE TABLE witan.forecasts (
     owner uuid,
     owner_name text,
     version_id uuid,
+    latest boolean,
     model_id uuid,
     model_property_values map<text,frozen<model_property_value>>,
     inputs map<text,frozen<data_item>>,
