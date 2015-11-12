@@ -8,12 +8,14 @@
             [witan.app.schema :as ws]
             [witan.app.util :as util]
             [witan.app.model :as model]
+            [witan.app.model-execution :as mex]
             [witan.app.user :as user]
             [witan.app.s3 :as s3]
             [witan.app.data :as data]
             [schema.core :as s]
             [clojure.string :as string]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [clojure.core.async :as a :refer [go]])
   (:use [liberator.core :only [defresource]]))
 
 (defn- ->ForecastHeader
@@ -82,7 +84,7 @@
            model_property_values
            inputs
            outputs] :as forecast}]
-  (let [divide-data-map (partial map (fn [[k v]] (hash-map k (data/Data-> v))))
+  (let [divide-data-map (partial map (fn [[k v]] (hash-map k (if (vector? v) (map data/Data-> v) (data/Data-> v)))))
         inputs  (divide-data-map inputs)
         outputs (divide-data-map outputs)
         cleaned         (-> forecast
@@ -265,6 +267,31 @@
             {:errors [] :values {}}
             property-values)))
 
+(defn conclude-forecast!
+  [{:keys [forecast-id version] :as args}]
+  (c/exec (update-forecast-outputs args))
+  (let [forecast (->Forecast (first (c/exec (find-forecast-by-version forecast-id version))))]
+    (c/exec (update-forecast-current-version-id forecast))
+    forecast))
+
+(defn process-output-data!
+  [[category output]]
+  (let [output-as-data (data/add-data! (first output))] ;; TODO we only process the first item. post MVP1 we may have >1
+    (hash-map category [(hayt/user-type output-as-data)])))
+
+(defn run-model!
+  ([forecast]
+   (run-model! forecast (model/get-model-by-model-id (:model_id forecast))))
+  ([forecast model]
+   (go ;; temporary solution
+     (log/info "Starting to run model: " (:model_id forecast) (:name model) (str "v" (:version model)))
+     (try
+       (let [outputs   (mex/execute-model forecast model)
+             data      (into {} (map process-output-data! (first (vec outputs))))]
+         (log/info "Finished running model " (:model_id forecast) "-" (count data) "output(s) returned." outputs)
+         (conclude-forecast! (assoc (->Forecast forecast) :outputs data)))
+       (catch Exception e (log/error "Model" (:model_id forecast) "threw an error:" (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
+
 (defn add-forecast!
   [{:keys [name owner model-id model-properties] :as forecast}]
   (let [existing-forecasts (c/exec (find-forecast-by-name-and-owner name owner))
@@ -284,36 +311,42 @@
       (c/exec (create-forecast-name new-forecast))
       (first (c/exec (find-forecast-by-id id))))))
 
+(defn has-all-inputs?
+  [model inputs]
+  (let [model-input-categories (->> (:input_data model)
+                                    (map :category)
+                                    (set))
+        supplied-input-categories (-> inputs keys set)
+        intersection-count (count (clojure.set/intersection model-input-categories supplied-input-categories))]
+    (= intersection-count (count model-input-categories))))
+
 (defn update-forecast!
   [{:keys [forecast-id owner inputs]}]
   (if-let [latest-forecast (get-most-recent-version forecast-id)]
-    (let [old-version (:version latest-forecast)
-          new-version (inc old-version)
-          new-version-id (uuid/random)
-          owner-name (-> owner user/retrieve-user :name) ;; TODO should check for nil
-          new-forecast (assoc latest-forecast
-                              :version new-version
-                              :version-id new-version-id
-                              :owner owner
-                              :owner-name owner-name
-                              :in-progress? true
-                              :forecast-id forecast-id
-                              :model-id (:model_id latest-forecast)
-                              :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
-                              :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)])))]
-      (c/exec (create-forecast-version new-forecast))
-      (c/exec (update-forecast-current-version-id new-forecast))
-      (if (zero? old-version)
-        (c/exec (delete-forecast-by-version forecast-id 0))
-        (c/exec (update-forecast-latest forecast-id old-version false)))
-      (first (c/exec (find-forecast-by-version forecast-id new-version))))))
-
-(defn conclude-forecast!
-  [{:keys [forecast-id version] :as args}]
-  (c/exec (update-forecast-outputs args))
-  (let [forecast (->Forecast (first (c/exec (find-forecast-by-version forecast-id version))))]
-    (c/exec (update-forecast-current-version-id forecast))
-    forecast))
+    (let [model (model/get-model-by-model-id (:model_id latest-forecast))]
+      (if (has-all-inputs? model inputs)
+        (let [old-version (:version latest-forecast)
+              new-version (inc old-version)
+              new-version-id (uuid/random)
+              owner-name (-> owner user/retrieve-user :name) ;; TODO should check for nil
+              new-forecast (assoc latest-forecast
+                                  :version new-version
+                                  :version-id new-version-id
+                                  :owner owner
+                                  :owner-name owner-name
+                                  :in-progress? true
+                                  :forecast-id forecast-id
+                                  :model-id (:model_id latest-forecast)
+                                  :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
+                                  :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)])))]
+          (c/exec (create-forecast-version new-forecast))
+          (c/exec (update-forecast-current-version-id new-forecast))
+          (if (zero? old-version)
+            (c/exec (delete-forecast-by-version forecast-id 0))
+            (c/exec (update-forecast-latest forecast-id old-version false)))
+          (run-model! (assoc new-forecast :inputs inputs) model) ;; assoc to use the original inputs (not UDT'd)
+          (first (c/exec (find-forecast-by-version forecast-id new-version))))
+        (log/error "The incorrect number of inputs was supplied.")))))
 
 (defn get-forecasts
   []

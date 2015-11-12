@@ -110,6 +110,12 @@
   "An output category with a data item"
   {ModelOutputCategory [DataItem]})
 
+(def RawModelOutput
+  "What we expect back from a model"
+  {s/Str [{(s/required-key :name)      s/Str
+           (s/required-key :file_name) s/Str
+           (s/required-key :s3_key)    IdType}]})
+
 (def ModelInfo
   "Forecast data in the context of the model"
   {(s/required-key :inputs)     [ModelInput]

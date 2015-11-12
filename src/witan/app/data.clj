@@ -46,8 +46,10 @@
 
 (defn get-current-version-name
   [name]
-  (some-> (first (c/exec (find-data-name name)))
-          :version))
+  (try
+    (some-> (first (c/exec (find-data-name name)))
+            :version)
+    (catch Exception e nil)))
 
 (defn get-data-by-s3-key
   [s3-key]
