@@ -40,11 +40,11 @@
                             :publisher (:id user1)
                             :file-name "base-population.csv"
                             :s3-key    #uuid "33a7b684-79cb-4fb5-870d-adc15a87ae84"})
-        d4 (data/add-data! {:category input-category-c
-                            :name "Low Trend Data GLA"
+        d4 (data/add-data! {:category  (:category input-category-c)
+                            :name      "Low Trend Data GLA"
                             :publisher (:id user1)
                             :file-name "low-trend.csv"
-                            :s3-key #uuid "6b6f285c-b7d6-4846-bca1-55a76ee671b9"})
+                            :s3-key    #uuid "0c53f871-ba4e-4e90-81df-425382e9b95e"})
 
         ;; add models
         m1 (model/add-model! {:name "My Model 1"
@@ -52,7 +52,7 @@
                               :owner (:id user1)
                               :input-data [input-category-a]
                               :output-data [output-category-a]
-                              :fixed-input-data [{:category input-category-c :data (data/Data-> d4)}]})
+                              :fixed-input-data [{:category (:category input-category-c) :data (data/Data-> d4)}]})
         m2 (model/add-model! {:name "My Model 2"
                               :description "Description of my model"
                               :owner (:id user2)
@@ -105,4 +105,4 @@
         f3_1_done (forecast/conclude-forecast! {:forecast-id (:forecast_id f3_1)
                                                 :version (:version f3_1)
                                                 :outputs nil}) ;; TODO nil outputs for now but needs to be something legit
-                              ]))
+        ]))

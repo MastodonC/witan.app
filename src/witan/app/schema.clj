@@ -137,17 +137,18 @@
 
 (def Forecast
   "Forecast"
-  {(s/required-key :version-id)    IdType
-   (s/required-key :name)          s/Str
-   (s/required-key :owner)         IdType
-   (s/required-key :owner-name)    s/Str
-   (s/required-key :forecast-id)   IdType
-   (s/required-key :version)       s/Int
-   (s/required-key :created)       DateTimeType
-   (s/required-key :in-progress?)  s/Bool
-   (s/optional-key :description)   s/Str
-   (s/optional-key :tag)           Tag
-   (s/optional-key :model-id)      IdType})
+  {(s/required-key :version-id)   IdType
+   (s/required-key :name)         s/Str
+   (s/required-key :owner)        IdType
+   (s/required-key :owner-name)   s/Str
+   (s/required-key :forecast-id)  IdType
+   (s/required-key :version)      s/Int
+   (s/required-key :created)      DateTimeType
+   (s/required-key :in-progress?) s/Bool
+   (s/required-key :latest?)      s/Bool
+   (s/optional-key :description)  s/Str
+   (s/optional-key :tag)          Tag
+   (s/optional-key :model-id)     IdType})
 
 (def ForecastInfo
   "Forecast in-depth"

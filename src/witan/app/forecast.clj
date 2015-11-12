@@ -34,6 +34,7 @@
                             :model_property_values
                             :owner_name)
                     (assoc :in-progress? in_progress
+                           :latest? true
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
                            :version-id current_version_id
@@ -43,6 +44,7 @@
 (defn- ->Forecast
   "Converts raw cassandra forecast into a ws/Forecast schema"
   [{:keys [in_progress
+           latest
            forecast_id
            created
            version_id
@@ -51,6 +53,7 @@
            model_property_values] :as forecast}]
   (let [cleaned (-> forecast
                     (dissoc :in_progress
+                            :latest
                             :forecast_id
                             :created
                             :version_id
@@ -60,6 +63,7 @@
                             :inputs
                             :outputs)
                     (assoc :in-progress? in_progress
+                           :latest? latest
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
                            :version-id version_id
@@ -69,6 +73,7 @@
 (defn ->ForecastInfo
   "Converts raw cassandra forecast into a ws/ForecastInfo schema"
   [{:keys [in_progress
+           latest
            forecast_id
            created
            version_id
@@ -82,6 +87,7 @@
         outputs (divide-data-map outputs)
         cleaned         (-> forecast
                             (dissoc :in_progress
+                                    :latest
                                     :forecast_id
                                     :created
                                     :version_id
@@ -89,6 +95,7 @@
                                     :model_id
                                     :model_property_values)
                             (assoc :in-progress? in_progress
+                                   :latest? latest
                                    :forecast-id forecast_id
                                    :created (util/java-Date-to-ISO-Date-Time created)
                                    :version-id version_id
@@ -125,6 +132,12 @@
   [forecast-id version]
   (hayt/delete :forecasts (hayt/where {:forecast_id forecast-id
                                        :version version})))
+
+(defn update-forecast-latest
+  [forecast-id version latest?]
+  (hayt/update :forecasts
+               (hayt/set-columns {:latest latest?})
+               (hayt/where {:forecast_id forecast-id :version version})))
 
 (defn update-forecast-current-version-id
   [{:keys [forecast-id version-id version in-progress?]}]
@@ -184,6 +197,7 @@
                              :version_id version-id
                              :version version
                              :in_progress in-progress?
+                             :latest true
                              :model_id model-id
                              :model_property_values model-property-values
                              :inputs inputs))))
@@ -276,7 +290,7 @@
     (let [old-version (:version latest-forecast)
           new-version (inc old-version)
           new-version-id (uuid/random)
-          owner-name (-> owner user/retrieve-user :name)
+          owner-name (-> owner user/retrieve-user :name) ;; TODO should check for nil
           new-forecast (assoc latest-forecast
                               :version new-version
                               :version-id new-version-id
@@ -289,8 +303,9 @@
                               :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)])))]
       (c/exec (create-forecast-version new-forecast))
       (c/exec (update-forecast-current-version-id new-forecast))
-      (when (zero? old-version)
-        (c/exec (delete-forecast-by-version forecast-id 0)))
+      (if (zero? old-version)
+        (c/exec (delete-forecast-by-version forecast-id 0))
+        (c/exec (update-forecast-latest forecast-id old-version false)))
       (first (c/exec (find-forecast-by-version forecast-id new-version))))))
 
 (defn conclude-forecast!
@@ -389,10 +404,16 @@
   :processable? (fn [ctx]
                   (let [forecast (get-most-recent-version id)
                         inputs (:inputs (util/get-post-params ctx))]
+                    (every? (fn [[category data-item]] (s3/exists? (:s3-key data-item))) inputs)
                     (and forecast
                          ((util/post!-processable-validation ws/UpdateForecast) ctx)
                          (all-categories-exist-in-model? forecast (keys inputs))
-                         (every? (fn [[category data-item]] (s3/exists? (:s3-key data-item))) inputs))))
+                         (every? (fn [[category data-item]]
+                                   (let [key    (:s3-key data-item)
+                                         result (s3/exists? key)]
+                                     (when-not result
+                                       (log/error "Tried to use an S3 key that doesn't exist:" key))
+                                     result)) inputs))))
   :handle-created (fn [ctx]
                     (let [given-inputs (:inputs (util/get-post-params ctx))
                           added-data (map

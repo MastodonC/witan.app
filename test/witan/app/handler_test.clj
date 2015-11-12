@@ -49,6 +49,7 @@
      :created #inst "2015-10-14T08:41:21.477-00:00",
      :description "Description of my forecast",
      :in_progress false,
+     :latest true
      :name "My Forecast 1",
      :owner #uuid "d8fc0f3c-0535-4959-bf9e-505af9a59ad9",
      :owner_name "User 3",
@@ -68,6 +69,7 @@
      :created #inst "2015-10-14T08:41:21.253-00:00",
      :description "Description of my forecast",
      :in_progress false,
+     :latest false,
      :name "My Forecast 1",
      :owner #uuid "d8fc0f3c-0535-4959-bf9e-505af9a59ad9",
      :owner_name "User 3",
@@ -78,6 +80,7 @@
      :created #inst "2015-10-06T12:44:17.176-00:00",
      :version_id #uuid "ca7928d8-ea7d-4bdb-ab16-4c6ae8912830",
      :in_progress false,
+     :latest false,
      :forecast_id #uuid "fd44474d-e0f8-4713-bacf-299e503e4f30",
      :version 0,
      :owner #uuid "cac4ba3a-07c8-4e79-9ae0-d97317bb0d45",
