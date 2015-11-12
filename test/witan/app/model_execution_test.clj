@@ -27,7 +27,7 @@
    :name "My Forecast 1"
    :created #inst "2015-10-30T17:51:21.244-00:00"
    :inputs {"Development data" {:data_id development-data-id
-                                :category input-category-a
+                                :category (:category input-category-a)
                                 :name "boo"
                                 :publisher #uuid "03b1039b-bd0e-4f24-a503-44b5c3f81130"
                                 :version 1
@@ -36,7 +36,7 @@
                                 :created #inst "2015-10-30T17:51:21.235-00:00"}
             "High trend data" {:s3_key #uuid "33a7b684-79cb-4fb5-870d-adc15a87ae84"
                                :data_id high-trend-data-id
-                               :category input-category-b
+                               :category (:category input-category-b)
                                :created #inst "2015-11-06T12:59:01.552-00:00"
                                :file_name "base-population.csv"
                                :name "base population Ealing"
@@ -57,13 +57,13 @@
    :output_data [output-category]
    :input_data_defaults {"Base population data" {:s3_key #uuid "4348bec5-12db-48bc-be28-2c4323f91197"
                                                  :data_id base-population-default-id
-                                                 :category input-category-a
+                                                 :category (:category input-category-a)
                                                  :created #inst "2015-11-06T12:59:01.517-00:00"
                                                  :file_name "Long+Pop.csv"
                                                  :name "London base population"
                                                  :publisher #uuid "f132d30c-adf9-4385-8f26-baa4525a4bf0"
                                                  :version 1}}
-   :fixed_input_data {"Low Trend Data" {:category input-category-c
+   :fixed_input_data {"Low Trend Data" {:category (:category input-category-c)
                                         :name "Low Trend Data GLA"
                                         :publisher #uuid "62d61b07-b658-430f-90b4-2e763e1df0ff"
                                         :version 1
