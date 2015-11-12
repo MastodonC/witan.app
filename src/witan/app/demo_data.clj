@@ -80,13 +80,18 @@
                                       :owner (:id user1)
                                       :input-data [development-category]
                                       :output-data [output-category]
-                                      :fixed-input-data [{:category population-fixed-input
-                                                          :data (data/Data-> population-data)}
-                                                         {:category institutional-fixed-input
-                                                          :data (data/Data-> institutional-data)}
-                                                         {:category private-housing-fixed-input :data (data/Data-> private-housing-data)}
-                                                         {:category household-fixed-input :data (data/Data-> households-data)}
-                                                         {:category low-trend-fixed-input :data (data/Data-> low-trend-data)}
-                                                         {:category high-trend-fixed-input :data (data/Data-> high-trend-data)}
-                                                         {:category dwellings-data-fixed-input :data (data/Data-> dwellings-data)}]})
+                                                     :fixed-input-data [{:category (:category population-fixed-input)
+                                                                         :data (data/Data-> population-data)}
+                                                                        {:category (:category institutional-fixed-input)
+                                                                         :data (data/Data-> institutional-data)}
+                                                                        {:category (:category private-housing-fixed-input)
+                                                                         :data (data/Data-> private-housing-data)}
+                                                                        {:category (:category household-fixed-input)
+                                                                         :data (data/Data-> households-data)}
+                                                                        {:category (:category low-trend-fixed-input)
+                                                                         :data (data/Data-> low-trend-data)}
+                                                                        {:category (:category high-trend-fixed-input)
+                                                                         :data (data/Data-> high-trend-data)}
+                                                                        {:category (:category dwellings-data-fixed-input)
+                                                                         :data (data/Data-> dwellings-data)}]})
         ]))
