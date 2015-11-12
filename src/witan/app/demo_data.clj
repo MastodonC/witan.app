@@ -76,8 +76,43 @@
                                         :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
         ;; model
         dclg-housing-linked-model (model/add-model! {:name "DCLG-based Housing Linked Model"
-                                      :description "demography model which was developed to generate population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
-                                      :owner (:id user1)
+                                                     :description "demography model which was developed to generate population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
+                                                     :owner (:id user1)
+                                                     :properties [{:name "Borough"
+                                                                   :type "dropdown"
+                                                                   :context "Please choose a London borough"
+                                                                   :enum_values ["Barking and Dagenham"
+                                                                                 "Barnet"
+                                                                                 "Bexley"
+                                                                                 "Brent"
+                                                                                 "Bromley"
+                                                                                 "Camden"
+                                                                                 "Croydon"
+                                                                                 "Ealing"
+                                                                                 "Enfield"
+                                                                                 "Greenwich"
+                                                                                 "Hackney"
+                                                                                 "Hammersmith and Fulham"
+                                                                                 "Haringey"
+                                                                                 "Harrow"
+                                                                                 "Havering"
+                                                                                 "Hillingdon"
+                                                                                 "Hounslow"
+                                                                                 "Islington"
+                                                                                 "Kensington and Chelsea"
+                                                                                 "Kingston upon Thames"
+                                                                                 "Lambeth"
+                                                                                 "Lewisham"
+                                                                                 "Merton"
+                                                                                 "Newham"
+                                                                                 "Redbridge"
+                                                                                 "Richmond upon Thames"
+                                                                                 "Southwark"
+                                                                                 "Sutton"
+                                                                                 "Tower Hamlets"
+                                                                                 "Waltham Forest"
+                                                                                 "Wandsworth"
+                                                                                 "Westminster"]}]
                                       :input-data [development-category]
                                       :output-data [output-category]
                                                      :fixed-input-data [{:category (:category population-fixed-input)
