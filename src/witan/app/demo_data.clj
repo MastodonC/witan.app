@@ -128,4 +128,17 @@
                                                                         {:category (:category high-trend-fixed-input)
                                                                          :data (data/Data-> high-trend-data)}
                                                                         {:category (:category dwellings-data-fixed-input)
-                                                                         :data (data/Data-> dwellings-data)}]})]))
+                                                                         :data (data/Data-> dwellings-data)}]})
+        f1 (forecast/add-forecast! {:name        "Housing Linked Model Islington"
+                                    :description "DCLG Housing Linked Model for the borough of Islington"
+                                    :owner       (:id user1)
+                                    :model-id    (:model_id dclg-housing-linked-model)
+                                    :model-properties [{:name "Borough" :value "Islington"}]})
+        f2 (forecast/add-forecast! {:name        "Housing Linked Model Camden"
+                                    :description "DCLG Housing Linked Model for the borough of Camden"
+                                    :owner       (:id user1)
+                                    :model-id    (:model_id dclg-housing-linked-model)
+                                    :model-properties [{:name "Borough" :value "Camden"}]})
+        f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1) :owner (:id user1) :inputs {(:category development-category) development-data}})
+        f2_1 (forecast/update-forecast! {:forecast-id (:forecast_id f2) :owner (:id user1) :inputs {(:category development-category) development-data}})
+        ]))
