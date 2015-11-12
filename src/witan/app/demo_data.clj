@@ -1,5 +1,5 @@
 (ns witan.app.demo-data
-    (:require [witan.app.config :as c]
+  (:require [witan.app.config :as c]
             [witan.app.data :as data]
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
@@ -70,10 +70,10 @@
                                         :file-name "dwellings.csv"
                                         :s3-key #uuid "cb28732e-3d5b-43eb-945f-d9471c983161"})
         development-data (data/add-data! {:category (:category dwellings-data-fixed-input)
-                                        :name "New Dwellings Data - SHLAA GLA"
-                                        :publisher (:id user1)
-                                        :file-name "development.csv"
-                                        :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
+                                          :name "New Dwellings Data - SHLAA GLA"
+                                          :publisher (:id user1)
+                                          :file-name "development.csv"
+                                          :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
         ;; model
         dclg-housing-linked-model (model/add-model! {:name "DCLG-based Housing Linked Model"
                                                      :description "demography model which was developed to generate population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
@@ -113,8 +113,8 @@
                                                                                  "Waltham Forest"
                                                                                  "Wandsworth"
                                                                                  "Westminster"]}]
-                                      :input-data [development-category]
-                                      :output-data [output-category]
+                                                     :input-data [development-category]
+                                                     :output-data [output-category]
                                                      :fixed-input-data [{:category (:category population-fixed-input)
                                                                          :data (data/Data-> population-data)}
                                                                         {:category (:category institutional-fixed-input)
@@ -128,5 +128,4 @@
                                                                         {:category (:category high-trend-fixed-input)
                                                                          :data (data/Data-> high-trend-data)}
                                                                         {:category (:category dwellings-data-fixed-input)
-                                                                         :data (data/Data-> dwellings-data)}]})
-        ]))
+                                                                         :data (data/Data-> dwellings-data)}]})]))
