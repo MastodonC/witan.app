@@ -75,6 +75,7 @@
    (s/optional-key :version)   s/Int
    (s/optional-key :file-name) s/Str
    (s/optional-key :s3-key)    IdType
+   (s/optional-key :s3-url)    s/Str
    (s/required-key :created)   DateTimeType})
 
 (def ModelInputCategory
