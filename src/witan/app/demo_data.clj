@@ -69,7 +69,7 @@
                                         :publisher (:id user1)
                                         :file-name "dwellings.csv"
                                         :s3-key #uuid "cb28732e-3d5b-43eb-945f-d9471c983161"})
-        development-data (data/add-data! {:category (:category dwellings-data-fixed-input)
+        development-data (data/add-data! {:category (:category development-category)
                                           :name "New Dwellings Data - SHLAA GLA"
                                           :publisher (:id user1)
                                           :file-name "development.csv"
@@ -139,6 +139,7 @@
                                     :owner       (:id user1)
                                     :model-id    (:model_id dclg-housing-linked-model)
                                     :model-properties [{:name "Borough" :value "Camden"}]})
-        f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1) :owner (:id user1) :inputs {(:category development-category) development-data}})
-        f2_1 (forecast/update-forecast! {:forecast-id (:forecast_id f2) :owner (:id user1) :inputs {(:category development-category) development-data}})
+        f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1)
+                                         :owner (:id user1)
+                                         :inputs {(:category development-category) development-data}})
         ]))
