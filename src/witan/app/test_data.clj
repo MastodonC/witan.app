@@ -52,7 +52,7 @@
                               :owner (:id user1)
                               :input-data [input-category-a]
                               :output-data [output-category-a]
-                              :fixed-input-data [{:category (:category input-category-c) :data (data/Data-> d4)}]})
+                              :fixed-input-data [{:category (:category input-category-c) :data (data/->Data d4)}]})
         m2 (model/add-model! {:name "My Model 2"
                               :description "Description of my model"
                               :owner (:id user2)

@@ -34,9 +34,9 @@
              :model-id model_id
              :created (util/java-Date-to-ISO-Date-Time created)
              :input-data (mapv #(cond-> % (get input_data_defaults (:category %1))
-                                        (assoc :default (data/Data-> (get input_data_defaults (:category %1))))) input_data)
+                                        (assoc :default (data/->Data (get input_data_defaults (:category %1))))) input_data)
              :output-data (mapv #(hash-map :category %1) output_data)
-             :fixed-input-data (mapv (fn [[category data]] (hash-map :category category :data (data/Data-> data))) fixed_input_data))))
+             :fixed-input-data (mapv (fn [[category data]] (hash-map :category category :data (data/->Data data))) fixed_input_data))))
 
 (defn find-model-by-name
   [name]
