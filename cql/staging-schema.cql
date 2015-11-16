@@ -4,20 +4,7 @@ CREATE TABLE witan.forecast_names (
     name text,
     owner uuid,
     PRIMARY KEY (name, owner)
-) WITH CLUSTERING ORDER BY (owner ASC)
-    AND bloom_filter_fp_chance = 0.01
-    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
-    AND comment = ''
-    AND compaction = {'min_threshold': '4', 'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32'}
-    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
-    AND dclocal_read_repair_chance = 0.1
-    AND default_time_to_live = 0
-    AND gc_grace_seconds = 864000
-    AND max_index_interval = 2048
-    AND memtable_flush_period_in_ms = 0
-    AND min_index_interval = 128
-    AND read_repair_chance = 0.0
-    AND speculative_retry = '99.0PERCENTILE';
+);
 
 CREATE TYPE witan.model_property_value (
     name text,
@@ -44,21 +31,19 @@ CREATE TABLE witan.users (
     name text,
     password_hash text,
     username text
-) WITH bloom_filter_fp_chance = 0.01
-    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
-    AND comment = ''
-    AND compaction = {'min_threshold': '4', 'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32'}
-    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
-    AND dclocal_read_repair_chance = 0.1
-    AND default_time_to_live = 0
-    AND gc_grace_seconds = 864000
-    AND max_index_interval = 2048
-    AND memtable_flush_period_in_ms = 0
-    AND min_index_interval = 128
-    AND read_repair_chance = 0.0
-    AND speculative_retry = '99.0PERCENTILE';
+);
 CREATE INDEX user_username ON witan.users (username);
 
+CREATE TYPE witan.data_item (
+  data_id uuid,
+  category text,
+  name text,
+  publisher uuid,
+  version int,
+  file_name text,
+  s3_key uuid,
+  created timestamp
+);
 
 CREATE TABLE witan.forecasts (
     forecast_id uuid,
@@ -70,23 +55,13 @@ CREATE TABLE witan.forecasts (
     owner uuid,
     owner_name text,
     version_id uuid,
+    latest boolean,
     model_id uuid,
     model_property_values map<text,frozen<model_property_value>>,
+    inputs map<text,frozen<data_item>>,
+    outputs map<text,frozen<list<data_item>>>,
     PRIMARY KEY (forecast_id, version)
-) WITH CLUSTERING ORDER BY (version DESC)
-    AND bloom_filter_fp_chance = 0.01
-    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
-    AND comment = ''
-    AND compaction = {'min_threshold': '4', 'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32'}
-    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
-    AND dclocal_read_repair_chance = 0.1
-    AND default_time_to_live = 0
-    AND gc_grace_seconds = 864000
-    AND max_index_interval = 2048
-    AND memtable_flush_period_in_ms = 0
-    AND min_index_interval = 128
-    AND read_repair_chance = 0.0
-    AND speculative_retry = '99.0PERCENTILE';
+) WITH CLUSTERING ORDER BY (version DESC);
 
 // --------------------------------------------------------------------------------
 // model properties
@@ -97,25 +72,17 @@ CREATE TYPE witan.model_property (
       enum_values list<text>
 );
 
+CREATE TYPE witan.model_category (
+      category text,
+      description text,
+);
+
 // model names
 CREATE TABLE witan.model_names (
     name text,
     model_id uuid,
     PRIMARY KEY (name, model_id)
-) WITH CLUSTERING ORDER BY (model_id ASC)
-    AND bloom_filter_fp_chance = 0.01
-    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
-    AND comment = ''
-    AND compaction = {'min_threshold': '4', 'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32'}
-    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
-    AND dclocal_read_repair_chance = 0.1
-    AND default_time_to_live = 0
-    AND gc_grace_seconds = 864000
-    AND max_index_interval = 2048
-    AND memtable_flush_period_in_ms = 0
-    AND min_index_interval = 128
-    AND read_repair_chance = 0.0
-    AND speculative_retry = '99.0PERCENTILE';
+);
 
 // model headers
 CREATE TABLE witan.data_by_data_id (
@@ -124,28 +91,38 @@ CREATE TABLE witan.data_by_data_id (
   name text,
   publisher uuid,
   version int,
-  s3_url text,
+  file_name text,
+  s3_key uuid,
   created timestamp
 );
 
 CREATE TABLE witan.data_by_category (
   data_id uuid,
-  category text PRIMARY KEY,
+  category text,
   name text,
   publisher uuid,
   version int,
-  s3_url text,
-  created timestamp
+  file_name text,
+  s3_key uuid,
+  created timestamp,
+  PRIMARY KEY (category, data_id)
 );
 
-CREATE TYPE witan.model_data (
+CREATE TABLE witan.data_by_s3_key (
   data_id uuid,
   category text,
   name text,
   publisher uuid,
   version int,
-  s3_url text,
-  created timestamp
+  file_name text,
+  s3_key uuid,
+  created timestamp,
+  PRIMARY KEY (s3_key, data_id)
+);
+
+CREATE TABLE witan.data_names (
+  name text PRIMARY KEY,
+  version int
 );
 
 CREATE TABLE witan.models (
@@ -157,21 +134,8 @@ CREATE TABLE witan.models (
     model_id uuid PRIMARY KEY,
     version int,
     properties list<frozen<witan.model_property>>,
-    input_data list<text>,
-    input_data_defaults map<text,frozen<model_data>>,
-    output_data list<text>
-) WITH bloom_filter_fp_chance = 0.01
-    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
-    AND comment = ''
-    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
-    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
-    AND dclocal_read_repair_chance = 0.1
-    AND default_time_to_live = 0
-    AND gc_grace_seconds = 864000
-    AND max_index_interval = 2048
-    AND memtable_flush_period_in_ms = 0
-    AND min_index_interval = 128
-    AND read_repair_chance = 0.0
-    AND speculative_retry = '99.0PERCENTILE';
-
-// Data items
+    input_data list<frozen<witan.model_category>>,
+    input_data_defaults map<text,frozen<data_item>>,
+    output_data list<text>,
+    fixed_input_data map<text,frozen<data_item>>
+);
