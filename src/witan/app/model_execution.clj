@@ -126,7 +126,7 @@ TODO: will need to get own config files")
       (throw (Exception. (str "The upload of an output failed:" data-name s3-key))))))
 
 (defn borough-property-to-gss [properties]
-  (assoc properties :borough (gss-code (:borough properties)) ))
+  (assoc properties :borough-gss-code (gss-code (:borough properties)) ))
 
 (defmulti execute-model (fn [_ model] [(:name model) (:version model)]))
 (defmethod execute-model ["DCLG-based Housing Linked Model" 1]
