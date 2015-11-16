@@ -78,7 +78,7 @@
         dclg-housing-linked-model (model/add-model! {:name "DCLG-based Housing Linked Model"
                                                      :description "demography model which was developed to generate population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
                                                      :owner (:id user1)
-                                                     :properties [{:name "Borough"
+                                                     :properties [{:name "borough"
                                                                    :type "dropdown"
                                                                    :context "Please choose a London borough"
                                                                    :enum_values ["Barking and Dagenham"
@@ -133,12 +133,12 @@
                                     :description "DCLG Housing Linked Model for the borough of Islington"
                                     :owner       (:id user1)
                                     :model-id    (:model_id dclg-housing-linked-model)
-                                    :model-properties [{:name "Borough" :value "Islington"}]})
+                                    :model-properties [{:name "borough" :value "Islington"}]})
         f2 (forecast/add-forecast! {:name        "Housing Linked Model Camden"
                                     :description "DCLG Housing Linked Model for the borough of Camden"
                                     :owner       (:id user1)
                                     :model-id    (:model_id dclg-housing-linked-model)
-                                    :model-properties [{:name "Borough" :value "Camden"}]})
+                                    :model-properties [{:name "borough" :value "Camden"}]})
         f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1)
                                          :owner (:id user1)
                                          :inputs {(:category development-category) development-data}})
