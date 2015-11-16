@@ -10,7 +10,7 @@
              [cors :refer [wrap-cors]]
              [defaults :refer [api-defaults wrap-defaults]]
              [json :refer [wrap-json-body wrap-json-response]]]
-            [witan.app.user :as user]
+            [witan.app.user :as u]
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
             [witan.app.util :refer [load-extensions!]]
@@ -22,8 +22,7 @@
             [ring.util.http-response :refer :all]
             [clojure.tools.logging :as log]
             [clj-time.core :as t]
-            [overtone.at-at :as at])
-  (:gen-class))
+            [overtone.at-at :as at]))
 
 ;; Global storage for store generated tokens.
 (defonce tokens (atom {}))
@@ -45,7 +44,7 @@
 
 (defn add-token!
   [user-id tokens]
-  (let [token (user/random-token)
+  (let [token (u/random-token)
         ttl (t/days 28)
         existing (some #(if (= user-id (-> % second :user)) %) @tokens)]
     (when existing ;; remove an existing token for this user
@@ -55,7 +54,7 @@
 
 (defn login
   [{:keys [username password] :as body}]
-  (if-let [{:keys [id]} (user/user-valid? username password)]
+  (if-let [{:keys [id]} (u/user-valid? username password)]
     (let [token (add-token! id tokens)]
       (ok {:token token :id id}))
     (ok {:message "login failed"})))
@@ -63,13 +62,13 @@
 (defn signup
   [{:keys [username password name] :as body}]
   (log/info "signup" body)
-  (if-let [{:keys [id]} (user/add-user! body)]
+  (if-let [{:keys [id]} (u/add-user! body)]
     (let [token (add-token! id tokens)]
       (created {:token token :id id}))
     (ok {:message "User already present"})))
 
 (defn check-user [identity]
-  (if-let [user (user/retrieve-user identity)]
+  (if-let [user (u/retrieve-user identity)]
     (ok (select-keys user [:id :username :name]))
     (unauthorized {:error "Unauthorized"})))
 

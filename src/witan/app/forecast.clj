@@ -9,7 +9,7 @@
             [witan.app.util :as util]
             [witan.app.model :as model]
             [witan.app.model-execution :as mex]
-            [witan.app.user :as user]
+            [witan.app.user :as u]
             [witan.app.s3 :as s3]
             [witan.app.data :as data]
             [schema.core :as s]
@@ -302,7 +302,7 @@
         version-id (uuid/random)
         uuid-model-id (util/to-uuid model-id)
         checked-property-values (check-property-values uuid-model-id model-properties)
-        owner-name (-> owner user/retrieve-user :name)
+        owner-name (-> owner u/retrieve-user :name)
         new-forecast (assoc forecast :forecast-id id
                             :version-id version-id
                             :model-id uuid-model-id
@@ -331,7 +331,7 @@
         (let [old-version (:version latest-forecast)
               new-version (inc old-version)
               new-version-id (uuid/random)
-              owner-name (-> owner user/retrieve-user :name) ;; TODO should check for nil
+              owner-name (-> owner u/retrieve-user :name) ;; TODO should check for nil
               new-forecast (assoc latest-forecast
                                   :version new-version
                                   :version-id new-version-id

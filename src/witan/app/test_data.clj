@@ -3,7 +3,7 @@
             [witan.app.data :as data]
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
-            [witan.app.user :as user]))
+            [witan.app.user :as u]))
 
 (def input-category-a  {:category "long population"
                         :description "This a description of the long population input"})
@@ -21,8 +21,8 @@
   "Add a bunch of test data into Cassandra"
   []
   (let [;; add users
-        user1 (user/add-user! {:name "Mastodon 1" :username "support@mastodonc.com" :password "secret"})
-        user2 (user/add-user! {:name "Mastodon 2" :username "support2@mastodonc.com" :password "secret"})
+        user1 (u/add-user! {:name "Mastodon 1" :username "support@mastodonc.com" :password "secret"})
+        user2 (u/add-user! {:name "Mastodon 2" :username "support2@mastodonc.com" :password "secret"})
 
         ;; add data
         d1 (data/add-data! {:category  (:category input-category-a)

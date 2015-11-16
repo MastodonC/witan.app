@@ -3,7 +3,7 @@
             [witan.app.data :as data]
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
-            [witan.app.user :as user]))
+            [witan.app.user :as u]))
 
 (def population-fixed-input  {:category "population"
                               :description "DCLG public population data"})
@@ -29,8 +29,8 @@
   "Loads realistic demo data into Cassandra"
   []
   (let [;; add users
-        user1 (user/add-user! {:name "Mastodon 1" :username "support@mastodonc.com" :password "secret"})
-        user2 (user/add-user! {:name "Mastodon 2" :username "support2@mastodonc.com" :password "secret"})
+        user1 (u/add-user! {:name "Mastodon 1" :username "support@mastodonc.com" :password "secret"})
+        user2 (u/add-user! {:name "Mastodon 2" :username "support2@mastodonc.com" :password "secret"})
 
         ;; fixed data sources
         ;; Note: data is uploaded in S3 with given keys in both witan-test-data and witan-staging-data buckets
