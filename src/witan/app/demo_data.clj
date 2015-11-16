@@ -69,7 +69,7 @@
                                         :publisher (:id user1)
                                         :file-name "dwellings.csv"
                                         :s3-key #uuid "cb28732e-3d5b-43eb-945f-d9471c983161"})
-        development-data (data/add-data! {:category (:category dwellings-data-fixed-input)
+        development-data (data/add-data! {:category (:category development-category)
                                           :name "New Dwellings Data - SHLAA GLA"
                                           :publisher (:id user1)
                                           :file-name "development.csv"
