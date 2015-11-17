@@ -95,7 +95,8 @@
   "add data version"
   [{:keys [data-id category name file-name publisher s3-key]
     :or {data-id (uuid/random)}}]
-  (let [version (or (get-current-version-name name) 1)]
+  (let [current-version (get-current-version-name name)
+        version (if current-version (inc current-version) 1)]
     (run! #(c/exec (create-data {:data-id data-id
                                  :category category
                                  :name name
