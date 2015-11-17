@@ -452,17 +452,17 @@
                                      result)) inputs))))
   :handle-created (fn [ctx]
                     (let [given-inputs (:inputs (util/get-post-params ctx))
-                          added-data (map
-                                      (fn [[category data-item]]
-                                        (let [s3-key (util/to-uuid (:s3-key data-item))
-                                              data (or
-                                                    (data/get-data-by-s3-key s3-key)
-                                                    (data/add-data! {:category (name category)
-                                                                     :name (:name data-item)
-                                                                     :file-name (:file-name data-item)
-                                                                     :s3-key (util/to-uuid (:s3-key data-item))
-                                                                     :publisher user-id}))]
-                                          [(name category) data])) given-inputs)
+                          added-data (into {} (map
+                                               (fn [[category data-item]]
+                                                 (let [s3-key (util/to-uuid (:s3-key data-item))
+                                                       data (or
+                                                             (data/get-data-by-s3-key s3-key)
+                                                             (data/add-data! {:category (name category)
+                                                                              :name (:name data-item)
+                                                                              :file-name (:file-name data-item)
+                                                                              :s3-key (util/to-uuid (:s3-key data-item))
+                                                                              :publisher user-id}))]
+                                                   (hash-map (name category) data))) given-inputs))
                           new-forecast (update-forecast! {:forecast-id id
                                                           :owner user-id
                                                           :inputs added-data})]
