@@ -34,11 +34,11 @@
                  [com.amazonaws/aws-java-sdk "1.10.27"]
                  [amazonica "0.3.35" :exclusions [com.amazonaws/aws-java-sdk]]
                  [clojure-csv/clojure-csv "2.0.1"]
-                 [witan.models "0.1.0-SNAPSHOT"]
+                 [witan.models "0.1.2"]
                  [clj-http "2.0.0"]
                  [slugger "1.0.1"]
                  [com.stuartsierra/component "0.3.0"]
-                 
+
                  ;; do this here to avoid clashes
                  ;; with local profiles.clj. We need
                  ;; to choose a consistent version so
@@ -46,7 +46,7 @@
                  [cider/cider-nrepl              ~cider-nrepl-version]
                  [org.clojure/tools.namespace    "0.2.10"]
                  [org.clojure/tools.nrepl        "0.2.12"]]
-  
+
   :plugins [[lein-ring "0.8.13"]
             [s3-wagon-private "1.1.2"]]
 
@@ -54,9 +54,9 @@
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
 
   :jvm-opts ["-Xmx1024m"]
-  
+
   :repl-options {:init-ns user}
-  
+
   :uberjar-name "witan-app.jar"
 
   :main ^:skip-aot witan.Bootstrap
