@@ -18,8 +18,14 @@ Example Configuration in <https://github.com/MastodonC/witan.app/blob/master/res
 
 To start a web server for the application, run:
 
-    lein ring server
+    lein repl
+    user> (go)
 
+Or to run from an uberjar
+
+    lein do clean, uberjar
+    java -jar target/witan-app.jar
+    
 The API documentation (via swagger) will automaticall open on http://localhost:3000
 
 ## License
