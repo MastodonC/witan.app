@@ -20,7 +20,7 @@
   (start [this]
     (println "Starting REPL server " config)
     (assoc this :repl-server
-           (apply nrepl-server/start-server :handler cider-nrepl-handler (flatten (seq config)))))
+           (apply nrepl-server/start-server :handler cider-nrepl-handler :bind "0.0.0.0" (flatten (seq config)))))
   (stop [this]
     (println "Stopping REPL server with " config)
     (nrepl-server/stop-server (:repl-server this))
@@ -51,5 +51,5 @@
       (System/exit 0))
 
     (install-default-exception-handler)
-    
+
     (alter-var-root #'witan.application/system (fn [_] (component/start (build-application opts))))))
