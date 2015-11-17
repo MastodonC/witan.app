@@ -84,9 +84,12 @@
            model_property_values
            inputs
            outputs] :as forecast}]
-  (let [divide-data-map (partial map (fn [[k v]] (hash-map k (if (vector? v) (map data/Data-> v) (data/Data-> v)))))
-        inputs  (divide-data-map inputs)
-        outputs (divide-data-map outputs)
+  (let [divide-data-map (fn [inputs urls?] (map
+                                            (fn [[k v]] (hash-map k (if (vector? v)
+                                                                      (map #(data/->Data % urls?) v)
+                                                                      (data/->Data v urls?)))) inputs))
+        inputs  (divide-data-map inputs false)
+        outputs (divide-data-map outputs true)
         cleaned         (-> forecast
                             (dissoc :in_progress
                                     :latest

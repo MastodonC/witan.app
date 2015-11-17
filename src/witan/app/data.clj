@@ -4,24 +4,31 @@
             [clj-time.core :as t]
             [clj-time.format :as tf]
             [witan.app.config :as c]
+            [schema.core :as s]
+            [witan.app.schema :as ws]
             [witan.app.util :as util]
             [witan.app.s3 :as s3])
   (:use [liberator.core :only [defresource]]))
 
-(defn Data->
-  [{:keys [data_id
-           file_name
-           s3_key
-           created] :as data}]
-  (-> data
-      (dissoc :data_id
-              :file_name
-              :s3_key
-              :created)
-      (assoc :data-id data_id
-             :file-name file_name
-             :s3-key s3_key
-             :created (util/java-Date-to-ISO-Date-Time created))))
+(defn ->Data
+  ([data]
+   (->Data data false))
+  ([{:keys [data_id
+            file_name
+            s3_key
+            created] :as data} url?]
+   (let [new-data (-> data
+                      (dissoc :data_id
+                              :file_name
+                              :s3_key
+                              :created)
+                      (assoc :data-id data_id
+                             :file-name file_name
+                             :s3-key s3_key
+                             :created (util/java-Date-to-ISO-Date-Time created)))]
+     (if url?
+       (assoc new-data :s3-url (str (s3/presigned-download-url s3_key file_name)))
+       new-data))))
 
 (defn find-data-by-category
   [category]
@@ -60,7 +67,7 @@
 
 (defn get-data-by-category
   [category]
-  (map #(assoc % :s3-url (str (s3/presigned-download-url (:s3_key %) (:file_name %)))) (c/exec (find-data-by-category category))))
+  (c/exec (find-data-by-category category)))
 
 (defn data-to-db
   [{:keys [data-id category name publisher version file-name s3-key] :as data}]
@@ -103,4 +110,4 @@
   util/json-resource
   :allow-methods #{:get}
   :handle-ok (fn [ctx]
-               (map Data-> (get-data-by-category category))))
+               (s/validate [ws/DataItem] (map #(->Data % true) (get-data-by-category category)))))
