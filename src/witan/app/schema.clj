@@ -36,6 +36,10 @@
 (def DateTimeType
   sc/ISO-Date-Time)
 
+(def ErrorType
+  {(s/required-key :code) s/Int
+   (s/required-key :message) s/Str})
+
 (def User
   "User"
   {(s/required-key :id)   IdType
@@ -153,6 +157,7 @@
    (s/required-key :created)      DateTimeType
    (s/required-key :in-progress?) s/Bool
    (s/required-key :latest?)      s/Bool
+   (s/required-key :errors)       [ErrorType]
    (s/optional-key :description)  s/Str
    (s/optional-key :tag)          Tag
    (s/optional-key :model-id)     IdType})

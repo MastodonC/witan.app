@@ -14,6 +14,11 @@ CREATE TYPE witan.model_property_value (
     value text
 );
 
+CREATE TYPE witan.error (
+    message text,
+    code int
+);
+
 CREATE TABLE witan.forecast_headers (
     forecast_id uuid PRIMARY KEY,
     created timestamp,
@@ -25,7 +30,8 @@ CREATE TABLE witan.forecast_headers (
     owner uuid,
     owner_name text,
     model_id uuid,
-    model_property_values map<text,frozen<model_property_value>>
+    model_property_values map<text,frozen<model_property_value>>,
+    errors list<frozen<witan.error>>
 );
 
 CREATE TABLE witan.users (
@@ -61,6 +67,7 @@ CREATE TABLE witan.forecasts (
     latest boolean,
     model_id uuid,
     model_property_values map<text,frozen<model_property_value>>,
+    errors list<frozen<witan.error>>,
     inputs map<text,frozen<data_item>>,
     outputs map<text,frozen<list<data_item>>>,
     PRIMARY KEY (forecast_id, version)

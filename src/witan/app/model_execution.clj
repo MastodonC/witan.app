@@ -143,18 +143,3 @@ TODO: will need to get own config files")
 (defmethod execute-model :default
   [_ model]
   (throw (Exception. (str "The following model could not be found: " (:name model) " v" (:version model)))))
-
-(defn execute-test-model
-  [forecast model]
-  (let [properties (get-properties forecast)]
-    (log/info "Running the test model with the following properties: " properties)
-    (<!! (timeout 3000))
-    {"Some output" [{:name      "Fake result"
-                     :file_name "fake.csv"
-                     :s3_key    #uuid "0c53f871-ba4e-4e90-81df-425382e9b95e"}]
-     "Some more output" [{:name      "Fake result 2"
-                          :file_name "fake2.csv"
-                          :s3_key    #uuid "1c53f871-ba4e-4e90-81df-425382e9b95e"}
-                         {:name      "Fake result 3"
-                          :file_name "fake3.csv"
-                          :s3_key    #uuid "2c53f871-ba4e-4e90-81df-425382e9b95e"}]}))
