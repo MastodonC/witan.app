@@ -23,7 +23,8 @@
      :forecast_id #uuid "fd44474d-e0f8-4713-bacf-299e503e4f30",
      :version 2,
      :owner #uuid "cac4ba3a-07c8-4e79-9ae0-d97317bb0d45",
-     :owner_name "User 1"}
+     :owner_name "User 1"
+     :errors []}
     {:description "Description of my forecast",
      :name "My Forecast 2",
      :created #inst "2015-10-06T12:44:17.210-00:00",
@@ -32,7 +33,8 @@
      :current_version_id #uuid "102fef0c-aa17-41bc-9f4e-cc11d18d7ae5",
      :version 0,
      :owner #uuid "6961ed51-e1d6-4890-b102-ab862893e3ba",
-     :owner_name "User 2"}
+     :owner_name "User 2"
+     :errors []}
     {:description "Description of my forecast",
      :name "My Forecast 3",
      :created #inst "2015-10-06T12:44:17.240-00:00",
@@ -41,7 +43,8 @@
      :forecast_id #uuid "7185c4e4-739e-4eb8-8e37-f3f4b618ac1d",
      :version 0,
      :owner #uuid "cac4ba3a-07c8-4e79-9ae0-d97317bb0d45",
-     :owner_name "User 1"}))
+     :owner_name "User 1"
+     :errors []}))
 
 (defn get-dummy-forecasts [& _]
   '({:forecast_id #uuid "fd44474d-e0f8-4713-bacf-299e503e4f30",
@@ -63,7 +66,8 @@
                                       :version 1,
                                       :file_name "base-population.csv",
                                       :s3_key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd",
-                                      :created #inst "2015-10-28T18:27:33.967-00:00" } }}
+                                      :created #inst "2015-10-28T18:27:33.967-00:00" } }
+     :errors []}
     {:forecast_id #uuid "fd44474d-e0f8-4713-bacf-299e503e4f30",
      :version 1,
      :created #inst "2015-10-14T08:41:21.253-00:00",
@@ -74,7 +78,8 @@
      :owner #uuid "d8fc0f3c-0535-4959-bf9e-505af9a59ad9",
      :owner_name "User 3",
      :version_id #uuid "f960e442-2c85-489e-9807-4eeecd6fd55a"
-     :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"}
+     :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"
+     :errors []}
     {:description "Description of my forecast",
      :name "My Forecast 1",
      :created #inst "2015-10-06T12:44:17.176-00:00",
@@ -85,7 +90,8 @@
      :version 0,
      :owner #uuid "cac4ba3a-07c8-4e79-9ae0-d97317bb0d45",
      :owner_name "User 1"
-     :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"}))
+     :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"
+     :errors []}))
 
 (defn get-dummy-models []
   '({:name "My Model 2",
