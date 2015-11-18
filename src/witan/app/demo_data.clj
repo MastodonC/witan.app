@@ -76,7 +76,7 @@
                                           :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
         ;; model
         dclg-housing-linked-model (model/add-model! {:name "DCLG-based Housing Linked Model"
-                                                     :description "demography model which was developed to generate population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
+                                                     :description "Demography model which was developed to generate population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
                                                      :owner (:id user1)
                                                      :properties [{:name "borough"
                                                                    :type "dropdown"
