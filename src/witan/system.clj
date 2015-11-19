@@ -11,7 +11,7 @@
                                                    :join? false})))
   (stop [this]
     (println "Stopping JettyServer")
-    ((::server this)) ;; this is the jetty shutdown fn.
+    (.stop (::server this)) ;; this is the jetty shutdown fn.
     (dissoc this ::server)))
 
 (defn system []
@@ -19,4 +19,3 @@
        :jetty-server (->JettyServer #'witan.app.handler/app 3000)
        :repl-server  (Object.) ; dummy - replaced when invoked via uberjar.
        )))
-
