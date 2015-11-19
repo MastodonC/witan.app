@@ -26,8 +26,18 @@
                               :password_hash hash
                               :name (:name user)))))
 
+(defn update-password [id password]
+  (let [hash (hs/encrypt password)]
+    (hayt/update :Users
+                 (hayt/set-columns {:password_hash hash})
+                 (hayt/where {:id id}))))
+
 (defn retrieve-user-by-username [username]
   (first (c/exec (find-user-by-username username))))
+
+(defn change-password! [username password]
+  (let [user (retrieve-user-by-username username)]
+    (c/exec (update-password (:id user) password))))
 
 (defn add-user! [{:keys [username] :as user}]
   (let [existing-users (retrieve-user-by-username username)]
