@@ -16,7 +16,7 @@
 
 (defn system []
   (-> (component/system-map
-       :jetty-server (->JettyServer witan.app.handler/app 3000)
-       :repl-server  (Object.) ; dummy - replaced when invoked via uberjar.   
+       :jetty-server (->JettyServer #'witan.app.handler/app 3000)
+       :repl-server  (Object.) ; dummy - replaced when invoked via uberjar.
        )))
 
