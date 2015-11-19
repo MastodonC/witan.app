@@ -102,6 +102,13 @@
   (sweet/swagger-docs
    {:info {:title "Witan API"
            :description "Back-end API for the Witan project"}})
+  (sweet/context* "/monitoring" []
+                  (sweet/GET* "/_elb_status" []
+                              :no-doc true
+                              (ok {:status "ALL GOOD"}))
+                  (sweet/POST* "/_elb_status" []
+                               :no-doc true
+                               (ok {:status "ALL GOOD"})))
   (sweet/context* "/api" []
                   (sweet/POST* "/login" []
                                :body [login-details w/LoginDetails]
