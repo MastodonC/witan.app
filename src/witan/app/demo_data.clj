@@ -6,24 +6,24 @@
             [witan.app.user :as u]))
 
 (def population-fixed-input  {:category "population"
-                              :description "DCLG public population data"})
+                              :description "Department of Communities and Local Government (DCLG) public population projections"})
 (def institutional-fixed-input {:category "institutional"
-                                :description "Institutional population, also known as Communal establishment pop (CEP) i.e. people living in student halls, retirement homes etc."})
+                                :description "DCLG institutional population projections, also known as communal establishment pop (CEP) i.e. people living in student halls, retirement homes etc."})
 (def private-housing-fixed-input {:category "private-housing"
-                                  :description "Household population"})
+                                  :description "DCLG household population projections i.e. people living in private rather than communal housing"})
 (def household-fixed-input {:category "households-data"
-                            :description "Number of households"})
+                            :description "DCLG projections for numbers of households"})
 (def low-trend-fixed-input {:category "low-trend-data"
-                            :description "Low migration scenario trend-based population projections"})
+                            :description "GLA-generated low migration scenario trend-based population projections"})
 (def high-trend-fixed-input {:category "high-trend-data"
-                             :description "High migration scenario trend-based population projections"})
+                             :description "GLA-generated high migration scenario trend-based population projections"})
 (def dwellings-data-fixed-input {:category "dwellings-data"
                                  :description "Dwellings from most recent census"})
 
 (def development-category {:category "development-data"
-                           :description "New dwellings projections based on planning permissions entered and checked by the Boroughs"})
+                           :description "Net new dwellings from London Development Database and projections of housing (SHLAA or BPO)"})
 (def output-category {:category "housing-linked-population"
-                      :description "Housing linked population figures"})
+                      :description "Housing-linked population projections"})
 
 (defn load-demo-data!
   "Loads realistic demo data into Cassandra"
@@ -35,48 +35,48 @@
         ;; fixed data sources
         ;; Note: data is uploaded in S3 with given keys in both witan-test-data and witan-staging-data buckets
         population-data (data/add-data! {:category  (:category population-fixed-input)
-                                         :name      "Census population"
+                                         :name      "DCLG population"
                                          :publisher (:id user1)
                                          :file-name "Long+Pop.csv"
                                          :s3-key #uuid "ecef4186-0d6a-452b-9713-cdce3437cd59"})
         institutional-data (data/add-data! {:category  (:category institutional-fixed-input)
-                                            :name      "Institutional population"
+                                            :name      "DCLG institutional population"
                                             :publisher (:id user1)
                                             :file-name "Long+Inst+Pop.csv"
                                             :s3-key #uuid "59400efa-b002-4eae-849b-34751b458f74"})
         private-housing-data (data/add-data! {:category (:category private-housing-fixed-input)
-                                              :name "Private Housing"
+                                              :name "DCLG household population"
                                               :publisher (:id user1)
                                               :file-name "Long+PHP.csv"
                                               :s3-key #uuid "f70f99c3-10d1-4271-a30b-dc1290117943"})
         households-data (data/add-data! {:category (:category household-fixed-input)
-                                         :name "Households"
+                                         :name "DCLG households"
                                          :publisher (:id user1)
                                          :file-name "Long+HH.csv"
                                          :s3-key #uuid "fad572a5-6d90-4bbc-8874-62a2886b3ce6"})
         low-trend-data (data/add-data! {:category (:category low-trend-fixed-input)
-                                        :name "Low trend data"
+                                        :name "Low trend"
                                         :publisher (:id user1)
                                         :file-name "Low+-+SYA.csv"
                                         :s3-key #uuid "72aea88c-24cf-4213-a6f3-a3e2b36b8604"})
         high-trend-data (data/add-data! {:category (:category high-trend-fixed-input)
-                                         :name "High trend data"
+                                         :name "High trend"
                                          :publisher (:id user1)
                                          :file-name "High+-+SYA.csv"
                                          :s3-key #uuid "765a4acc-0e54-4f17-9d4e-365c7bdd3fb2"})
         dwellings-data (data/add-data! {:category (:category dwellings-data-fixed-input)
-                                        :name "Dwellings Data"
+                                        :name "Dwellings"
                                         :publisher (:id user1)
                                         :file-name "dwellings.csv"
                                         :s3-key #uuid "cb28732e-3d5b-43eb-945f-d9471c983161"})
         development-data (data/add-data! {:category (:category development-category)
-                                          :name "New Dwellings Data - SHLAA GLA"
+                                          :name "Net new dwellings"
                                           :publisher (:id user1)
                                           :file-name "development.csv"
                                           :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
         ;; model
         dclg-housing-linked-model (model/add-model! {:name "DCLG-based Housing Linked Model"
-                                                     :description "Demography model which was developed to generate population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
+                                                     :description "Demography model developed at the GLA to generate borough-level population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
                                                      :owner (:id user1)
                                                      :properties [{:name "borough"
                                                                    :type "dropdown"
