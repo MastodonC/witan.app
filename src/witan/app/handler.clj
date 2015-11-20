@@ -9,7 +9,8 @@
             [ring.middleware
              [cors :refer [wrap-cors]]
              [defaults :refer [api-defaults wrap-defaults]]
-             [json :refer [wrap-json-body wrap-json-response]]]
+             [json :refer [wrap-json-body wrap-json-response]]
+             [multipart-params :refer [wrap-multipart-params]]]
             [witan.app.user :as u]
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
@@ -19,6 +20,7 @@
             [schema.core :as s]
             [witan.app.schema :as w]
             [compojure.api.sweet :as sweet]
+            [compojure.api.upload :as upload]
             [ring.util.http-response :refer :all]
             [clojure.tools.logging :as log]
             [clj-time.core :as t]
@@ -156,6 +158,16 @@
                                              version :- java.lang.Long]
                                :summary "Returns a forecast of the specified id and version"
                                (forecast/forecast {:id id :version version}))
+                   (sweet/POST* "/data/:model-id/:category" []
+                                :multipart-params [file :- upload/TempFileUpload]
+                                :middlewares [wrap-multipart-params]
+                                :path-params [model-id :- java.util.UUID
+                                              category :- String]
+                                :summary "Validates a given data file for a model input"
+                                (model/validation {:model-id  model-id
+                                                   :category category
+                                                   :file-name ()
+                                                   :file file}))
                    (sweet/POST* "/forecasts/:id/versions" {:as request}
                                 :path-params [id :- java.util.UUID]
                                 :summary "Creates a new version of this forecast with the specified updates and run it"

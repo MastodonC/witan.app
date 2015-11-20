@@ -9,8 +9,10 @@
             [witan.app.util :as util]
             [witan.app.schema :as ws]
             [witan.app.data :as data]
+            [witan.app.validation :as validation]
             [schema.core :as s]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [ring.util.mime-type :refer [ext-mime-type]])
   (:use [liberator.core :only [defresource]]))
 
 (defn ->Model
@@ -83,6 +85,14 @@
   [model-id]
   (first (c/exec (find-model-by-model-id model-id))))
 
+(defn is-an-input-category?
+  [model-id category]
+  (let [model (get-model-by-model-id model-id)]
+    (some->> model
+             :input_data
+             (map :category)
+             (some #{category}))))
+
 (defn add-default-data-to-model!
   [model-id category data]
   (let [model (get-model-by-model-id model-id)
@@ -123,3 +133,17 @@
                (s/validate
                      ws/Model
                      (->Model result))))
+
+(defresource validation [{:keys [model-id category file]}]
+  :allowed-methods #{:post}
+  :available-media-types ["application/json"]
+  :processable? (fn [ctx]
+                  (and
+                   (validation/csv-extension? (:filename file))
+                   (is-an-input-category? model-id category)))
+  :handle-unprocessable-entity (fn [ctx] {:error (str "Could not get validation data for " model-id " - " category)})
+  :post! (fn [ctx]
+)
+  :handle-created (fn [ctx]
+               (log/info "you are here" (:tempfile file))
+               {:boo "yeah"}))
