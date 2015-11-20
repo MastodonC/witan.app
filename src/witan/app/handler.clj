@@ -160,10 +160,6 @@
                                 :path-params [id :- java.util.UUID]
                                 :summary "Creates a new version of this forecast with the specified updates and run it"
                                 (forecast/version {:id id :user-id (:identity request)}))
-                   (sweet/GET* "/forecasts/:id/:version/output/:type" []
-                               :summary "Downloads an output of the given type"
-                               (not-implemented))
-
                    (sweet/POST* "/tag" []
                                 :summary "Creates a new tag from a forecast id and version"
                                 (not-implemented))
