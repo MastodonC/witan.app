@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-sed -e "s/AWS_ACCESS_KEY/$WITAN_APP_AWS_KEY/" -e "s/AWS_SECRET_KEY/$WITAN_APP_AWS_SECRET/" ./resources/aws-credentials.template > ./resources/aws-credentials
+sed -e "s@AWS_ACCESS_KEY@${WITAN_APP_AWS_KEY}@" -e "s@AWS_SECRET_KEY@${WITAN_APP_AWS_SECRET}@" ./resources/aws-credentials.template > ./resources/aws-credentials
