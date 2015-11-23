@@ -17,6 +17,7 @@
             [witan.app.util :refer [load-extensions!]]
             [witan.app.s3 :as s3]
             [witan.app.data :as data]
+            [witan.app.validation :as validation]
             [schema.core :as s]
             [witan.app.schema :as w]
             [compojure.api.sweet :as sweet]
@@ -158,16 +159,13 @@
                                              version :- java.lang.Long]
                                :summary "Returns a forecast of the specified id and version"
                                (forecast/forecast {:id id :version version}))
-                   (sweet/POST* "/data/:model-id/:category" []
+                   (sweet/POST* "/validation/:category" []
                                 :multipart-params [file :- upload/TempFileUpload]
                                 :middlewares [wrap-multipart-params]
-                                :path-params [model-id :- java.util.UUID
-                                              category :- String]
-                                :summary "Validates a given data file for a model input"
-                                (model/validation {:model-id  model-id
-                                                   :category category
-                                                   :file-name ()
-                                                   :file file}))
+                                :path-params [category :- String]
+                                :summary "Validates a given data file for a category"
+                                (validation/validation {:category category
+                                                        :file file}))
                    (sweet/POST* "/forecasts/:id/versions" {:as request}
                                 :path-params [id :- java.util.UUID]
                                 :summary "Creates a new version of this forecast with the specified updates and run it"
