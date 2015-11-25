@@ -147,3 +147,9 @@ CREATE TABLE witan.models (
     output_data list<text>,
     fixed_input_data map<text,frozen<data_item>>
 );
+
+CREATE TABLE witan.validations (
+  category text PRIMARY KEY,
+  header_row list<text>,
+  serialized_schema text
+);

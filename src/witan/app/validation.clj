@@ -1,25 +1,40 @@
 (ns witan.app.validation
-  (:require [clojure.tools.logging :as log])
+  (:require [clojure.tools.logging :as log]
+            [qbits.hayt :as hayt]
+            [witan.app.config :as c])
   (:use [liberator.core :only [defresource]]))
 
+(defn find-validation
+  [category]
+  (hayt/select :validations (hayt/where {:category category})))
+
+(defn get-validation
+  [category]
+  (first (c/exec (find-validation category))))
+
+(defn add-validation!
+  [{:keys [category header-row]}]
+  (c/exec (hayt/insert :validations (hayt/values {:category category
+                                                  :header_row header-row}))))
 (defn csv-extension?
   [filename]
   (let [ext (last (clojure.string/split filename #"\."))]
-    (log/info ext)
     (= ext "csv")))
 
 (defn header-line-ok?
   [header expected-header]
-  (= ["GSS.Code.Borough","BOROUGH","Gender","GSS.Code.Ward","ZONELABEL","Age","Rate"] expected-header)
-)
+  (= header expected-header))
 
 (defn validate-content
-  [category file]
-  (with-open [rdr (clojure.java.io/reader file)]
-    (let [lines (line-seq rdr)]
-      (header-line-ok? (first lines) "")
-      (log/info (first lines))))
-  true)
+  [category file output-function]
+  (if-let [validation (get-validation category)]
+    (with-open [rdr (clojure.java.io/reader file)]
+      (let [lines (line-seq rdr)]
+        (log/info (first lines))
+        [(header-line-ok? (first lines) (:header_row validation))
+         {:validation-error (str "The header row of the file is incorrect. we expect " (:header_row validation))}]
+)))
+  [nil {:validation-error "Could not find the validation for this data category."}])
 
 (defresource validation [{:keys [category file]}]
   :allowed-methods #{:post}

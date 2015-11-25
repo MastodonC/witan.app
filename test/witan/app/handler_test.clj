@@ -7,10 +7,12 @@
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
             [witan.app.data :as data]
+            [witan.app.validation :as validation]
             [witan.app.schema :as ws]
             [witan.app.s3 :as s3]
             [clojure.data.json :as json]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [clojure.java.io :as io]))
 
 (def user-id (java.util.UUID/randomUUID))
 
@@ -118,6 +120,9 @@
 
 (defn get-dummy-data []
   '({:category "Base population data", :created #inst "2015-10-28T18:27:33.968-00:00", :data_id #uuid "40ff789b-68dd-420d-81e7-2b19b69fd399", :file_name "base-population.csv", :name "base population Camden", :publisher #uuid "bd163a4b-fecc-4f8d-a642-c9ee951d6f77", :s3_key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd", :version 1 :public false}))
+
+(defn get-dummy-validation []
+  {:category "development-data" :header-row ["GSS.Code" "Borough name" "Year" "Past development" "Future development"]})
 
 (defn auth-header [token] {"Authorization" (str "Token " token)})
 

@@ -3,7 +3,8 @@
             [witan.app.data :as data]
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
-            [witan.app.user :as u]))
+            [witan.app.user :as u]
+            [witan.app.validation :as validation]))
 
 (def population-fixed-input  {:category "population"
                               :description "Department of Communities and Local Government (DCLG) public population projections"})
@@ -75,6 +76,9 @@
                                           :file-name "development.csv"
                                           :public? true
                                           :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
+        ;; validation
+        development-data-validation (validation/add-validation! {:category (:category development-category)
+                                                                 :header-row ["GSS.Code" "Borough name" "Year" "Past development" "Future development"]})
         ;; model
         dclg-housing-linked-model (model/add-model! {:name "DCLG-based Housing Linked Model"
                                                      :description "Demography model developed at the GLA to generate borough-level population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
