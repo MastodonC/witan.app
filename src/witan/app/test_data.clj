@@ -73,6 +73,7 @@
                                           :name "Net new dwellings"
                                           :publisher (:id user1)
                                           :file-name "development.csv"
+                                          :public? true
                                           :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
         ;; model
         dclg-housing-linked-model (model/add-model! {:name "DCLG-based Housing Linked Model"

@@ -16,15 +16,18 @@
   ([{:keys [data_id
             file_name
             s3_key
-            created] :as data} url?]
+            created
+            public] :as data} url?]
    (let [new-data (-> data
                       (dissoc :data_id
                               :file_name
                               :s3_key
+                              :public
                               :created)
                       (assoc :data-id data_id
                              :file-name file_name
                              :s3-key s3_key
+                             :public? public
                              :created (util/java-Date-to-ISO-Date-Time created)))]
      (if url?
        (assoc new-data :s3-url (str (s3/presigned-download-url s3_key file_name)))
@@ -66,21 +69,25 @@
       (first)))
 
 (defn get-data-by-category
-  [category]
-  (c/exec (find-data-by-category category)))
+  [category user]
+  (filter #(or (:public %)
+               (= (:publisher %) user))
+          (c/exec (find-data-by-category category))))
 
 (defn data-to-db
-  [{:keys [data-id category name publisher version file-name s3-key] :as data}]
+  [{:keys [data-id category name publisher version file-name s3-key public?] :as data}]
   (-> data
       (dissoc :data-id
               :file-name
-              :s3-key)
+              :s3-key
+              :public?)
       (assoc :data_id data-id
              :file_name file-name
-             :s3_key s3-key)))
+             :s3_key s3-key
+             :public public?)))
 
 (defn create-data
-  [{:keys [data-id category name publisher version file-name s3-key]} data-table]
+  [{:keys [data-id category name publisher version file-name s3-key public?]} data-table]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert data-table (hayt/values :data_id data-id
                                          :category category
@@ -88,13 +95,15 @@
                                          :publisher publisher
                                          :version version
                                          :file_name file-name
+                                         :public public?
                                          :s3_key s3-key
                                          :created creation-time))))
 
 (defn add-data!
   "add data version"
-  [{:keys [data-id category name file-name publisher s3-key]
-    :or {data-id (uuid/random)}}]
+  [{:keys [data-id category name file-name publisher s3-key public?]
+    :or {data-id (uuid/random)
+         public? false}}] ;; always default public to false.
   (let [current-version (get-current-version-name name)
         version (if current-version (inc current-version) 1)]
     (run! #(c/exec (create-data {:data-id data-id
@@ -103,6 +112,7 @@
                                  :file-name file-name
                                  :publisher publisher
                                  :version version
+                                 :public? public?
                                  :s3-key s3-key} %)) '(:data_by_data_id :data_by_category :data_by_s3_key))
     (c/exec (update-version-number-name name version))
     (first (c/exec (find-data-by-data-id data-id)))))
@@ -111,4 +121,6 @@
   util/json-resource
   :allow-methods #{:get}
   :handle-ok (fn [ctx]
-               (s/validate [ws/DataItem] (map #(->Data % true) (get-data-by-category category)))))
+               (s/validate [ws/DataItem] (map #(->Data % true) (get-data-by-category
+                                                                category
+                                                                (util/get-user-id ctx))))))
