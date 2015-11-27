@@ -368,12 +368,10 @@
         (log/error "The incorrect number of inputs was supplied.")))))
 
 (defn get-forecasts
-  ([user]
-   (filter #(or (:public %)
-                (= (:owner %) user))
-           (c/exec (hayt/select :forecast_headers))))
-  ([]
-   (filter :public (c/exec (hayt/select :forecast_headers)))))
+  [user]
+  (filter #(or (:public %)
+               (= (:owner %) user))
+          (c/exec (hayt/select :forecast_headers))))
 
 
 (defn get-forecast
