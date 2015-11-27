@@ -21,6 +21,7 @@
 (defn- ->ForecastHeader
   "Converts raw cassandra forecast_header into a ws/Forecast schema"
   [{:keys [in_progress
+           public
            forecast_id
            created
            current_version_id
@@ -34,8 +35,10 @@
                             :current_version_id
                             :model_id
                             :model_property_values
-                            :owner_name)
+                            :owner_name
+                            :public)
                     (assoc :in-progress? in_progress
+                           :public? public
                            :latest? true
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
@@ -46,6 +49,7 @@
 (defn- ->Forecast
   "Converts raw cassandra forecast into a ws/Forecast schema"
   [{:keys [in_progress
+           public
            latest
            forecast_id
            created
@@ -55,6 +59,7 @@
            model_property_values] :as forecast}]
   (let [cleaned (-> forecast
                     (dissoc :in_progress
+                            :public
                             :latest
                             :forecast_id
                             :created
@@ -65,6 +70,7 @@
                             :inputs
                             :outputs)
                     (assoc :in-progress? in_progress
+                           :public? public
                            :latest? latest
                            :forecast-id forecast_id
                            :created (util/java-Date-to-ISO-Date-Time created)
@@ -75,6 +81,7 @@
 (defn ->ForecastInfo
   "Converts raw cassandra forecast into a ws/ForecastInfo schema"
   [{:keys [in_progress
+           public
            latest
            forecast_id
            created
@@ -92,6 +99,7 @@
         outputs (divide-data-map outputs true)
         cleaned         (-> forecast
                             (dissoc :in_progress
+                                    :public
                                     :latest
                                     :forecast_id
                                     :created
@@ -100,6 +108,7 @@
                                     :model_id
                                     :model_property_values)
                             (assoc :in-progress? in_progress
+                                   :public? public
                                    :latest? latest
                                    :forecast-id forecast_id
                                    :created (util/java-Date-to-ISO-Date-Time created)
@@ -169,7 +178,7 @@
   (first (c/exec (find-forecast-by-version forecast-id version))))
 
 (defn create-new-forecast
-  [{:keys [name description owner owner-name forecast-id version-id model-id model-property-values]}]
+  [{:keys [name description owner owner-name forecast-id version-id model-id model-property-values public?]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecast_headers (hayt/values :name name
                                                 :description description
@@ -179,6 +188,7 @@
                                                 :forecast_id forecast-id
                                                 :current_version_id version-id
                                                 :in_progress false
+                                                :public public?
                                                 :model_id model-id
                                                 :model_property_values model-property-values
                                                 :version 0))))
@@ -190,7 +200,7 @@
                                             :owner owner)))
 
 (defn create-forecast-version
-  [{:keys [name description owner owner-name forecast-id version in-progress? id version-id model-id model-property-values inputs]}]
+  [{:keys [name description owner owner-name forecast-id version in-progress? public? id version-id model-id model-property-values inputs]}]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert :forecasts (hayt/values
                              :forecast_id forecast-id
@@ -202,13 +212,14 @@
                              :version_id version-id
                              :version version
                              :in_progress in-progress?
+                             :public public?
                              :latest true
                              :model_id model-id
                              :model_property_values model-property-values
                              :inputs inputs))))
 
 (defn create-first-version
-  [{:keys [forecast-id version-id name description owner owner-name model-id model-property-values]}]
+  [{:keys [forecast-id version-id name description owner owner-name model-id model-property-values public?]}]
   (create-forecast-version {:name name
                             :description description
                             :forecast-id forecast-id
@@ -217,6 +228,7 @@
                             :owner owner
                             :owner-name owner-name
                             :in-progress? false
+                            :public public?
                             :model-id model-id
                             :model-property-values model-property-values}))
 
@@ -296,7 +308,9 @@
        (catch Exception e (log/error "Model" (:model_id forecast) "threw an error:" (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
 
 (defn add-forecast!
-  [{:keys [name owner model-id model-properties] :as forecast}]
+  [{:keys [name owner model-id model-properties public?]
+    :or {public? false}
+    :as forecast}]
   (let [existing-forecasts (c/exec (find-forecast-by-name-and-owner name owner))
         id (uuid/random)
         version-id (uuid/random)
@@ -306,6 +320,7 @@
         new-forecast (assoc forecast :forecast-id id
                             :version-id version-id
                             :model-id uuid-model-id
+                            :public? public?
                             :model-property-values (:values checked-property-values)
                             :owner-name owner-name)]
     (when (and (empty? existing-forecasts) (empty? (:errors checked-property-values)))
@@ -352,8 +367,12 @@
         (log/error "The incorrect number of inputs was supplied.")))))
 
 (defn get-forecasts
-  []
-  (c/exec (hayt/select :forecast_headers)))
+  ([user]
+   (filter #(or (:public %)
+                (= (:owner %) user))
+           (c/exec (hayt/select :forecast_headers))))
+  ([]
+   (filter :public (c/exec (hayt/select :forecast_headers)))))
 
 
 (defn get-forecast
@@ -411,10 +430,10 @@
   :handle-unprocessable-entity (fn [ctx] (if (not-empty (:property-errors ctx))
                                            {:error (str "Property errors: " (string/join ", " (:property-errors ctx)))}
                                            {:error "Validation error in given forecast."}))
-  :handle-ok  (fn [_]
+  :handle-ok  (fn [ctx]
                 (s/validate
                  [ws/Forecast]
-                 (map ->ForecastHeader (get-forecasts)))))
+                 (map ->ForecastHeader (get-forecasts (util/get-user-id ctx))))))
 
 (defresource forecast [{:keys [version latest-version?] :as args}]
   util/json-resource

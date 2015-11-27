@@ -136,6 +136,7 @@
   {(s/required-key :name)             s/Str
    (s/required-key :model-id)         (s/either IdType s/Str)
    (s/optional-key :description)      s/Str
+   (s/optional-key :public?)          s/Bool
    (s/optional-key :model-properties) [{s/Keyword s/Str}]})
 
 (def UpdateForecast
@@ -152,6 +153,7 @@
    (s/required-key :version)      s/Int
    (s/required-key :created)      DateTimeType
    (s/required-key :in-progress?) s/Bool
+   (s/required-key :public?)      s/Bool
    (s/required-key :latest?)      s/Bool
    (s/optional-key :description)  s/Str
    (s/optional-key :tag)          Tag
