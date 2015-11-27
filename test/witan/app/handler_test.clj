@@ -14,7 +14,7 @@
 
 (def user-id (java.util.UUID/randomUUID))
 
-(defn get-dummy-forecast-headers []
+(defn get-dummy-forecast-headers [& _]
   '({:description "Description of my forecast",
      :name "My Forecast 1",
      :created #inst "2015-10-06T12:44:17.176-00:00",
@@ -23,7 +23,8 @@
      :forecast_id #uuid "fd44474d-e0f8-4713-bacf-299e503e4f30",
      :version 2,
      :owner #uuid "cac4ba3a-07c8-4e79-9ae0-d97317bb0d45",
-     :owner_name "User 1"}
+     :owner_name "User 1"
+     :public false}
     {:description "Description of my forecast",
      :name "My Forecast 2",
      :created #inst "2015-10-06T12:44:17.210-00:00",
@@ -32,7 +33,8 @@
      :current_version_id #uuid "102fef0c-aa17-41bc-9f4e-cc11d18d7ae5",
      :version 0,
      :owner #uuid "6961ed51-e1d6-4890-b102-ab862893e3ba",
-     :owner_name "User 2"}
+     :owner_name "User 2"
+     :public false}
     {:description "Description of my forecast",
      :name "My Forecast 3",
      :created #inst "2015-10-06T12:44:17.240-00:00",
@@ -41,7 +43,8 @@
      :forecast_id #uuid "7185c4e4-739e-4eb8-8e37-f3f4b618ac1d",
      :version 0,
      :owner #uuid "cac4ba3a-07c8-4e79-9ae0-d97317bb0d45",
-     :owner_name "User 1"}))
+     :owner_name "User 1"
+     :public false}))
 
 (defn get-dummy-forecasts [& _]
   '({:forecast_id #uuid "fd44474d-e0f8-4713-bacf-299e503e4f30",
@@ -53,6 +56,7 @@
      :name "My Forecast 1",
      :owner #uuid "d8fc0f3c-0535-4959-bf9e-505af9a59ad9",
      :owner_name "User 3",
+     :public false
      :version_id #uuid "78b1bf97-0ebe-42ef-8031-384e504cf795"
      :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"
      :model_property_values {}
@@ -73,6 +77,7 @@
      :name "My Forecast 1",
      :owner #uuid "d8fc0f3c-0535-4959-bf9e-505af9a59ad9",
      :owner_name "User 3",
+     :public false
      :version_id #uuid "f960e442-2c85-489e-9807-4eeecd6fd55a"
      :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"}
     {:description "Description of my forecast",
@@ -85,6 +90,7 @@
      :version 0,
      :owner #uuid "cac4ba3a-07c8-4e79-9ae0-d97317bb0d45",
      :owner_name "User 1"
+     :public false
      :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"}))
 
 (defn get-dummy-models []
