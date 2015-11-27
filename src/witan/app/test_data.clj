@@ -26,7 +26,7 @@
                       :description "Housing-linked population projections"})
 
 (defn load-test-data!
-  "Loads realistic demo data into Cassandra"
+  "Loads test data into Cassandra - do not rely on this data, it's often broken"
   []
   (let [;; add users
         user1 (u/add-user! {:name "Mastodon 1" :username "support@mastodonc.com" :password "secret"})
