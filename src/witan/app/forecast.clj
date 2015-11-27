@@ -228,7 +228,7 @@
                             :owner owner
                             :owner-name owner-name
                             :in-progress? false
-                            :public public?
+                            :public? public?
                             :model-id model-id
                             :model-property-values model-property-values}))
 
@@ -353,6 +353,7 @@
                                   :owner owner
                                   :owner-name owner-name
                                   :in-progress? true
+                                  :public? (:public latest-forecast)
                                   :forecast-id forecast-id
                                   :model-id (:model_id latest-forecast)
                                   :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
