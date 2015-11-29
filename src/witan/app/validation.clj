@@ -37,13 +37,12 @@
   [category file]
   (if-let [validation (get-validation category)]
     (validate validation file)
-    [nil {:validation-error "Could not find the validation for this data category."}]))
+    [false {:validation-error "Could not find the validation for this data category."}]))
 
 (defresource validation [{:keys [category file]}]
   :allowed-methods #{:post}
   :available-media-types ["application/json"]
   :processable? (fn [ctx]
-                  (log/info "IN PROCESSABLE" file)
                   (if (csv-extension? (:filename file))
                     (validate-content category (:tempfile file))
                     [nil {:validation-error "this doesn't seem to be a CSV file"}]))
