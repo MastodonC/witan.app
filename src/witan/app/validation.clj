@@ -23,18 +23,21 @@
 
 (defn header-line-ok?
   [header expected-header]
-  (= header expected-header))
+  (= header (clojure.string/join "," expected-header)))
+
+(defn validate
+  [validation file]
+  (with-open [rdr (clojure.java.io/reader file)]
+    (let [lines (line-seq rdr)]
+      (log/info (first lines))
+      [(header-line-ok? (first lines) (:header_row validation))
+       {:validation-error (str "The header row of the file is incorrect. we expect " (:header_row validation))}])))
 
 (defn validate-content
-  [category file output-function]
+  [category file]
   (if-let [validation (get-validation category)]
-    (with-open [rdr (clojure.java.io/reader file)]
-      (let [lines (line-seq rdr)]
-        (log/info (first lines))
-        [(header-line-ok? (first lines) (:header_row validation))
-         {:validation-error (str "The header row of the file is incorrect. we expect " (:header_row validation))}]
-)))
-  [nil {:validation-error "Could not find the validation for this data category."}])
+    (validate validation file)
+    [nil {:validation-error "Could not find the validation for this data category."}]))
 
 (defresource validation [{:keys [category file]}]
   :allowed-methods #{:post}
