@@ -458,7 +458,6 @@
   :processable? (fn [ctx]
                   (let [forecast (get-most-recent-version id)
                         inputs (:inputs (util/get-post-params ctx))]
-                    (every? (fn [[category data-item]] (s3/exists? (:s3-key data-item))) inputs)
                     (and forecast
                          ((util/post!-processable-validation ws/UpdateForecast) ctx)
                          (all-categories-exist-in-model? forecast (keys inputs))
