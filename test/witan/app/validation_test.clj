@@ -10,7 +10,7 @@
 
 (defn validation-error
   [validated]
-  (-> validated second :validation-error))
+  (-> validated second :error))
 
 (deftest content-validation-test
 
