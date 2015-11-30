@@ -150,6 +150,5 @@ CREATE TABLE witan.models (
 
 CREATE TABLE witan.validations (
   category text PRIMARY KEY,
-  header_row list<text>,
-  serialized_schema text
+  header_row list<text>
 );
