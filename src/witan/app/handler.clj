@@ -182,7 +182,7 @@
                    (sweet/GET* "/data/:category" []
                                :summary "get available data inputs by category"
                                :path-params [category :- String]
-                               (data/data {:category category}))
+                               (data/search {:category category}))
                    (sweet/GET* "/data/download/:uuid" []
                                :summary "Downloads the data of a given id"
                                (not-implemented))))
