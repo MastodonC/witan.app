@@ -31,22 +31,10 @@
     (let [lines (line-seq rdr)]
       (log/info (first lines))
       [(header-line-ok? (first lines) (:header_row validation))
-       {:validation-error (str "The header row of the file is incorrect. we expect " (:header_row validation))}])))
+       {:error (str "The header row of the file is incorrect. we expect " (:header_row validation))}])))
 
 (defn validate-content
   [category file]
   (if-let [validation (get-validation category)]
     (validate validation file)
-    [false {:validation-error "Could not find the validation for this data category."}]))
-
-(defresource validation [{:keys [category file]}]
-  :allowed-methods #{:post}
-  :available-media-types ["application/json"]
-  :processable? (fn [ctx]
-                  (if (csv-extension? (:filename file))
-                    (validate-content category (:tempfile file))
-                    [nil {:validation-error "this doesn't seem to be a CSV file"}]))
-  :handle-unprocessable-entity (fn [ctx] {:error (:validation-error ctx)})
-  :handle-created (fn [ctx]
-               (log/info "you are here" (:tempfile file))
-               {:boo "yeah"}))
+    [false {:error "Could not find the validation for this data category."}]))

@@ -3,9 +3,11 @@
             [qbits.alia.uuid :as uuid]
             [clj-time.core :as t]
             [clj-time.format :as tf]
+            [clojure.tools.logging :as log]
             [witan.app.config :as c]
             [schema.core :as s]
             [witan.app.schema :as ws]
+            [witan.app.validation :as validation]
             [witan.app.util :as util]
             [witan.app.s3 :as s3])
   (:use [liberator.core :only [defresource]]))
@@ -117,10 +119,25 @@
     (c/exec (update-version-number-name name version))
     (first (c/exec (find-data-by-data-id data-id)))))
 
-(defresource data [{:keys [category]}]
-  util/json-resource
-  :allow-methods #{:get}
+(defresource data [{:keys [category name file user-id]}]
+  :allowed-methods #{:get :post}
+  :available-media-types ["application/json"]
+  :processable? (fn [ctx]
+                  (cond
+                    (not (validation/csv-extension? (:filename file))) [false {:error "this doesn't seem to be a csv file"}]
+                    :default (validation/validate-content category (:tempfile file))))
+  :handle-unprocessable-entity (fn [ctx] {:error (:error ctx)})
   :handle-ok (fn [ctx]
                (s/validate [ws/DataItem] (map #(->Data % true) (get-data-by-category
                                                                 category
-                                                                (util/get-user-id ctx))))))
+                                                                (util/get-user-id ctx)))))
+  :handle-created (fn [ctx]
+                    (let [s3-key (java.util.UUID/randomUUID)
+                          post-params (util/get-post-params ctx)]
+                      (try (s3/upload s3-key (:tempfile file))
+                           (->Data (add-data! {:category category
+                                               :name name
+                                               :file-name (:filename file)
+                                               :s3-key s3-key
+                                               :publisher user-id}))
+                           (catch com.amazonaws.AmazonClientException e [false {:error "File upload failed"}])))))

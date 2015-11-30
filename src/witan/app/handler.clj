@@ -159,13 +159,16 @@
                                              version :- java.lang.Long]
                                :summary "Returns a forecast of the specified id and version"
                                (forecast/forecast {:id id :version version}))
-                   (sweet/POST* "/validation/:category" []
-                                :multipart-params [file :- upload/TempFileUpload]
+                   (sweet/POST* "/data" {:as request}
+                                :multipart-params [file :- upload/TempFileUpload
+                                                   name :- String
+                                                   category :- String]
                                 :middlewares [wrap-multipart-params]
-                                :path-params [category :- String]
-                                :summary "Validates a given data file for a category"
-                                (validation/validation {:category category
-                                                        :file file}))
+                                :summary "Upload,validate and save a data file"
+                                (data/data {:category category
+                                            :name name
+                                            :file file
+                                            :user-id (:identity request)}))
                    (sweet/POST* "/forecasts/:id/versions" {:as request}
                                 :path-params [id :- java.util.UUID]
                                 :summary "Creates a new version of this forecast with the specified updates and run it"
@@ -176,9 +179,6 @@
                    (sweet/POST* "/share-request/:tag-id" []
                                 :summary "Creates a request to update the sharing properties of a tag"
                                 (not-implemented))
-                   (sweet/GET* "/data/pre-sign" []
-                               :summary "Returns presigned aws URL for upload of input data"
-                               (ok (s3/sign)))
                    (sweet/GET* "/data/:category" []
                                :summary "get available data inputs by category"
                                :path-params [category :- String]

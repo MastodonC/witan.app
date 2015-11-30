@@ -65,7 +65,8 @@
   {(s/required-key :name)      s/Str
    (s/required-key :file-name) s/Str
    (s/required-key :s3-key)    (s/either IdType s/Str)
-   (s/required-key :public?)   s/Bool})
+   (s/required-key :public?)   s/Bool
+   (s/required-key :category)  s/Str})
 
 (def DataItem
   "A data item"
