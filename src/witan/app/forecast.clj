@@ -458,7 +458,6 @@
   :processable? (fn [ctx]
                   (let [forecast (get-most-recent-version id)
                         inputs (:inputs (util/get-post-params ctx))]
-                    (every? (fn [[category data-item]] (s3/exists? (:s3-key data-item))) inputs)
                     (and forecast
                          ((util/post!-processable-validation ws/UpdateForecast) ctx)
                          (all-categories-exist-in-model? forecast (keys inputs))
@@ -467,7 +466,9 @@
                                          result (s3/exists? key)]
                                      (when-not result
                                        (log/error "Tried to use an S3 key that doesn't exist:" key))
-                                     result)) inputs))))
+                                     result)) inputs)
+                         (or (-> forecast :public? not) ;; if public, check all data inputs are public
+                             (every? #(-> % second :public?) inputs)))))
   :handle-created (fn [ctx]
                     (let [given-inputs (:inputs (util/get-post-params ctx))
                           added-data (into {} (map
