@@ -290,8 +290,8 @@
     forecast))
 
 (defn process-output-data!
-  [[category output]]
-  (let [output-as-data (data/add-data! (first output))] ;; TODO we only process the first item. post MVP1 we may have >1
+  [[category output] public?]
+  (let [output-as-data (data/add-data! (assoc (first output) :public? public?))] ;; TODO we only process the first item. post MVP1 we may have >1
     (hash-map category [(hayt/user-type output-as-data)])))
 
 (defn run-model!
@@ -302,7 +302,9 @@
      (log/info "Starting to run model: " (:model_id forecast) (:name model) (str "v" (:version model)))
      (try
        (let [outputs   (mex/execute-model forecast model)
-             data      (into {} (map process-output-data! (first (vec outputs))))]
+             data      (into {} (->> (vec outputs)
+                                     (first)
+                                     (map #(process-output-data! % (:public? forecast)))))]
          (log/info "Finished running model " (:model_id forecast) "-" (count data) "output(s) returned." outputs)
          (conclude-forecast! (assoc (->Forecast forecast) :outputs data)))
        (catch Exception e (log/error "Model" (:model_id forecast) "threw an error:" (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
