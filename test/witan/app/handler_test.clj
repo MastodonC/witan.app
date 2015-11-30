@@ -65,6 +65,7 @@
                                       :name "base population Camden",
                                       :publisher #uuid "bd163a4b-fecc-4f8d-a642-c9ee951d6f77",
                                       :version 1,
+                                      :public false
                                       :file_name "base-population.csv",
                                       :s3_key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd",
                                       :created #inst "2015-10-28T18:27:33.967-00:00" } }}
@@ -93,7 +94,7 @@
      :public false
      :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"}))
 
-(defn get-dummy-models []
+(defn get-dummy-models [& _]
   '({:name "My Model 2",
      :created #inst "2015-10-09T13:52:43.951-00:00",
      :description "Description of my model",
@@ -116,7 +117,7 @@
   {:description "Description of my model", :properties [{:name "Some field", :type "text", :context "Placeholder value 123", :enum_values []}], :version_id #uuid "fa200d2d-816d-4502-b94a-9ba020f2f1f4", :input_data ["Base population data"], :name "My Model 2", :output_data ["All the population data"], :input_data_defaults {}, :created #inst "2015-10-21T10:51:22.093-00:00", :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0", :version 1, :owner #uuid "98f9adcb-bc80-407c-b9c8-736506f6e410"})
 
 (defn get-dummy-data []
-  '({:category "Base population data", :created #inst "2015-10-28T18:27:33.968-00:00", :data_id #uuid "40ff789b-68dd-420d-81e7-2b19b69fd399", :file_name "base-population.csv", :name "base population Camden", :publisher #uuid "bd163a4b-fecc-4f8d-a642-c9ee951d6f77", :s3_key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd", :version 1}))
+  '({:category "Base population data", :created #inst "2015-10-28T18:27:33.968-00:00", :data_id #uuid "40ff789b-68dd-420d-81e7-2b19b69fd399", :file_name "base-population.csv", :name "base population Camden", :publisher #uuid "bd163a4b-fecc-4f8d-a642-c9ee951d6f77", :s3_key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd", :version 1 :public false}))
 
 (defn auth-header [token] {"Authorization" (str "Token " token)})
 
@@ -229,7 +230,7 @@
             [status body _] (post* app "/api/forecasts/b7b35c0b-bbf0-4a52-ab40-6264ed0f364d/versions" {:body (json {"Base population data" {"name" "base population" "file-name" "file.csv" "s3-key" "653ceaad-cf3b-467c-966c-04b57f443708"}})})])))
 
   (testing "/api/data/:category"
-    (with-redefs [data/get-data-by-category (fn [_] (get-dummy-data))]
+    (with-redefs [data/get-data-by-category (fn [_ _] (get-dummy-data))]
       (let [token (logged-in-user-token)
             [status body _] (get* app "/api/data/Base%20population%20data" {} (auth-header token))]
         (is (= status 200))
