@@ -31,7 +31,8 @@
 
 (defn upload
   [key file]
-  (amazonica/put-object :bucket-name bucket
+  (amazonica/put-object {:endpoint "eu-central-1"}
+                        :bucket-name bucket
                         :key key
                         :metadata {:server-side-encryption "AES256"}
                         :file file))
