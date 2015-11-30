@@ -479,6 +479,7 @@
                                                                               :name (:name data-item)
                                                                               :file-name (:file-name data-item)
                                                                               :s3-key (util/to-uuid (:s3-key data-item))
+                                                                              :public? (:public? data-item)
                                                                               :publisher user-id}))]
                                                    (hash-map (name category) data))) given-inputs))
                           new-forecast (update-forecast! {:forecast-id id
