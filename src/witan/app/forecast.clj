@@ -461,29 +461,12 @@
                     (and forecast
                          ((util/post!-processable-validation ws/UpdateForecast) ctx)
                          (all-categories-exist-in-model? forecast (keys inputs))
-                         (every? (fn [[category data-item]]
-                                   (let [key    (:s3-key data-item)
-                                         result (s3/exists? key)]
-                                     (when-not result
-                                       (log/error "Tried to use an S3 key that doesn't exist:" key))
-                                     result)) inputs)
+                         (every? data/exists? inputs)
                          (or (-> forecast :public? not) ;; if public, check all data inputs are public
                              (every? #(-> % second :public?) inputs)))))
   :handle-created (fn [ctx]
                     (let [given-inputs (:inputs (util/get-post-params ctx))
-                          added-data (into {} (map
-                                               (fn [[category data-item]]
-                                                 (let [s3-key (util/to-uuid (:s3-key data-item))
-                                                       data (or
-                                                             (data/get-data-by-s3-key s3-key)
-                                                             (data/add-data! {:category (name category)
-                                                                              :name (:name data-item)
-                                                                              :file-name (:file-name data-item)
-                                                                              :s3-key (util/to-uuid (:s3-key data-item))
-                                                                              :public? (:public? data-item)
-                                                                              :publisher user-id}))]
-                                                   (hash-map (name category) data))) given-inputs))
                           new-forecast (update-forecast! {:forecast-id id
                                                           :owner user-id
-                                                          :inputs added-data})]
+                                                          :inputs given-inputs})]
                       (s/validate ws/ForecastInfo (->ForecastInfo new-forecast)))))

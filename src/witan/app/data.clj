@@ -70,6 +70,11 @@
       (c/exec)
       (first)))
 
+(defn exists?
+  [data]
+  (-> data
+      :s3-key
+      (get-data-by-s3-key)))
 (defn get-data-by-category
   [category user]
   (filter #(or (:public %)
