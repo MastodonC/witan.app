@@ -64,7 +64,8 @@
   "new data item being created"
   {(s/required-key :name)      s/Str
    (s/required-key :file-name) s/Str
-   (s/required-key :s3-key)    (s/either IdType s/Str)})
+   (s/required-key :s3-key)    (s/either IdType s/Str)
+   (s/required-key :public?)   s/Bool})
 
 (def DataItem
   "A data item"
@@ -76,6 +77,7 @@
    (s/optional-key :file-name) s/Str
    (s/optional-key :s3-key)    IdType
    (s/optional-key :s3-url)    s/Str
+   (s/optional-key :public?)   s/Bool
    (s/required-key :created)   DateTimeType})
 
 (def ModelInputCategory
