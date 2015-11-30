@@ -162,7 +162,8 @@
                    (sweet/POST* "/data" {:as request}
                                 :multipart-params [file :- upload/TempFileUpload
                                                    name :- String
-                                                   category :- String]
+                                                   category :- String
+                                                   public :- Boolean]
                                 :middlewares [wrap-multipart-params]
                                 :summary "Upload,validate and save a data file"
                                 (data/data {:category category

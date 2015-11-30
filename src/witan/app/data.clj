@@ -126,10 +126,12 @@
                (s/validate [ws/DataItem] (map #(->Data % true) (get-data-by-category
                                                                 category
                                                                 (util/get-user-id ctx))))))
-(defresource data [{:keys [category name file user-id]}]
+
+(defresource data [{:keys [category name file public user-id]}]
   :allowed-methods #{:post}
   :available-media-types ["application/json"]
   :processable? (fn [ctx]
+                  (log/info public)
                   (cond
                     (not (validation/csv-extension? (:filename file))) [false {:error "this doesn't seem to be a csv file"}]
                     :default (validation/validate-content category (:tempfile file))))
@@ -142,5 +144,6 @@
                                                :name name
                                                :file-name (:filename file)
                                                :s3-key s3-key
+                                               :public? public
                                                :publisher user-id}))
                            (catch com.amazonaws.AmazonClientException e [false {:error "File upload failed"}])))))
