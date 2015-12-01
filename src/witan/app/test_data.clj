@@ -3,7 +3,6 @@
             [witan.app.data :as data]
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
-            [witan.app.validation :as validation]
             [witan.app.user :as u]))
 
 (def population-fixed-input  {:category "population"
