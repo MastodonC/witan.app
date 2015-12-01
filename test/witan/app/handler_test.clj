@@ -227,7 +227,7 @@
                   forecast/update-forecast! (fn [forecast-id owner inputs] (first (get-dummy-forecasts)))
                   s3/exists? (fn [_] true)]
       (let [token (logged-in-user-token)
-            [status body _] (post* app "/api/forecasts/b7b35c0b-bbf0-4a52-ab40-6264ed0f364d/versions" {:body (json {"Base population data" {"name" "base population" "file-name" "file.csv" "s3-key" "653ceaad-cf3b-467c-966c-04b57f443708"}})})])))
+            [status body _] (post* app "/api/forecasts/b7b35c0b-bbf0-4a52-ab40-6264ed0f364d/versions" {:body (json {"Base population data" {"category" "development-data" "publisher" "5db2c4ab-77f9-4e2f-839d-776faf4c5453" "name" "base population" "created" "2015-11-30T22:25:31" "file-name" "file.csv" "public?" "null" "s3-key" "653ceaad-cf3b-467c-966c-04b57f443708" "version" "1"}})})])))
 
   (testing "/api/data/:category"
     (with-redefs [data/get-data-by-category (fn [_ _] (get-dummy-data))]

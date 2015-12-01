@@ -3,9 +3,11 @@
             [qbits.alia.uuid :as uuid]
             [clj-time.core :as t]
             [clj-time.format :as tf]
+            [clojure.tools.logging :as log]
             [witan.app.config :as c]
             [schema.core :as s]
             [witan.app.schema :as ws]
+            [witan.app.validation :as validation]
             [witan.app.util :as util]
             [witan.app.s3 :as s3])
   (:use [liberator.core :only [defresource]]))
@@ -68,6 +70,12 @@
       (c/exec)
       (first)))
 
+(defn exists?
+  [data]
+  (-> data
+      :s3-key
+      (get-data-by-s3-key)))
+
 (defn get-data-by-category
   [category user]
   (filter #(or (:public %)
@@ -117,10 +125,33 @@
     (c/exec (update-version-number-name name version))
     (first (c/exec (find-data-by-data-id data-id)))))
 
-(defresource data [{:keys [category]}]
+(defresource search [{:keys [category]}]
   util/json-resource
   :allow-methods #{:get}
   :handle-ok (fn [ctx]
                (s/validate [ws/DataItem] (map #(->Data % true) (get-data-by-category
                                                                 category
                                                                 (util/get-user-id ctx))))))
+
+(defresource data [{:keys [category name file public user-id]}]
+  :allowed-methods #{:post}
+  :available-media-types ["application/json"]
+  :processable? (fn [ctx]
+                  (log/info public)
+                  (cond
+                    (not (validation/csv-extension? (:filename file))) [false {:error "this doesn't seem to be a csv file"}]
+                    :default (validation/validate-content category (:tempfile file))))
+  :handle-unprocessable-entity (fn [ctx] {:error (:error ctx)})
+  :post! (fn [ctx]
+           (let [s3-key (java.util.UUID/randomUUID)]
+             (try (s3/upload s3-key (:tempfile file))
+                  {:s3-key s3-key}
+                  (catch com.amazonaws.AmazonClientException e [false {:error "File upload failed"}]) )))
+  :handle-created (fn [ctx]
+                    (let [post-params (util/get-post-params ctx)]
+                      (->Data (add-data! {:category category
+                                          :name name
+                                          :file-name (:filename file)
+                                          :s3-key (:s3-key ctx)
+                                          :public? public
+                                          :publisher user-id})))))

@@ -60,13 +60,6 @@
   {(s/required-key :name)  s/Str
    (s/required-key :value) (s/either s/Str s/Int)}) ;; varies depending on the ModelProperty type
 
-(def NewDataItem
-  "new data item being created"
-  {(s/required-key :name)      s/Str
-   (s/required-key :file-name) s/Str
-   (s/required-key :s3-key)    (s/either IdType s/Str)
-   (s/required-key :public?)   s/Bool})
-
 (def DataItem
   "A data item"
   {(s/required-key :data-id)   IdType
@@ -143,7 +136,7 @@
 
 (def UpdateForecast
   "Schema for creating a new version"
-  {(s/optional-key :inputs) {(s/either s/Keyword ModelInputCategory) NewDataItem}})
+  {(s/optional-key :inputs) {(s/either s/Keyword ModelInputCategory) DataItem}})
 
 (def Forecast
   "Forecast"

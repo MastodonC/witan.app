@@ -9,7 +9,8 @@
             [ring.middleware
              [cors :refer [wrap-cors]]
              [defaults :refer [api-defaults wrap-defaults]]
-             [json :refer [wrap-json-body wrap-json-response]]]
+             [json :refer [wrap-json-body wrap-json-response]]
+             [multipart-params :refer [wrap-multipart-params]]]
             [witan.app.user :as u]
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
@@ -19,6 +20,7 @@
             [schema.core :as s]
             [witan.app.schema :as w]
             [compojure.api.sweet :as sweet]
+            [compojure.api.upload :as upload]
             [ring.util.http-response :refer :all]
             [clojure.tools.logging :as log]
             [clj-time.core :as t]
@@ -156,27 +158,32 @@
                                              version :- java.lang.Long]
                                :summary "Returns a forecast of the specified id and version"
                                (forecast/forecast {:id id :version version}))
+                   (sweet/POST* "/data" {:as request}
+                                :multipart-params [file :- upload/TempFileUpload
+                                                   name :- String
+                                                   category :- String
+                                                   public :- Boolean]
+                                :middlewares [wrap-multipart-params]
+                                :summary "Upload,validate and save a data file"
+                                (data/data {:category category
+                                            :name name
+                                            :file file
+                                            :public public
+                                            :user-id (:identity request)}))
                    (sweet/POST* "/forecasts/:id/versions" {:as request}
                                 :path-params [id :- java.util.UUID]
                                 :summary "Creates a new version of this forecast with the specified updates and run it"
                                 (forecast/version {:id id :user-id (:identity request)}))
-                   (sweet/GET* "/forecasts/:id/:version/output/:type" []
-                               :summary "Downloads an output of the given type"
-                               (not-implemented))
-
                    (sweet/POST* "/tag" []
                                 :summary "Creates a new tag from a forecast id and version"
                                 (not-implemented))
                    (sweet/POST* "/share-request/:tag-id" []
                                 :summary "Creates a request to update the sharing properties of a tag"
                                 (not-implemented))
-                   (sweet/GET* "/data/pre-sign" []
-                               :summary "Returns presigned aws URL for upload of input data"
-                               (ok (s3/sign)))
                    (sweet/GET* "/data/:category" []
                                :summary "get available data inputs by category"
                                :path-params [category :- String]
-                               (data/data {:category category}))
+                               (data/search {:category category}))
                    (sweet/GET* "/data/download/:uuid" []
                                :summary "Downloads the data of a given id"
                                (not-implemented))))
