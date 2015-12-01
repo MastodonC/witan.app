@@ -75,6 +75,7 @@
   (-> data
       :s3-key
       (get-data-by-s3-key)))
+
 (defn get-data-by-category
   [category user]
   (filter #(or (:public %)
@@ -141,14 +142,16 @@
                     (not (validation/csv-extension? (:filename file))) [false {:error "this doesn't seem to be a csv file"}]
                     :default (validation/validate-content category (:tempfile file))))
   :handle-unprocessable-entity (fn [ctx] {:error (:error ctx)})
+  :post! (fn [ctx]
+           (let [s3-key (java.util.UUID/randomUUID)]
+             (try (s3/upload s3-key (:tempfile file))
+                  {:s3-key s3-key}
+                  (catch com.amazonaws.AmazonClientException e [false {:error "File upload failed"}]) )))
   :handle-created (fn [ctx]
-                    (let [s3-key (java.util.UUID/randomUUID)
-                          post-params (util/get-post-params ctx)]
-                      (try (s3/upload s3-key (:tempfile file))
-                           (->Data (add-data! {:category category
-                                               :name name
-                                               :file-name (:filename file)
-                                               :s3-key s3-key
-                                               :public? public
-                                               :publisher user-id}))
-                           (catch com.amazonaws.AmazonClientException e [false {:error "File upload failed"}])))))
+                    (let [post-params (util/get-post-params ctx)]
+                      (->Data (add-data! {:category category
+                                          :name name
+                                          :file-name (:filename file)
+                                          :s3-key (:s3-key ctx)
+                                          :public? public
+                                          :publisher user-id})))))
