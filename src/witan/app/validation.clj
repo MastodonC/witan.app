@@ -1,8 +1,7 @@
 (ns witan.app.validation
   (:require [clojure.tools.logging :as log]
             [qbits.hayt :as hayt]
-            [witan.app.config :as c])
-  (:use [liberator.core :only [defresource]]))
+            [witan.app.config :as c]))
 
 (defn find-validation
   [category]

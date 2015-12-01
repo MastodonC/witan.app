@@ -17,7 +17,6 @@
             [witan.app.util :refer [load-extensions!]]
             [witan.app.s3 :as s3]
             [witan.app.data :as data]
-            [witan.app.validation :as validation]
             [schema.core :as s]
             [witan.app.schema :as w]
             [compojure.api.sweet :as sweet]
