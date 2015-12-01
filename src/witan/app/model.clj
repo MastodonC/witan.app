@@ -12,6 +12,7 @@
             [witan.validation :as validation]
             [schema.core :as s]
             [clojure.tools.logging :as log]
+            [hitman.core :as hitman]
             [ring.util.mime-type :refer [ext-mime-type]])
   (:use [liberator.core :only [defresource]]))
 
@@ -20,6 +21,7 @@
   [{:keys [version_id
            model_id
            created
+           description
            input_data
            input_data_defaults
            output_data
@@ -34,6 +36,7 @@
               :fixed_input_data)
       (assoc :version-id version_id
              :model-id model_id
+             :description (hitman/markdown description)
              :created (util/java-Date-to-ISO-Date-Time created)
              :input-data (mapv #(cond-> % (get input_data_defaults (:category %1))
                                         (assoc :default (data/->Data (get input_data_defaults (:category %1))))) input_data)
