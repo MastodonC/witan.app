@@ -168,6 +168,7 @@
                                 (data/data {:category category
                                             :name name
                                             :file file
+                                            :public public
                                             :user-id (:identity request)}))
                    (sweet/POST* "/forecasts/:id/versions" {:as request}
                                 :path-params [id :- java.util.UUID]
