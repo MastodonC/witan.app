@@ -7,12 +7,10 @@
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
             [witan.app.data :as data]
-            [witan.app.validation :as validation]
             [witan.app.schema :as ws]
             [witan.app.s3 :as s3]
             [clojure.data.json :as json]
-            [schema.core :as s]
-            [clojure.java.io :as io]))
+            [schema.core :as s]))
 
 (def user-id (java.util.UUID/randomUUID))
 
