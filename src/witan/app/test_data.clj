@@ -77,7 +77,6 @@
                                           :public? true
                                           :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
 
-        development-validation (validation/add-validation! {:category "development-data" :header-row ["GSS.Code" "Borough name" "Year" "Past development" "Future development"]})
         ;; model
         dclg-housing-linked-model (model/add-model! {:name "DCLG-based Housing Linked Model"
                                                      :description "Demography model developed at the GLA to generate borough-level population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
