@@ -7,7 +7,7 @@
             [witan.app.config :as c]
             [schema.core :as s]
             [witan.app.schema :as ws]
-            [witan.app.validation :as validation]
+            [witan.validation :as validation]
             [witan.app.util :as util]
             [witan.app.s3 :as s3])
   (:use [liberator.core :only [defresource]]))
