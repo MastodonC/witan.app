@@ -23,7 +23,6 @@
                  [prismatic/schema "1.0.3"]
                  [kixi/schema-contrib "0.2.0"]
                  [kixi/compojure-api "0.24.0"]
-                 ;; Logging
                  [org.clojure/tools.logging      "0.3.1"]
                  [ch.qos.logback/logback-classic "1.1.3"]
                  [org.slf4j/jul-to-slf4j         ~slf4j-version]
@@ -38,6 +37,7 @@
                  [clj-http "2.0.0"]
                  [slugger "1.0.1"]
                  [com.stuartsierra/component "0.3.0"]
+                 [kixi/hitman "0.2.1"]
 
                  ;; do this here to avoid clashes
                  ;; with local profiles.clj. We need
