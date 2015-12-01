@@ -54,7 +54,7 @@
 (defn update-version-number-name
   [name version]
   (hayt/update :data_names (hayt/set-columns {:version version})
-                           (hayt/where {:name name})))
+               (hayt/where {:name name})))
 
 (defn get-current-version-name
   [name]
@@ -125,19 +125,18 @@
     (c/exec (update-version-number-name name version))
     (first (c/exec (find-data-by-data-id data-id)))))
 
-(defresource search [{:keys [category]}]
+(defresource search [{:keys [category groups]}]
   util/json-resource
   :allow-methods #{:get}
   :handle-ok (fn [ctx]
                (s/validate [ws/DataItem] (map #(->Data % true) (get-data-by-category
                                                                 category
-                                                                (util/get-user-id ctx))))))
+                                                                (when-not (contains? groups "public") (util/get-user-id ctx)))))))
 
 (defresource data [{:keys [category name file public user-id]}]
   :allowed-methods #{:post}
   :available-media-types ["application/json"]
   :processable? (fn [ctx]
-                  (log/info public)
                   (cond
                     (not (validation/csv-extension? (:filename file))) [false {:error "this doesn't seem to be a csv file"}]
                     :default (validation/validate-content category (:tempfile file))))
