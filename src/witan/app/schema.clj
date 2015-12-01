@@ -66,12 +66,12 @@
    (s/required-key :name)      s/Str
    (s/required-key :category)  s/Str
    (s/required-key :publisher) IdType ;; a user or org
+   (s/required-key :public?)   s/Bool
+   (s/required-key :created)   DateTimeType
    (s/optional-key :version)   s/Int
    (s/optional-key :file-name) s/Str
    (s/optional-key :s3-key)    IdType
-   (s/optional-key :s3-url)    s/Str
-   (s/optional-key :public?)   s/Bool
-   (s/required-key :created)   DateTimeType})
+   (s/optional-key :s3-url)    s/Str})
 
 (def ModelInputCategory
   "Inputs into the model"
