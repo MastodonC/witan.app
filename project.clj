@@ -37,7 +37,7 @@
                  [clj-http "2.0.0"]
                  [slugger "1.0.1"]
                  [com.stuartsierra/component "0.3.0"]
-                 [kixi/hitman "0.2.1"]
+                 [markdown-clj "0.9.82"]
 
                  ;; do this here to avoid clashes
                  ;; with local profiles.clj. We need

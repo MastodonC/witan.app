@@ -21,7 +21,7 @@
                                  :description "Dwellings from most recent census"})
 
 (def development-category {:category "development-data"
-                           :description "Net new dwellings from London Development Database and projections of housing (SHLAA or BPO)"})
+                           :description "Net new dwellings from London Development Database and projections of housing (SHLAA or BPO). [Download a template here.](http://www.google.com)"})
 (def output-category {:category "housing-linked-population"
                       :description "Housing-linked population projections"})
 
