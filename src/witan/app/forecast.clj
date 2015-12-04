@@ -464,12 +464,12 @@
   :processable? (fn [ctx]
                   (let [forecast (get-most-recent-version id)
                         inputs   (:inputs (util/get-post-params ctx))
-                        tests    [[(fn [] forecast)                                                    "forecast is nil"]
-                                  [(fn [] ((util/post!-processable-validation ws/UpdateForecast) ctx)) "failed schema validation"]]
-                        result (reduce (fn [a x] (if-not ((first x)) (reduced (second x)) nil)) [] tests)]
-                    (when result
-                      (log/error "The updated forecast was unable to be processed (422):" result))
-                    (nil? result))) ;; return a bool, true if result is nil
+                        result   (if forecast
+                                   (if ((util/post!-processable-validation ws/UpdateForecast) ctx)
+                                     true
+                                     (log/error "Updating forecast failed due to validation."))
+                                   (log/error "Updating forecast failed because forecast was nil"))]
+                    result)) ;; return a bool, true if result is nil
   :handle-created (fn [ctx]
                     (let [given-inputs (:inputs (util/get-post-params ctx))
                           inputs (into {} (map locate-input-by-data-id given-inputs))
