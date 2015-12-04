@@ -336,9 +336,7 @@
   (let [model-input-categories (->> (:input_data model)
                                     (map :category)
                                     (set))
-        _ (println "model-input-categories" model-input-categories)
         supplied-input-categories (-> inputs keys set)
-        _ (println "supplied-input-categories" supplied-input-categories)
         intersection-count (count (clojure.set/intersection model-input-categories supplied-input-categories))]
     (= intersection-count (count model-input-categories))))
 

@@ -160,15 +160,16 @@
                                (forecast/forecast {:id id :version version}))
                    (sweet/POST* "/data" {:as request}
                                 :multipart-params [file :- upload/TempFileUpload
+                                                   filename :- String
                                                    name :- String
                                                    category :- String
-                                                   public :- Boolean]
+                                                   public? :- Boolean]
                                 :middlewares [wrap-multipart-params]
                                 :summary "Upload,validate and save a data file"
                                 (data/data {:category category
                                             :name name
                                             :file file
-                                            :public public
+                                            :public public?
                                             :user-id (:identity request)}))
                    (sweet/POST* "/forecasts/:id/versions" {:as request}
                                 :path-params [id :- java.util.UUID]
