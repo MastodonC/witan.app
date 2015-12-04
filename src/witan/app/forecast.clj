@@ -336,9 +336,15 @@
   (let [model-input-categories (->> (:input_data model)
                                     (map :category)
                                     (set))
+        _ (println "model-input-categories" model-input-categories)
         supplied-input-categories (-> inputs keys set)
+        _ (println "supplied-input-categories" supplied-input-categories)
         intersection-count (count (clojure.set/intersection model-input-categories supplied-input-categories))]
     (= intersection-count (count model-input-categories))))
+
+(defn locate-input-by-data-id
+  [[category {:keys [data-id]}]]
+  (hash-map (name category) (data/get-data-by-data-id data-id)))
 
 (defn update-forecast!
   [{:keys [forecast-id owner inputs]}]
@@ -459,16 +465,17 @@
   :allowed-methods #{:post}
   :processable? (fn [ctx]
                   (let [forecast (get-most-recent-version id)
-                        inputs (:inputs (util/get-post-params ctx))]
-                    (and forecast
-                         ((util/post!-processable-validation ws/UpdateForecast) ctx)
-                         (all-categories-exist-in-model? forecast (keys inputs))
-                         (every? data/exists? inputs)
-                         (or (-> forecast :public? not) ;; if public, check all data inputs are public
-                             (every? #(-> % second :public?) inputs)))))
+                        inputs   (:inputs (util/get-post-params ctx))
+                        tests    [[(fn [] forecast)                                                    "forecast is nil"]
+                                  [(fn [] ((util/post!-processable-validation ws/UpdateForecast) ctx)) "failed schema validation"]]
+                        result (reduce (fn [a x] (if-not ((first x)) (reduced (second x)) nil)) [] tests)]
+                    (when result
+                      (log/error "The updated forecast was unable to be processed (422):" result))
+                    (nil? result))) ;; return a bool, true if result is nil
   :handle-created (fn [ctx]
                     (let [given-inputs (:inputs (util/get-post-params ctx))
+                          inputs (into {} (map locate-input-by-data-id given-inputs))
                           new-forecast (update-forecast! {:forecast-id id
                                                           :owner user-id
-                                                          :inputs given-inputs})]
+                                                          :inputs inputs})]
                       (s/validate ws/ForecastInfo (->ForecastInfo new-forecast)))))

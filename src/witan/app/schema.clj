@@ -136,7 +136,7 @@
 
 (def UpdateForecast
   "Schema for creating a new version"
-  {(s/optional-key :inputs) {(s/either s/Keyword ModelInputCategory) DataItem}})
+  {(s/optional-key :inputs) {(s/either s/Keyword ModelInputCategory) {(s/required-key :data-id) s/Str}}})
 
 (def Forecast
   "Forecast"
