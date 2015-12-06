@@ -20,11 +20,11 @@
 
 (defn load-db-schema!
   "drops and recreates the existing schema with config specified keyspace and c* host.  WARNING: drops the existing keyspace."
-  []
-  (let [session (session-setup (get-in c/config [:cassandra-session :host]))
-        keyspace (get-in c/config [:cassandra-session :keyspace])
+  [config]
+  (let [session (session-setup (get-in config [:cassandra-session :host]))
+        keyspace (get-in config [:cassandra-session :keyspace])
         db-scripts (clojure.string/split (slurp (io/file (io/resource "db-schema.cql"))) #";")
-        replication (get-in c/config [:cassandra-session :replication])]
+        replication (get-in config [:cassandra-session :replication])]
     (log/warn "Dropping keyspace " keyspace)
     (alia/execute session (str "DROP KEYSPACE " keyspace ";"))
     (log/warn "Recreating keyspace " keyspace)
