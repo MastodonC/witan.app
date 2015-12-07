@@ -3,6 +3,7 @@
             [clj-time.core     :as t]
             [clj-time.format   :as tf]
             [clj-time.coerce   :as tc]
+            [clojure.tools.logging :as log]
             [schema.core :as s]))
 
 (defn java-Date-to-ISO-Date-Time
@@ -29,10 +30,13 @@
   [schema]
   (fn [ctx]
     (if (http-post? ctx)
-      (let [params (get-post-params ctx)]
-        (nil? (s/check
-               schema
-               params)))
+      (let [params (get-post-params ctx)
+            result (s/check
+                    schema
+                    params)]
+        (when result
+          (log/error "Schema validation error:" result))
+        (nil? result))
       true)))
 
 (defn is-a-number? [txt]

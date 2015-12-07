@@ -82,6 +82,11 @@
                (= (:publisher %) user))
           (c/exec (find-data-by-category category))))
 
+(defn get-data-by-data-id
+  [data-id]
+  (let [id (if (string? data-id) (java.util.UUID/fromString data-id) data-id)]
+    (first (c/exec (find-data-by-data-id id)))))
+
 (defn data-to-db
   [{:keys [data-id category name publisher version file-name s3-key public?] :as data}]
   (-> data
@@ -123,7 +128,7 @@
                                  :public? public?
                                  :s3-key s3-key} %)) '(:data_by_data_id :data_by_category :data_by_s3_key))
     (c/exec (update-version-number-name name version))
-    (first (c/exec (find-data-by-data-id data-id)))))
+    (get-data-by-data-id data-id)))
 
 (defresource search [{:keys [category groups]}]
   util/json-resource

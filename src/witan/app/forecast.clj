@@ -340,6 +340,10 @@
         intersection-count (count (clojure.set/intersection model-input-categories supplied-input-categories))]
     (= intersection-count (count model-input-categories))))
 
+(defn locate-input-by-data-id
+  [[category {:keys [data-id]}]]
+  (hash-map (name category) (data/get-data-by-data-id data-id)))
+
 (defn update-forecast!
   [{:keys [forecast-id owner inputs]}]
   (if-let [latest-forecast (get-most-recent-version forecast-id)]
@@ -459,16 +463,17 @@
   :allowed-methods #{:post}
   :processable? (fn [ctx]
                   (let [forecast (get-most-recent-version id)
-                        inputs (:inputs (util/get-post-params ctx))]
-                    (and forecast
-                         ((util/post!-processable-validation ws/UpdateForecast) ctx)
-                         (all-categories-exist-in-model? forecast (keys inputs))
-                         (every? data/exists? inputs)
-                         (or (-> forecast :public? not) ;; if public, check all data inputs are public
-                             (every? #(-> % second :public?) inputs)))))
+                        inputs   (:inputs (util/get-post-params ctx))
+                        result   (if forecast
+                                   (if ((util/post!-processable-validation ws/UpdateForecast) ctx)
+                                     true
+                                     (log/error "Updating forecast failed due to validation."))
+                                   (log/error "Updating forecast failed because forecast was nil"))]
+                    result)) ;; return a bool, true if result is nil
   :handle-created (fn [ctx]
                     (let [given-inputs (:inputs (util/get-post-params ctx))
+                          inputs (into {} (map locate-input-by-data-id given-inputs))
                           new-forecast (update-forecast! {:forecast-id id
                                                           :owner user-id
-                                                          :inputs given-inputs})]
+                                                          :inputs inputs})]
                       (s/validate ws/ForecastInfo (->ForecastInfo new-forecast)))))
