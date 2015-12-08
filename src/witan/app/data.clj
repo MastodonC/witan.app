@@ -169,7 +169,6 @@
   :handle-ok {:location (str (s3/presigned-download-url
                               (str "public/" filename)
                               filename))}
-  :post-to-missing? (fn [_] false)
   :existed? (fn [ctx]
               (s3/exists? (str "public/" filename)))
   :moved-permanently? (fn [_] false)
