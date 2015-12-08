@@ -159,3 +159,20 @@
                                           :s3-key (:s3-key ctx)
                                           :public? public
                                           :publisher user-id})))))
+
+(defresource public [filename redirect]
+  util/json-resource
+  :allow-methods #{:get}
+  :exists? (fn [_] (if redirect
+                     false
+                     (s3/exists? (str "public/" filename))))
+  :handle-ok {:location (str (s3/presigned-download-url
+                              (str "public/" filename)
+                              filename))}
+  :post-to-missing? (fn [_] false)
+  :existed? (fn [ctx]
+              (s3/exists? (str "public/" filename)))
+  :moved-permanently? (fn [_] false)
+  :moved-temporarily? {:location (s3/presigned-download-url
+                                  (str "public/" filename)
+                                  filename)})
