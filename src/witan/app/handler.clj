@@ -186,9 +186,11 @@
                                :path-params [category :- String]
                                :query-params [{groups :- [String] []}]
                                (data/search {:category category :groups (set groups)}))
-                   (sweet/GET* "/data/download/:uuid" []
-                               :summary "Downloads the data of a given id"
-                               (not-implemented))))
+                   (sweet/GET* "/data/public/:filename" []
+                               :summary "Downloads the data of a given filename from the public folder"
+                               :path-params [filename :- String]
+                               :query-params [{redirect :- Boolean true}]
+                               (data/public filename redirect))))
 
   (sweet/ANY* "/*" []
               (not-found {:message "These aren't the droids you're looking for."})))
