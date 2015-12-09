@@ -6,6 +6,7 @@
    [clojure.test :refer :all]
    [clj-http.client :as client]
    [witan.app.config :as c]
+   [witan.app.s3 :as s3]
    [witan.system :as ws]
    [clojure.tools.logging :as log]
    [com.stuartsierra.component :as component]))
@@ -27,7 +28,8 @@
                 ws/system (fn []
                          (-> (component/system-map
                                  :jetty-server (ws/->JettyServer witan.app.handler/app 3002)
-                                 :repl-server (Object.))))]
+                                 :repl-server (Object.))))
+                s3/bucket "witan-dummy-data"]
     (load-db-schema! test-config)
     (load-test-data!)
     (try
