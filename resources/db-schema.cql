@@ -1,23 +1,22 @@
-DROP KEYSPACE witan;
-CREATE KEYSPACE witan WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '3'}  AND durable_writes = true;
-CREATE TABLE witan.forecast_names (
+CREATE TABLE forecast_names (
     name text,
     owner uuid,
     PRIMARY KEY (name, owner)
 );
 
-CREATE TYPE witan.model_property_value (
+CREATE TYPE model_property_value (
     name text,
     value text
 );
 
-CREATE TABLE witan.forecast_headers (
+CREATE TABLE forecast_headers (
     forecast_id uuid PRIMARY KEY,
     created timestamp,
     current_version_id uuid,
     version int,
     description text,
     in_progress boolean,
+    public boolean,
     name text,
     owner uuid,
     owner_name text,
@@ -25,16 +24,16 @@ CREATE TABLE witan.forecast_headers (
     model_property_values map<text,frozen<model_property_value>>
 );
 
-CREATE TABLE witan.users (
+CREATE TABLE users (
     id uuid PRIMARY KEY,
     first_name text,
     name text,
     password_hash text,
     username text
 );
-CREATE INDEX user_username ON witan.users (username);
+CREATE INDEX user_username ON users (username);
 
-CREATE TYPE witan.data_item (
+CREATE TYPE data_item (
   data_id uuid,
   category text,
   name text,
@@ -42,15 +41,17 @@ CREATE TYPE witan.data_item (
   version int,
   file_name text,
   s3_key uuid,
+  public boolean,
   created timestamp
 );
 
-CREATE TABLE witan.forecasts (
+CREATE TABLE forecasts (
     forecast_id uuid,
     version int,
     created timestamp,
     description text,
     in_progress boolean,
+    public boolean,
     name text,
     owner uuid,
     owner_name text,
@@ -65,27 +66,26 @@ CREATE TABLE witan.forecasts (
 
 // --------------------------------------------------------------------------------
 // model properties
-CREATE TYPE witan.model_property (
+CREATE TYPE model_property (
       name text,
       type text,
       context text,
       enum_values list<text>
 );
 
-CREATE TYPE witan.model_category (
+CREATE TYPE model_category (
       category text,
       description text,
 );
 
 // model names
-CREATE TABLE witan.model_names (
+CREATE TABLE model_names (
     name text,
     model_id uuid,
     PRIMARY KEY (name, model_id)
 );
 
-// model headers
-CREATE TABLE witan.data_by_data_id (
+CREATE TABLE data_by_data_id (
   data_id uuid PRIMARY KEY,
   category text,
   name text,
@@ -93,10 +93,11 @@ CREATE TABLE witan.data_by_data_id (
   version int,
   file_name text,
   s3_key uuid,
+  public boolean,
   created timestamp
 );
 
-CREATE TABLE witan.data_by_category (
+CREATE TABLE data_by_category (
   data_id uuid,
   category text,
   name text,
@@ -104,11 +105,12 @@ CREATE TABLE witan.data_by_category (
   version int,
   file_name text,
   s3_key uuid,
+  public boolean,
   created timestamp,
   PRIMARY KEY (category, data_id)
 );
 
-CREATE TABLE witan.data_by_s3_key (
+CREATE TABLE data_by_s3_key (
   data_id uuid,
   category text,
   name text,
@@ -116,16 +118,17 @@ CREATE TABLE witan.data_by_s3_key (
   version int,
   file_name text,
   s3_key uuid,
+  public boolean,
   created timestamp,
   PRIMARY KEY (s3_key, data_id)
 );
 
-CREATE TABLE witan.data_names (
+CREATE TABLE data_names (
   name text PRIMARY KEY,
   version int
 );
 
-CREATE TABLE witan.models (
+CREATE TABLE models (
     name text,
     version_id uuid,
     description text,
@@ -133,8 +136,8 @@ CREATE TABLE witan.models (
     owner uuid,
     model_id uuid PRIMARY KEY,
     version int,
-    properties list<frozen<witan.model_property>>,
-    input_data list<frozen<witan.model_category>>,
+    properties list<frozen<model_property>>,
+    input_data list<frozen<model_category>>,
     input_data_defaults map<text,frozen<data_item>>,
     output_data list<text>,
     fixed_input_data map<text,frozen<data_item>>

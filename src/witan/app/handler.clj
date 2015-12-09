@@ -24,7 +24,8 @@
             [ring.util.http-response :refer :all]
             [clojure.tools.logging :as log]
             [clj-time.core :as t]
-            [overtone.at-at :as at]))
+            [overtone.at-at :as at]
+            [ring.logger :refer [wrap-with-logger]]))
 
 ;; Global storage for store generated tokens.
 (defonce tokens (atom {}))
@@ -221,4 +222,5 @@
              (wrap-authorization auth-backend)
              (wrap-authentication auth-backend)
              (wrap-cors :access-control-allow-origin [#".*"]
-                        :access-control-allow-methods [:get :put :post :delete])))
+                        :access-control-allow-methods [:get :put :post :delete])
+             (wrap-with-logger)))

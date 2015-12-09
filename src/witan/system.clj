@@ -1,7 +1,8 @@
 (ns witan.system
   (:require [com.stuartsierra.component :as component]
             [witan.app.handler]
-            [ring.adapter.jetty :as jetty]))
+            [ring.adapter.jetty :as jetty]
+            [environ.core :as env]))
 
 (defrecord JettyServer [handler port]
     component/Lifecycle
@@ -15,7 +16,8 @@
     (dissoc this ::server)))
 
 (defn system []
-  (-> (component/system-map
-       :jetty-server (->JettyServer #'witan.app.handler/app 3000)
-       :repl-server  (Object.) ; dummy - replaced when invoked via uberjar.
-       )))
+  (let [port (or (env/env :witan-api-port) 3000)]
+    (-> (component/system-map
+         :jetty-server (->JettyServer #'witan.app.handler/app port)
+         :repl-server  (Object.) ; dummy - replaced when invoked via uberjar.
+         ))))
