@@ -9,13 +9,16 @@
    [witan.app.s3 :as s3]
    [witan.system :as ws]
    [clojure.tools.logging :as log]
-   [com.stuartsierra.component :as component]))
+   [com.stuartsierra.component :as component]
+   [cheshire.core :as json]))
 
 (def test-config
   {:cassandra-session {:host "localhost"
                        :keyspace "witan_test"
                        :replication 1}
    :s3 {:bucket "witan-dummy-data"}})
+
+(def test-server-port 3002)
 
 (def test-conn (atom nil))
 
@@ -27,7 +30,7 @@
                            (conn-fn body)))
                 ws/system (fn []
                          (-> (component/system-map
-                                 :jetty-server (ws/->JettyServer witan.app.handler/app 3002)
+                                 :jetty-server (ws/->JettyServer witan.app.handler/app test-server-port)
                                  :repl-server (Object.))))
                 s3/bucket "witan-dummy-data"]
     (load-db-schema! test-config)
