@@ -18,44 +18,6 @@ TODO: will need to get own config files")
 (def bucket
   (-> c/config :s3 :bucket))
 
-(def borough-gss-code
-  {"Barking and Dagenham" "E09000002"
-   "Barnet" "E09000003"
-   "Bexley" "E09000004"
-   "Brent" "E09000005"
-   "Bromley" "E09000006"
-   "Camden" "E09000007"
-   "City of London" "E09000001"
-   "Croydon" "E09000008"
-   "Ealing" "E09000009"
-   "Enfield" "E09000010"
-   "Greenwich" "E09000011"
-   "Hackney" "E09000012"
-   "Hammersmith and Fulham" "E09000013"
-   "Haringey" "E09000014"
-   "Harrow" "E09000015"
-   "Havering" "E09000016"
-   "Hillingdon" "E09000017"
-   "Hounslow" "E09000018"
-   "Islington" "E09000019"
-   "Kensington and Chelsea" "E09000020"
-   "Kingston upon Thames" "E09000021"
-   "Lambeth" "E09000022"
-   "Lewisham" "E09000023"
-   "Merton" "E09000024"
-   "Newham" "E09000025"
-   "Redbridge" "E09000026"
-   "Richmond upon Thames" "E09000027"
-   "Southwark" "E09000028"
-   "Sutton" "E09000029"
-   "Tower Hamlets" "E09000030"
-   "Waltham Forest" "E09000031"
-   "Wandsworth" "E09000032"
-   "Westminster" "E09000033"})
-
-(defn gss-code [borough]
-  (get borough-gss-code borough))
-
 (defn prepare-data
   [data]
   (let [normalised-data (-> data
@@ -125,15 +87,12 @@ TODO: will need to get own config files")
         :publisher publisher}] ;; TODO db expects a list
       (throw (Exception. (str "The upload of an output failed:" data-name s3-key))))))
 
-(defn borough-property-to-gss [properties]
-  (assoc properties :borough-gss-code (gss-code (:borough properties)) ))
-
 (defmulti execute-model (fn [_ model] [(:name model) (:version model)]))
 (defmethod execute-model ["DCLG-based Housing Linked Model" 1]
   [forecast model]
   (let [data (download-data forecast model)
         _ (log/info "Downloads finished. Calculating...")
-        properties (borough-property-to-gss (get-properties forecast))
+        properties (get-properties forecast)
         outputs (m/dclg-housing-linked-model (merge properties data))]
     (map (fn [[category output]] (hash-map category
                                            (handle-output
@@ -143,18 +102,3 @@ TODO: will need to get own config files")
 (defmethod execute-model :default
   [_ model]
   (throw (Exception. (str "The following model could not be found: " (:name model) " v" (:version model)))))
-
-(defn execute-test-model
-  [forecast model]
-  (let [properties (get-properties forecast)]
-    (log/info "Running the test model with the following properties: " properties)
-    (<!! (timeout 3000))
-    {"Some output" [{:name      "Fake result"
-                     :file_name "fake.csv"
-                     :s3_key    #uuid "0c53f871-ba4e-4e90-81df-425382e9b95e"}]
-     "Some more output" [{:name      "Fake result 2"
-                          :file_name "fake2.csv"
-                          :s3_key    #uuid "1c53f871-ba4e-4e90-81df-425382e9b95e"}
-                         {:name      "Fake result 3"
-                          :file_name "fake3.csv"
-                          :s3_key    #uuid "2c53f871-ba4e-4e90-81df-425382e9b95e"}]}))
