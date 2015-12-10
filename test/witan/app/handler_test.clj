@@ -9,8 +9,10 @@
             [witan.app.data :as data]
             [witan.app.schema :as ws]
             [witan.app.s3 :as s3]
+            [witan.app.model-execution :as mex]
             [clojure.data.json :as json]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [witan.app.config :as c]))
 
 (def user-id (java.util.UUID/randomUUID))
 
@@ -94,6 +96,30 @@
      :public false
      :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"}))
 
+(defn get-error-forecast[& _]
+  {:forecast_id #uuid "fd44474d-e0f8-4713-bacf-299e503e4f30",
+   :version 2,
+   :created #inst "2015-10-14T08:41:21.477-00:00",
+   :description "Description of my forecast",
+   :in_progress false,
+   :error "This is an error message",
+   :latest true
+   :name "My Forecast 1",
+   :owner #uuid "d8fc0f3c-0535-4959-bf9e-505af9a59ad9",
+   :owner_name "User 3",
+   :public false
+   :version_id #uuid "78b1bf97-0ebe-42ef-8031-384e504cf795"
+   :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0"
+   :model_property_values {}
+   :inputs {"Base population data" {:data_id #uuid "40ff789b-68dd-420d-81e7-2b19b69fd399",
+                                    :category "Base population data",
+                                    :name "base population Camden",
+                                    :publisher #uuid "bd163a4b-fecc-4f8d-a642-c9ee951d6f77",
+                                    :version 1,
+                                    :public false
+                                    :file_name "base-population.csv",
+                                    :s3_key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd",
+                                    :created #inst "2015-10-28T18:27:33.967-00:00" } }})
 (defn get-dummy-models [& _]
   '({:name "My Model 2",
      :created #inst "2015-10-09T13:52:43.951-00:00",
@@ -222,12 +248,26 @@
     ;;      (is (= status 201))))))
     )
 
+  (comment  (testing "/api/forecasts/:forecast-id/versions"
+              (with-redefs [data/get-data-by-data-id (fn [_] (first (get-dummy-data)))
+                            forecast/get-most-recent-version (fn [_] (first (get-dummy-forecasts)))
+                            forecast/create-new-forecast-version! (fn [_] {})
+                            mex/execute-model (fn [_ _] [{"Base population data" {}}])
+                            data/add-data! (fn [_] (first (get-dummy-data)))]
+                (let [token (logged-in-user-token)
+                      [status body _] (post* app "/api/forecasts/b7b35c0b-bbf0-4a52-ab40-6264ed0f364d/versions" {:body (json {:inputs {"Base population data" {"data-id" (java.util.UUID/randomUUID)}}}) :headers (auth-header token)})]
+                  (is (== status 201))))))
+
   (testing "/api/forecasts/:forecast-id/versions"
-    (with-redefs [data/add-data! (fn [_] )
-                  forecast/update-forecast! (fn [forecast-id owner inputs] (first (get-dummy-forecasts)))
-                  s3/exists? (fn [_] true)]
+    (with-redefs [data/get-data-by-data-id (fn [_] (first (get-dummy-data)))
+                  forecast/get-most-recent-version (fn [_] (first (get-dummy-forecasts)))
+                  forecast/create-new-forecast-version! (fn [_] {})
+                  forecast/process-error! get-error-forecast
+                  mex/execute-model (fn [_ _] {:error "this is an error"})
+                  forecast/get-forecast-version get-error-forecast]
       (let [token (logged-in-user-token)
-            [status body _] (post* app "/api/forecasts/b7b35c0b-bbf0-4a52-ab40-6264ed0f364d/versions" {:body (json {"Base population data" {"category" "development-data" "publisher" "5db2c4ab-77f9-4e2f-839d-776faf4c5453" "name" "base population" "created" "2015-11-30T22:25:31" "file-name" "file.csv" "public?" "null" "s3-key" "653ceaad-cf3b-467c-966c-04b57f443708" "version" "1"}})})])))
+            [status body _] (post* app "/api/forecasts/b7b35c0b-bbf0-4a52-ab40-6264ed0f364d/versions" {:body (json {:inputs {"Base population data" {"data-id" (java.util.UUID/randomUUID)}}}) :headers (auth-header token)})]
+        (is (== status 201)))))
 
   (testing "/api/data/:category"
     (with-redefs [data/get-data-by-category (fn [_ _] (get-dummy-data))]

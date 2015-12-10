@@ -92,13 +92,16 @@ TODO: will need to get own config files")
   [forecast model]
   (let [data (download-data forecast model)
         _ (log/info "Downloads finished. Calculating...")
-        properties (get-properties forecast)
-        outputs (m/dclg-housing-linked-model (merge properties data))]
-    (map (fn [[category output]] (hash-map category
-                                           (handle-output
-                                            (:owner forecast)
-                                            category
-                                            output))) outputs)))
+        properties (get-properties forecast)]
+    (try
+      (->> (m/dclg-housing-linked-model (merge properties data))
+           (map (fn [[category output]] (hash-map category
+                                                 (handle-output
+                                                  (:owner forecast)
+                                                  category
+                                                  output)))))
+      (catch Exception e (do (log/error "Model" (:model_id forecast) "threw an error:" (.getMessage e) (clojure.stacktrace/print-stack-trace e) )
+                             {:error (.getMessage e)})))))
 (defmethod execute-model :default
   [_ model]
   (throw (Exception. (str "The following model could not be found: " (:name model) " v" (:version model)))))
