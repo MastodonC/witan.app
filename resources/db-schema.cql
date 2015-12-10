@@ -69,6 +69,7 @@ CREATE TABLE forecasts (
 // model properties
 CREATE TYPE model_property (
       name text,
+      display text,
       type text,
       context text,
       enum_values list<text>
@@ -141,5 +142,5 @@ CREATE TABLE models (
     input_data list<frozen<model_category>>,
     input_data_defaults map<text,frozen<data_item>>,
     output_data list<text>,
-    fixed_input_data map<text,frozen<data_item>>
+    fixed_input_data list<frozen<data_item>>
 );

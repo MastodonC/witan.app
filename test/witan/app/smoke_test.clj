@@ -102,11 +102,10 @@
                                                                   {:name "public?" :content "true"}]})
                   data-id (get (json/parse-string body) "data-id")]
               (is (== status 201))
-              (testing "POST /api/forecasts/:id/versions"
-                (let [{:keys [status body]} (client/post (app-url (str "/api/forecasts/" forecast-id "/versions"))
-                                                         {:headers (auth-header token)
-                                                          :body (json/generate-string {:inputs {:development-data {:data-id data-id}}})
-                                                          :content-type :json})]))))))
+              (comment (testing "POST /api/forecasts/:id/versions"
+                         (let [{:keys [status body]} (client/post (app-url (str "/api/forecasts/" forecast-id "/versions"))
+                                                                  {:headers (auth-header token)
+                                                                   :body (json/generate-string {:inputs {:development-data {:data-id data-id}}})
+                                                                   :content-type :json})])))))))
       (testing "GET /api/data/:category"
-        (let [{:keys [status body]} (client/get (app-url "/api/data/development-data") {:headers (auth-header token)})]))
-)))
+        (let [{:keys [status body]} (client/get (app-url "/api/data/development-data") {:headers (auth-header token)})])))))

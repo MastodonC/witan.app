@@ -31,10 +31,13 @@ TODO: will need to get own config files")
 (defn download
   "Gets the content of an object
    NOTE ASSUMPTION: the input files are csv with \n or \r\n as eol characters"
-  [key]
+  [key tag]
+  (log/info "Downloading " key "(tag" tag ")")
   (let [presigned-download-url (ws3/presigned-download-url key "tmp")
-        slurped (slurp presigned-download-url)]
-    (prepare-data slurped)))
+        slurped (slurp presigned-download-url)
+        result (prepare-data slurped)
+        _ (log/info "Finished downloading" key)]
+    result))
 
 (defn get-properties
   [forecast]
@@ -51,7 +54,7 @@ TODO: will need to get own config files")
         input-defaults (:input_data_defaults model)
         given-inputs (:inputs forecast)
         fixed-inputs (:fixed_input_data model)]
-    (merge (into {} (map (fn [[k v]] [k (:s3_key v)]) fixed-inputs))
+    (merge (into {} (map (fn [d] [(:category d) (:s3_key d)]) fixed-inputs))
            (into {} (map (fn [category] (let  [given-data (get given-inputs category)
                                                default-data (get input-defaults category)]
                                           (cond
@@ -59,13 +62,13 @@ TODO: will need to get own config files")
                                             default-data [category (:s3_key default-data)]
                                             :else (throw (Exception. (str "Incomplete input data for model: " (:name model))))))) input-list)))))
 
-(defn download-data
-  "download all inputs"
+(defn prepare-download-data
+  "prepare download information for all inputs"
   [forecast model]
   (let [inputs (get-inputs forecast model)]
-    (log/info "Downloading" (count inputs) "data items...")
+    (log/info "Preparing download information for" (count inputs) "data items (pre cull)...")
     (if-not (some #(-> % second nil?) inputs)
-      (into {} (pmap (fn [[category s3-key]] [(keyword category) (download s3-key)]) inputs))
+      (into {} (pmap (fn [[category s3-key]] [(keyword category) s3-key]) inputs))
       (throw (Exception. (str "One or more download keys provided were nil."))))))
 
 (defn handle-output
@@ -79,29 +82,28 @@ TODO: will need to get own config files")
         presigned-upload-url (ws3/presigned-upload-url s3-key)
         http-resp (client/put (str presigned-upload-url) {:body csv})]
     (if (= (:status http-resp) 200)
-      [{:s3-key s3-key
-        :name data-name
-        :file-name (str (slug/->slug data-name) ".csv")
-        :category category
-        :version 1
-        :publisher publisher}] ;; TODO db expects a list
+      {:s3-key s3-key
+       :name data-name
+       :file-name (str (slug/->slug data-name) ".csv")
+       :category category
+       :version 1
+       :publisher publisher}
       (throw (Exception. (str "The upload of an output failed:" data-name s3-key))))))
 
 (defmulti execute-model (fn [_ model] [(:name model) (:version model)]))
 (defmethod execute-model ["DCLG-based Housing Linked Model" 1]
   [forecast model]
-  (let [data (download-data forecast model)
-        _ (log/info "Downloads finished. Calculating...")
-        properties (get-properties forecast)]
-    (try
-      (->> (m/dclg-housing-linked-model (merge properties data))
-           (map (fn [[category output]] (hash-map category
-                                                 (handle-output
-                                                  (:owner forecast)
-                                                  category
-                                                  output)))))
-      (catch Exception e (do (log/error "Model" (:model_id forecast) "threw an error:" (.getMessage e) (clojure.stacktrace/print-stack-trace e) )
-                             {:error (.getMessage e)})))))
+  (try
+    (let [data (prepare-download-data forecast model)
+          properties (get-properties forecast)
+          total-outputs (m/dclg-housing-linked-model {:properties properties :data data} download)]
+      (into {} (map (fn [{:keys [category outputs reports]}]
+                      (hash-map category (map #(handle-output
+                                                (:owner forecast)
+                                                category
+                                                %) outputs))) total-outputs)))
+    (catch Exception e (do (log/error "Model" (:model_id forecast) "threw an error:" (.getMessage e) (clojure.stacktrace/print-stack-trace e) )
+                           {:error (.getMessage e)}))))
 (defmethod execute-model :default
   [_ model]
   (throw (Exception. (str "The following model could not be found: " (:name model) " v" (:version model)))))

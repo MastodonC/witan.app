@@ -55,7 +55,7 @@
   :java-source-paths ["java-src"]
   :javac-options ["-target" "1.7" "-source" "1.7" "-Xlint:-options"]
 
-  :jvm-opts ["-Xmx1024m"]
+  :jvm-opts ["-Xmx2048m"]
 
   :repl-options {:init-ns user}
 

@@ -43,7 +43,7 @@
                               (mapv #(cond-> % (get input_data_defaults (:category %1))
                                              (assoc :default (data/->Data (get input_data_defaults (:category %1)))))))
              :output-data (mapv #(hash-map :category %1) output_data)
-             :fixed-input-data (mapv (fn [[category data]] (hash-map :category category :data (data/->Data data))) fixed_input_data))))
+             :fixed-input-data (mapv data/->Data fixed_input_data))))
 
 (defn find-model-by-name
   [name]
@@ -76,8 +76,7 @@
                           :input_data_defaults (zipmap (map :category input-defaults)
                                                        (map (comp hayt/user-type data/data-to-db :default) input-defaults))
                           :output_data (mapv :category output-data)
-                          :fixed_input_data  (zipmap (map :category fixed-input-data)
-                                                     (map (comp hayt/user-type data/data-to-db :data) fixed-input-data))))))
+                          :fixed_input_data (mapv (comp hayt/user-type data/data-to-db) fixed-input-data)))))
 
 (defn update-default-input-data
   [model-id category data input-data-defaults]
