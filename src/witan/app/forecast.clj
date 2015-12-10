@@ -486,10 +486,12 @@
                                      (log/error "Updating forecast failed due to validation."))
                                    (log/error "Updating forecast failed because forecast was nil"))]
                     result)) ;; return a bool, true if result is nil
+  :post!  (fn [ctx]
+            (let [given-inputs (:inputs (util/get-post-params ctx))
+                  inputs (into {} (map locate-input-by-data-id given-inputs))
+                  new-forecast (update-forecast! {:forecast-id id
+                                                  :owner user-id
+                                                  :inputs inputs})]
+              {:forecast new-forecast}))
   :handle-created (fn [ctx]
-                    (let [given-inputs (:inputs (util/get-post-params ctx))
-                          inputs (into {} (map locate-input-by-data-id given-inputs))
-                          new-forecast (update-forecast! {:forecast-id id
-                                                          :owner user-id
-                                                          :inputs inputs})]
-                      (s/validate ws/ForecastInfo (->ForecastInfo new-forecast)))))
+                    (s/validate ws/ForecastInfo (->ForecastInfo (:forecast ctx)))))
