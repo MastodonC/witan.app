@@ -12,7 +12,8 @@
             [witan.app.model-execution :as mex]
             [clojure.data.json :as json]
             [schema.core :as s]
-            [witan.app.config :as c]))
+            [witan.app.config :as c]
+            [witan.app.user :as user]))
 
 (def user-id (java.util.UUID/randomUUID))
 
@@ -139,9 +140,6 @@
      :version 0,
      :version_id #uuid "653c149a-86d8-4a3f-a7a8-d898c070177e"}))
 
-(defn get-dummy-model []
-  {:description "Description of my model", :properties [{:name "Some field", :type "text", :context "Placeholder value 123", :enum_values []}], :version_id #uuid "fa200d2d-816d-4502-b94a-9ba020f2f1f4", :input_data ["Base population data"], :name "My Model 2", :output_data ["All the population data"], :input_data_defaults {}, :created #inst "2015-10-21T10:51:22.093-00:00", :model_id #uuid "dbd5d07e-ec05-4409-83da-71971897cfa0", :version 1, :owner #uuid "98f9adcb-bc80-407c-b9c8-736506f6e410"})
-
 (defn get-dummy-data []
   '({:category "Base population data", :created #inst "2015-10-28T18:27:33.968-00:00", :data_id #uuid "40ff789b-68dd-420d-81e7-2b19b69fd399", :file_name "base-population.csv", :name "base population Camden", :publisher #uuid "bd163a4b-fecc-4f8d-a642-c9ee951d6f77", :s3_key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd", :version 1 :public false}))
 
@@ -248,26 +246,33 @@
     ;;      (is (= status 201))))))
     )
 
-  (comment  (testing "/api/forecasts/:forecast-id/versions"
-              (with-redefs [data/get-data-by-data-id (fn [_] (first (get-dummy-data)))
-                            forecast/get-most-recent-version (fn [_] (first (get-dummy-forecasts)))
-                            forecast/create-new-forecast-version! (fn [_] {})
-                            mex/execute-model (fn [_ _] [{"Base population data" {}}])
-                            data/add-data! (fn [_] (first (get-dummy-data)))]
-                (let [token (logged-in-user-token)
-                      [status body _] (post* app "/api/forecasts/b7b35c0b-bbf0-4a52-ab40-6264ed0f364d/versions" {:body (json {:inputs {"Base population data" {"data-id" (java.util.UUID/randomUUID)}}}) :headers (auth-header token)})]
-                  (is (== status 201))))))
+  (testing "/api/forecasts/:forecast-id/versions"
+    (with-redefs [data/get-data-by-data-id (fn [_] (first (get-dummy-data)))
+                  user/retrieve-user (fn [_] {:name "user1"})
+                  model/get-model-by-model-id (fn [_] (first (get-dummy-models)))
+                  forecast/get-most-recent-version (fn [_] (first (get-dummy-forecasts)))
+                  forecast/create-new-forecast-version! (fn [_] {})
+                  mex/execute-model (fn [_ _] '({"housing-linked-population" [{:data-id (java.util.UUID/randomUUID) :s3-key (java.util.UUID/randomUUID) :name "housing linked population figure"}]}))
+                  data/add-data! (fn [_] (first (get-dummy-data)))
+                  forecast/get-forecast-version (fn [_ _] (first (get-dummy-forecasts)))]
+      (let [token (logged-in-user-token)
+            [status body _] (post* app "/api/forecasts/b7b35c0b-bbf0-4a52-ab40-6264ed0f364d/versions" {:body (json {:inputs {"Base population data" {"data-id" (java.util.UUID/randomUUID)}}}) :headers (auth-header token)})]
+        (is (== status 201)))))
 
   (testing "/api/forecasts/:forecast-id/versions"
     (with-redefs [data/get-data-by-data-id (fn [_] (first (get-dummy-data)))
+                  user/retrieve-user (fn [_] {:name "user2"})
+                  model/get-model-by-model-id (fn [_] (first (get-dummy-models)))
                   forecast/get-most-recent-version (fn [_] (first (get-dummy-forecasts)))
                   forecast/create-new-forecast-version! (fn [_] {})
                   forecast/process-error! get-error-forecast
+
                   mex/execute-model (fn [_ _] {:error "this is an error"})
                   forecast/get-forecast-version get-error-forecast]
       (let [token (logged-in-user-token)
             [status body _] (post* app "/api/forecasts/b7b35c0b-bbf0-4a52-ab40-6264ed0f364d/versions" {:body (json {:inputs {"Base population data" {"data-id" (java.util.UUID/randomUUID)}}}) :headers (auth-header token)})]
-        (is (== status 201)))))
+        (is (== status 201))
+        (is (:error body)))))
 
   (testing "/api/data/:category"
     (with-redefs [data/get-data-by-category (fn [_ _] (get-dummy-data))]

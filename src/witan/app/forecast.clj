@@ -297,7 +297,6 @@
 
 (defn process-output-data!
   [[category output] public?]
-  (log/info "PROCESS OUTPUT DATA" category output public?)
   (let [output-as-data (data/add-data! (assoc (first output) :public? public?))] ;; TODO we only process the first item. post MVP1 we may have >1
     (hash-map category [(hayt/user-type output-as-data)])))
 
@@ -320,7 +319,7 @@
                                          (map #(process-output-data! % (:public? forecast)))))]
              (log/info "Finished running model " (:model_id forecast) "-" (count data) "output(s) returned." outputs)
              (conclude-forecast! (assoc (->Forecast forecast) :outputs data)))))
-       (catch Exception e (log/info "ERROR ERROR" (.getMessage e)))))))
+       (catch Exception e (log/info "Error around model " (:model_id forecast) " " (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
 
 (defn add-forecast!
   [{:keys [name owner model-id model-properties public?]
