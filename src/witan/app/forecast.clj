@@ -386,7 +386,8 @@
           (create-new-forecast-version! new-forecast)
           (run-model! (assoc new-forecast :inputs inputs) model) ;; assoc to use the original inputs (not UDT'd)
           (get-forecast-version forecast-id new-version))
-        (log/error "The incorrect number of inputs was supplied.")))))
+        (do (log/error "The incorrect number of inputs was supplied")
+            (throw (Exception. "The incorrect number of inputs was supplied")))))))
 
 (defn get-forecasts
   [user]
