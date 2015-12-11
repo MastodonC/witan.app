@@ -169,6 +169,13 @@
                                   :in_progress false})
                (hayt/where {:forecast_id forecast-id :version version})))
 
+(defn update-forecast-error
+  [{:keys [forecast-id version error]}]
+  (hayt/update :forecasts
+               (hayt/set-columns {:error error
+                                  :in_progress false})
+               (hayt/where {:forecast_id forecast-id :version version})))
+
 (defn get-most-recent-version
   [id]
   (first (c/exec (find-most-recent-version id))))
@@ -285,14 +292,17 @@
 (defn conclude-forecast!
   [{:keys [forecast-id version] :as args}]
   (c/exec (update-forecast-outputs args))
-  (let [forecast (->Forecast (first (c/exec (find-forecast-by-version forecast-id version))))]
-    (c/exec (update-forecast-current-version-id forecast))
-    forecast))
+  (let [forecast (->Forecast (get-forecast-version forecast-id version))]
+    (c/exec (update-forecast-current-version-id forecast))))
 
 (defn process-output-data!
   [[category output] public?]
   (let [output-as-data (data/add-data! (assoc (first output) :public? public?))] ;; TODO we only process the first item. post MVP1 we may have >1
     (hash-map category [(hayt/user-type output-as-data)])))
+
+(defn process-error!
+  [{:keys [forecast-id version]} error]
+  (c/exec (update-forecast-error {:forecast-id forecast-id :version version :error error})))
 
 (defn run-model!
   ([forecast]
@@ -301,13 +311,15 @@
    (go ;; temporary solution
      (log/info "Starting to run model: " (:model_id forecast) (:name model) (str "v" (:version model)))
      (try
-       (let [outputs   (mex/execute-model forecast model)
-             data      (into {} (->> (vec outputs)
-                                     (first)
-                                     (map #(process-output-data! % (:public? forecast)))))]
-         (log/info "Finished running model " (:model_id forecast) "-" (count data) "output(s) returned." outputs)
-         (conclude-forecast! (assoc (->Forecast forecast) :outputs data)))
-       (catch Exception e (log/error "Model" (:model_id forecast) "threw an error:" (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
+       (let [outputs  (mex/execute-model forecast model)]
+         (if-let [error (:error outputs)]
+           (process-error! forecast error)
+           (let [data      (into {} (->> (vec outputs)
+                                         (first)
+                                         (map #(process-output-data! % (:public? forecast)))))]
+             (log/info "Finished running model " (:model_id forecast) "-" (count data) "output(s) returned." outputs)
+             (conclude-forecast! (assoc (->Forecast forecast) :outputs data)))))
+       (catch Exception e (log/info "Error around model " (:model_id forecast) " " (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
 
 (defn add-forecast!
   [{:keys [name owner model-id model-properties public?]
@@ -341,8 +353,15 @@
     (= intersection-count (count model-input-categories))))
 
 (defn locate-input-by-data-id
-  [[category {:keys [data-id]}]]
+  [[category {:keys [ data-id]}]]
   (hash-map (name category) (data/get-data-by-data-id data-id)))
+
+(defn create-new-forecast-version!
+  [{:keys [forecast-id version] :as forecast}]
+  (c/exec (create-forecast-version forecast))
+  (c/exec (update-forecast-current-version-id forecast))
+  (if (== version 1)
+    (c/exec (delete-forecast-by-version forecast-id 0))))
 
 (defn update-forecast!
   [{:keys [forecast-id owner inputs]}]
@@ -364,14 +383,11 @@
                                   :model-id (:model_id latest-forecast)
                                   :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
                                   :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)])))]
-          (c/exec (create-forecast-version new-forecast))
-          (c/exec (update-forecast-current-version-id new-forecast))
-          (if (zero? old-version)
-            (c/exec (delete-forecast-by-version forecast-id 0))
-            (c/exec (update-forecast-latest forecast-id old-version false)))
+          (create-new-forecast-version! new-forecast)
           (run-model! (assoc new-forecast :inputs inputs) model) ;; assoc to use the original inputs (not UDT'd)
-          (first (c/exec (find-forecast-by-version forecast-id new-version))))
-        (log/error "The incorrect number of inputs was supplied.")))))
+          (get-forecast-version forecast-id new-version))
+        (do (log/error "The incorrect number of inputs was supplied")
+            (throw (Exception. "The incorrect number of inputs was supplied")))))))
 
 (defn get-forecasts
   [user]
@@ -470,10 +486,12 @@
                                      (log/error "Updating forecast failed due to validation."))
                                    (log/error "Updating forecast failed because forecast was nil"))]
                     result)) ;; return a bool, true if result is nil
+  :post!  (fn [ctx]
+            (let [given-inputs (:inputs (util/get-post-params ctx))
+                  inputs (into {} (map locate-input-by-data-id given-inputs))
+                  new-forecast (update-forecast! {:forecast-id id
+                                                  :owner user-id
+                                                  :inputs inputs})]
+              {:forecast new-forecast}))
   :handle-created (fn [ctx]
-                    (let [given-inputs (:inputs (util/get-post-params ctx))
-                          inputs (into {} (map locate-input-by-data-id given-inputs))
-                          new-forecast (update-forecast! {:forecast-id id
-                                                          :owner user-id
-                                                          :inputs inputs})]
-                      (s/validate ws/ForecastInfo (->ForecastInfo new-forecast)))))
+                    (s/validate ws/ForecastInfo (->ForecastInfo (:forecast ctx)))))

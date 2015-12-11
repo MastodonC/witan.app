@@ -51,6 +51,7 @@ CREATE TABLE forecasts (
     created timestamp,
     description text,
     in_progress boolean,
+    error text,
     public boolean,
     name text,
     owner uuid,

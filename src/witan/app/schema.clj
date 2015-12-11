@@ -152,7 +152,8 @@
    (s/required-key :latest?)      s/Bool
    (s/optional-key :description)  s/Str
    (s/optional-key :tag)          Tag
-   (s/optional-key :model-id)     IdType})
+   (s/optional-key :model-id)     IdType
+   (s/optional-key :error)        s/Str})
 
 (def ForecastInfo
   "Forecast in-depth"
