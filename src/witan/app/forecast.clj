@@ -329,7 +329,7 @@
                  data (into {} (map #(process-output-data! % (:public? forecast))) outputs)]
              (log/info "Finished processing model " (:model_id forecast) "-" (count data) "output(s) returned.")
              (conclude-forecast! (assoc (->Forecast forecast) :outputs data)))))
-       (catch Exception e (log/error "Model" (:model_id forecast) "threw an error:" (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
+       (catch Exception e (log/error "Error around model" (:model_id forecast) ":" (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
 
 (defn add-forecast!
   [{:keys [name owner model-id model-properties public?]
