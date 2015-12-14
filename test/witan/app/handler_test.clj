@@ -252,7 +252,11 @@
                   model/get-model-by-model-id (fn [_] (first (get-dummy-models)))
                   forecast/get-most-recent-version (fn [_] (first (get-dummy-forecasts)))
                   forecast/create-new-forecast-version! (fn [_] {})
-                  mex/execute-model (fn [_ _] '({"housing-linked-population" [{:data-id (java.util.UUID/randomUUID) :s3-key (java.util.UUID/randomUUID) :name "housing linked population figure"}]}))
+                  mex/execute-model (fn [_ _] {"housing-linked-population"
+                                               [{:name "housing linked population figures - single year"
+                                                 :data 123}
+                                                {:name "housing linked population figures - five year"
+                                                 :data 456}]})
                   data/add-data! (fn [_] (first (get-dummy-data)))
                   forecast/get-forecast-version (fn [_ _] (first (get-dummy-forecasts)))]
       (let [token (logged-in-user-token)

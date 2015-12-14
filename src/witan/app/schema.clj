@@ -52,6 +52,7 @@
   "Properties that a model can expose"
   {(s/required-key :name)    s/Str
    (s/required-key :type)    ModelPropertyType
+   (s/optional-key :display) s/Str
    (s/optional-key :context) s/Any
    (s/optional-key :enum_values) [s/Str]}) ;; varies depending on the type
 
@@ -95,8 +96,7 @@
                                   (s/optional-key :description) s/Str
                                   (s/optional-key :default)     DataItem}]
    (s/optional-key :output-data) [{(s/required-key :category) ModelOutputCategory}]
-   (s/optional-key :fixed-input-data) [{(s/optional-key :category) ModelInputCategory
-                                        (s/optional-key :data) DataItem}]})
+   (s/optional-key :fixed-input-data) [DataItem]})
 
 (def ModelInput
   "An input category with a data item"

@@ -91,6 +91,7 @@
                                      (get-inputs incomplete-forecast dummy-model))))))
   (testing "errors in model"
     (with-redefs [m/dclg-housing-linked-model (fn [& _] (throw (Exception. "this is an error message")))
-                  download-data (fn [& _] {})]
+                  download (fn [& _] {})
+                  prepare-download-data (fn [& _] {})]
       (let [outputs (execute-model dummy-forecast dummy-model)]
         (is (:error outputs))))))

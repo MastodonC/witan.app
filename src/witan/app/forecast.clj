@@ -284,10 +284,20 @@
       into correct structure"
   [model-id property-values]
   (let [model (model/get-model-by-model-id model-id)
-        model-properties (:properties model)]
-    (reduce (partial check-property-value model-properties)
-            {:errors [] :values {}}
-            property-values)))
+        model-properties (:properties model)
+        result {:errors [] :values {}}
+        get-names (fn [ps] (->> ps (map :name) set))
+        model-property-names (get-names model-properties)
+        supplied-property-names (get-names property-values)]
+    (if (clojure.set/subset? model-property-names supplied-property-names)
+      (reduce (partial check-property-value model-properties)
+              result
+              property-values)
+      (assoc result :errors
+             [(str "One or more model properties missing: "
+                   supplied-property-names
+                   " != "
+                   model-property-names)]))))
 
 (defn conclude-forecast!
   [{:keys [forecast-id version] :as args}]
@@ -296,9 +306,10 @@
     (c/exec (update-forecast-current-version-id forecast))))
 
 (defn process-output-data!
-  [[category output] public?]
-  (let [output-as-data (data/add-data! (assoc (first output) :public? public?))] ;; TODO we only process the first item. post MVP1 we may have >1
-    (hash-map category [(hayt/user-type output-as-data)])))
+  [[category outputs] public?]
+  (hash-map category
+            (mapv #(let [output-as-data (data/add-data! (assoc % :public? public?))]
+                     (hayt/user-type output-as-data)) outputs)))
 
 (defn process-error!
   [{:keys [forecast-id version]} error]
@@ -311,14 +322,14 @@
    (go ;; temporary solution
      (log/info "Starting to run model: " (:model_id forecast) (:name model) (str "v" (:version model)))
      (try
-       (let [outputs  (mex/execute-model forecast model)]
+       (let [outputs (mex/execute-model forecast model)]
          (if-let [error (:error outputs)]
            (process-error! forecast error)
-           (let [data      (into {} (->> (first outputs)
-                                         (map #(process-output-data! % (:public? forecast)))))]
-             (log/info "Finished running model " (:model_id forecast) "-" (count data) "output(s) returned." outputs)
+           (let [_ (log/info "Finished running model" (:model_id forecast) "- processing...")
+                 data (into {} (map #(process-output-data! % (:public? forecast))) outputs)]
+             (log/info "Finished processing model " (:model_id forecast) "-" (count data) "output(s) returned.")
              (conclude-forecast! (assoc (->Forecast forecast) :outputs data)))))
-       (catch Exception e (log/info "Error around model " (:model_id forecast) " " (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
+       (catch Exception e (log/error "Error around model" (:model_id forecast) ":" (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
 
 (defn add-forecast!
   [{:keys [name owner model-id model-properties public?]
@@ -328,19 +339,22 @@
         id (uuid/random)
         version-id (uuid/random)
         uuid-model-id (util/to-uuid model-id)
-        checked-property-values (check-property-values uuid-model-id model-properties)
-        owner-name (-> owner u/retrieve-user :name)
-        new-forecast (assoc forecast :forecast-id id
-                            :version-id version-id
-                            :model-id uuid-model-id
-                            :public? public?
-                            :model-property-values (:values checked-property-values)
-                            :owner-name owner-name)]
-    (when (and (empty? existing-forecasts) (empty? (:errors checked-property-values)))
-      (c/exec (create-new-forecast new-forecast))
-      (c/exec (create-first-version new-forecast))
-      (c/exec (create-forecast-name new-forecast))
-      (first (c/exec (find-forecast-by-id id))))))
+        checked-property-values (check-property-values uuid-model-id model-properties)]
+    (if (-> checked-property-values :errors empty?)
+      (let [ owner-name (-> owner u/retrieve-user :name)
+            new-forecast (assoc forecast :forecast-id id
+                                :version-id version-id
+                                :model-id uuid-model-id
+                                :public? public?
+                                :model-property-values (:values checked-property-values)
+                                :owner-name owner-name)]
+        (when (and (empty? existing-forecasts) (empty? (:errors checked-property-values)))
+          (c/exec (create-new-forecast new-forecast))
+          (c/exec (create-first-version new-forecast))
+          (c/exec (create-forecast-name new-forecast))
+          (first (c/exec (find-forecast-by-id id)))))
+      (log/error (str "There was an error with the supplied model "
+                      (:errors checked-property-values))))))
 
 (defn has-all-inputs?
   [model inputs]
@@ -482,10 +496,10 @@
                         given-inputs   (:inputs (util/get-post-params ctx))
                         inputs (into {} (map locate-input-by-data-id given-inputs))
                         result   (cond
-                                     (not forecast) (log/error "Updating forecast failed because forecast was nil")
-                                     (not ((util/post!-processable-validation ws/UpdateForecast) ctx)) (log/error "Updating forecast failed due to validation")
-                                     (not (has-all-inputs? model inputs)) (log/error "Updating forecast failed because not all inputs are present")
-                                     :else [true {:inputs inputs}])]
+                                   (not forecast) (log/error "Updating forecast failed because forecast was nil")
+                                   (not ((util/post!-processable-validation ws/UpdateForecast) ctx)) (log/error "Updating forecast failed due to validation")
+                                   (not (has-all-inputs? model inputs)) (log/error "Updating forecast failed because not all inputs are present")
+                                   :else [true {:inputs inputs}])]
                     result))
   :post!  (fn [ctx]
             (let [new-forecast (update-forecast! {:forecast-id id
