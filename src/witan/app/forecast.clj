@@ -314,8 +314,7 @@
        (let [outputs  (mex/execute-model forecast model)]
          (if-let [error (:error outputs)]
            (process-error! forecast error)
-           (let [data      (into {} (->> (vec outputs)
-                                         (first)
+           (let [data      (into {} (->> (first outputs)
                                          (map #(process-output-data! % (:public? forecast)))))]
              (log/info "Finished running model " (:model_id forecast) "-" (count data) "output(s) returned." outputs)
              (conclude-forecast! (assoc (->Forecast forecast) :outputs data)))))
@@ -479,19 +478,19 @@
   :allowed-methods #{:post}
   :processable? (fn [ctx]
                   (let [forecast (get-most-recent-version id)
-                        inputs   (:inputs (util/get-post-params ctx))
-                        result   (if forecast
-                                   (if ((util/post!-processable-validation ws/UpdateForecast) ctx)
-                                     true
-                                     (log/error "Updating forecast failed due to validation."))
-                                   (log/error "Updating forecast failed because forecast was nil"))]
-                    result)) ;; return a bool, true if result is nil
+                        model (model/get-model-by-model-id (:model_id forecast))
+                        given-inputs   (:inputs (util/get-post-params ctx))
+                        inputs (into {} (map locate-input-by-data-id given-inputs))
+                        result   (cond
+                                     (not forecast) (log/error "Updating forecast failed because forecast was nil")
+                                     (not ((util/post!-processable-validation ws/UpdateForecast) ctx)) (log/error "Updating forecast failed due to validation")
+                                     (not (has-all-inputs? model inputs)) (log/error "Updating forecast failed because not all inputs are present")
+                                     :else [true {:inputs inputs}])]
+                    result))
   :post!  (fn [ctx]
-            (let [given-inputs (:inputs (util/get-post-params ctx))
-                  inputs (into {} (map locate-input-by-data-id given-inputs))
-                  new-forecast (update-forecast! {:forecast-id id
+            (let [new-forecast (update-forecast! {:forecast-id id
                                                   :owner user-id
-                                                  :inputs inputs})]
+                                                  :inputs (:inputs ctx)})]
               {:forecast new-forecast}))
   :handle-created (fn [ctx]
                     (s/validate ws/ForecastInfo (->ForecastInfo (:forecast ctx)))))
