@@ -314,8 +314,7 @@
        (let [outputs  (mex/execute-model forecast model)]
          (if-let [error (:error outputs)]
            (process-error! forecast error)
-           (let [data      (into {} (->> (vec outputs)
-                                         (first)
+           (let [data      (into {} (->> (first outputs)
                                          (map #(process-output-data! % (:public? forecast)))))]
              (log/info "Finished running model " (:model_id forecast) "-" (count data) "output(s) returned." outputs)
              (conclude-forecast! (assoc (->Forecast forecast) :outputs data)))))
