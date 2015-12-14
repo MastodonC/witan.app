@@ -18,6 +18,7 @@ CREATE TABLE witan.forecast_headers (
     version int,
     description text,
     in_progress boolean,
+    public boolean,
     name text,
     owner uuid,
     owner_name text,
@@ -42,6 +43,7 @@ CREATE TYPE witan.data_item (
   version int,
   file_name text,
   s3_key uuid,
+  public boolean,
   created timestamp
 );
 
@@ -51,6 +53,7 @@ CREATE TABLE witan.forecasts (
     created timestamp,
     description text,
     in_progress boolean,
+    public boolean,
     name text,
     owner uuid,
     owner_name text,
@@ -84,7 +87,6 @@ CREATE TABLE witan.model_names (
     PRIMARY KEY (name, model_id)
 );
 
-// model headers
 CREATE TABLE witan.data_by_data_id (
   data_id uuid PRIMARY KEY,
   category text,
@@ -93,6 +95,7 @@ CREATE TABLE witan.data_by_data_id (
   version int,
   file_name text,
   s3_key uuid,
+  public boolean,
   created timestamp
 );
 
@@ -104,6 +107,7 @@ CREATE TABLE witan.data_by_category (
   version int,
   file_name text,
   s3_key uuid,
+  public boolean,
   created timestamp,
   PRIMARY KEY (category, data_id)
 );
@@ -116,6 +120,7 @@ CREATE TABLE witan.data_by_s3_key (
   version int,
   file_name text,
   s3_key uuid,
+  public boolean,
   created timestamp,
   PRIMARY KEY (s3_key, data_id)
 );
