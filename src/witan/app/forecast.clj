@@ -478,12 +478,13 @@
   :allowed-methods #{:post}
   :processable? (fn [ctx]
                   (let [forecast (get-most-recent-version id)
+                        model (model/get-model-by-model-id (:model-id forecast))
                         inputs   (:inputs (util/get-post-params ctx))
-                        result   (if forecast
-                                   (if ((util/post!-processable-validation ws/UpdateForecast) ctx)
-                                     true
-                                     (log/error "Updating forecast failed due to validation."))
-                                   (log/error "Updating forecast failed because forecast was nil"))]
+                        result   (cond
+                                     (not forecast) (log/error "Updating forecast failed because forecast was nil")
+                                     (not ((util/post!-processable-validation ws/UpdateForecast) ctx)) (log/error "Updating forecast failed due to validation")
+                                     (not (has-all-inputs? model inputs)) (log/error "Updating forecast failed because not all inputs are present")
+                                     :else true)]
                     result)) ;; return a bool, true if result is nil
   :post!  (fn [ctx]
             (let [given-inputs (:inputs (util/get-post-params ctx))
