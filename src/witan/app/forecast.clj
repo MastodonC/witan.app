@@ -478,20 +478,19 @@
   :allowed-methods #{:post}
   :processable? (fn [ctx]
                   (let [forecast (get-most-recent-version id)
-                        model (model/get-model-by-model-id (:model-id forecast))
-                        inputs   (:inputs (util/get-post-params ctx))
+                        model (model/get-model-by-model-id (:model_id forecast))
+                        given-inputs   (:inputs (util/get-post-params ctx))
+                        inputs (into {} (map locate-input-by-data-id given-inputs))
                         result   (cond
                                      (not forecast) (log/error "Updating forecast failed because forecast was nil")
                                      (not ((util/post!-processable-validation ws/UpdateForecast) ctx)) (log/error "Updating forecast failed due to validation")
                                      (not (has-all-inputs? model inputs)) (log/error "Updating forecast failed because not all inputs are present")
-                                     :else true)]
-                    result)) ;; return a bool, true if result is nil
+                                     :else [true {:inputs inputs}])]
+                    result))
   :post!  (fn [ctx]
-            (let [given-inputs (:inputs (util/get-post-params ctx))
-                  inputs (into {} (map locate-input-by-data-id given-inputs))
-                  new-forecast (update-forecast! {:forecast-id id
+            (let [new-forecast (update-forecast! {:forecast-id id
                                                   :owner user-id
-                                                  :inputs inputs})]
+                                                  :inputs (:inputs ctx)})]
               {:forecast new-forecast}))
   :handle-created (fn [ctx]
                     (s/validate ws/ForecastInfo (->ForecastInfo (:forecast ctx)))))
