@@ -1,6 +1,6 @@
 (ns witan.app.smoke-test
   (:require
-   [db-setup :refer :all]
+   [witan.app.db-setup :refer :all]
    [user :refer :all]
    [witan.app.test-data :refer [load-test-data!]]
    [clojure.test :refer :all]

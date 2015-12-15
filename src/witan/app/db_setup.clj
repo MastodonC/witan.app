@@ -1,4 +1,4 @@
-(ns db-setup
+(ns witan.app.db-setup
   (:require [clojure.java.io :as io]
             [qbits.alia :as alia]
             [witan.app.config :as c]
