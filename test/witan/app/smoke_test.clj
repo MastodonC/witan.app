@@ -56,10 +56,10 @@
 
 (deftest smoke-tests
   (testing "POST /api/login"
-    (let [{:keys [status body]} (client/post (app-url "/api/login") {:body (json/generate-string {:username "support@mastodonc.com" :password "secret"}) :content-type :json})]
+    (let [{:keys [status body]} (client/post (app-url "/api/login") {:body (json/generate-string {:username "support+witan@mastodonc.com" :password "secret"}) :content-type :json})]
       (is (== status 200))))
   (testing "authenticated calls"
-    (let [login (client/post (app-url "/api/login") {:body (json/generate-string {:username "support@mastodonc.com" :password "secret"})  :content-type :json})
+    (let [login (client/post (app-url "/api/login") {:body (json/generate-string {:username "support+witan@mastodonc.com" :password "secret"})  :content-type :json})
           token (get (json/parse-string (:body login)) "token")]
       (testing "login worked"
         (is (not (nil? token))))
