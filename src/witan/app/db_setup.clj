@@ -23,7 +23,7 @@
   [config]
   (let [session (session-setup (get-in config [:cassandra-session :host]))
         keyspace (get-in config [:cassandra-session :keyspace])
-        db-scripts (clojure.string/split (slurp (io/file (io/resource "db-schema.cql"))) #";")
+        db-scripts (clojure.string/split (slurp (io/resource "db-schema.cql")) #";")
         replication (get-in config [:cassandra-session :replication])]
     (log/warn "Dropping keyspace " keyspace)
     (try
