@@ -5,6 +5,6 @@ cat <<EOF |
 (load-db-schema! c/config)
 (exit)
 EOF
-lein repl
+lein repl :connect witan-app.marathon.mesos:5001
 
 
