@@ -91,7 +91,8 @@ TODO: will need to get own config files")
       (throw (Exception. (str "The upload of an output failed:" data-name s3-key))))))
 
 (defmulti execute-model (fn [_ model] [(:name model) (:version model)]))
-(defmethod execute-model ["DCLG-based Housing Linked Model" 1]
+
+(defmethod execute-model ["Housing-linked Ward Population Projection Model" 1]
   [forecast model]
   (try
     (let [data (prepare-download-data forecast model)
@@ -104,6 +105,11 @@ TODO: will need to get own config files")
                                                 %) outputs))) total-outputs)))
     (catch Exception e (do (log/error "Model" (:model_id forecast) "threw an error:" (.getMessage e) (clojure.stacktrace/print-stack-trace e) )
                            {:error (.getMessage e)}))))
+
+(defmethod execute-model ["Trend-based Ward Population Projection Model" 1]
+  [forecast model]
+  (throw (Exception. (str "The Trend-based Ward Population Projection Model is currently unavailable."))))
+
 (defmethod execute-model :default
   [_ model]
   (throw (Exception. (str "The following model could not be found: " (:name model) " v" (:version model)))))

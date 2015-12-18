@@ -320,10 +320,9 @@
 
 (defn process-error!
   [{:keys [forecast-id version version-id]} error]
-  (let [latest (get-most-recent-version forecast-id)
-        error (or error "No error message was provided.")]
+  (let [error (or error "No error message was provided.")]
     (c/exec (update-forecast-error {:forecast-id forecast-id :version version :error error}))
-    (when (= (:version-id latest) version-id)
+    (when (or (<= version 1) (= (-> forecast-id (get-most-recent-version) :version-id) version-id))
       (c/exec (update-forecast-header-error {:forecast-id forecast-id :version version :error error})))))
 
 
@@ -341,7 +340,9 @@
                  data (into {} (map #(process-output-data! % (:public? forecast))) outputs)]
              (log/info "Finished processing model " (:model_id forecast) "-" (count data) "output(s) returned.")
              (conclude-forecast! (assoc (->Forecast forecast) :outputs data)))))
-       (catch Exception e (log/error "Error around model" (:model_id forecast) ":" (.getMessage e) (clojure.stacktrace/print-stack-trace e)))))))
+       (catch Exception e (do
+                            (log/error "Error around model" (:model_id forecast) ":" (.getMessage e) (clojure.stacktrace/print-stack-trace e))
+                            (process-error! forecast (.getMessage e))))))))
 
 (defn add-forecast!
   [{:keys [name owner model-id model-properties public?]
