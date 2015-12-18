@@ -277,18 +277,21 @@
         f1 (forecast/add-forecast! {:name        "Housing Linked Model Islington"
                                     :description "DCLG Housing Linked Model for the borough of Islington"
                                     :owner       (:id user1)
+                                    :owner-name  (:name user1)
                                     :model-id    (:model_id dclg-housing-linked-model)
                                     :model-properties [{:name "borough" :value "Islington"}
                                                        {:name "fertility-assumption" :value "High Fertility"}]})
         f2 (forecast/add-forecast! {:name        "Housing Linked Model Camden"
                                     :description "DCLG Housing Linked Model for the borough of Camden"
                                     :owner       (:id user2)
+                                    :owner-name  (:name user2)
                                     :model-id    (:model_id dclg-housing-linked-model)
                                     :model-properties [{:name "borough" :value "Camden"}
                                                        {:name "fertility-assumption" :value "Standard Fertility"}]})
         f3 (forecast/add-forecast! {:name        "Housing Linked Model Bromley"
                                     :description "DCLG Housing Linked Model for the borough of Bromley"
                                     :owner       (:id user1)
+                                    :owner-name  (:name user1)
                                     :public?     true
                                     :model-id    (:model_id dclg-housing-linked-model)
                                     :model-properties [{:name "borough" :value "Bromley"}
