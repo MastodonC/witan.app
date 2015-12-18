@@ -5,7 +5,9 @@
             [buddy.hashers :as hs]
             [qbits.hayt :as hayt]
             [qbits.alia.uuid :as uuid]
-            [witan.app.config :as c]))
+            [witan.app.config :as c]
+            [witan.app.schema :as ws]
+            [schema.core :as s]))
 
 (defn random-token
   []
@@ -40,10 +42,10 @@
     (c/exec (update-password (:id user) password))))
 
 (defn add-user! [{:keys [username] :as user}]
+  (s/validate ws/SignUp user)
   (let [existing-users (retrieve-user-by-username username)]
     (when (empty? existing-users)
       (c/exec (create-user user))
-      ; retrieving newly created user
       (retrieve-user-by-username username))))
 
 (defn password-ok? [existing-user password]
