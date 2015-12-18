@@ -199,7 +199,7 @@
         _ (log/info "Adding models...")
 
         dclg-housing-linked-model (model/add-model! {:name "DCLG-based Housing Linked Model"
-                                                     :description "Demography model developed at the [GLA](https://www.london.gov.uk/about-us/greater-london-authority-gla) to generate borough-level population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG)."
+                                                     :description "Demography model developed at the [GLA](https://www.london.gov.uk/about-us/greater-london-authority-gla) to generate borough-level population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG). More information, regarding the methods used in this model, [can be found here](https://files.datapress.com/london/dataset/2013-round-population-projections/technical-note-guide-gla-popproj-variants.pdf)."
                                                      :owner (:id user1)
                                                      :properties [{:name "borough"
                                                                    :display "London Borough"
