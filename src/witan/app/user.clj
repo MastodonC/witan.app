@@ -41,7 +41,8 @@
   (let [user (retrieve-user-by-username username)]
     (c/exec (update-password (:id user) password))))
 
-(s/defn add-user! [{:keys [username] :as user} :- ws/SignUp]
+(defn add-user! [{:keys [username] :as user}]
+  (s/validate ws/SignUp user)
   (let [existing-users (retrieve-user-by-username username)]
     (when (empty? existing-users)
       (c/exec (create-user user))
