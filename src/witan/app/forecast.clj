@@ -313,7 +313,7 @@
 
 (defn process-error!
   [{:keys [forecast-id version]} error]
-  (c/exec (update-forecast-error {:forecast-id forecast-id :version version :error error})))
+  (c/exec (update-forecast-error {:forecast-id forecast-id :version version :error (or error "No error message was provided.")})))
 
 (defn run-model!
   ([forecast]
@@ -323,8 +323,8 @@
      (log/info "Starting to run model: " (:model_id forecast) (:name model) (str "v" (:version model)))
      (try
        (let [outputs (mex/execute-model forecast model)]
-         (if-let [error (:error outputs)]
-           (process-error! forecast error)
+         (if (contains? outputs :error)
+           (process-error! forecast (:error outputs))
            (let [_ (log/info "Finished running model" (:model_id forecast) "- processing...")
                  data (into {} (map #(process-output-data! % (:public? forecast))) outputs)]
              (log/info "Finished processing model " (:model_id forecast) "-" (count data) "output(s) returned.")
