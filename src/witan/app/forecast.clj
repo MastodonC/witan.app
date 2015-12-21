@@ -322,8 +322,7 @@
    (go ;; temporary solution
      (log/info "Starting to run model: " (:model_id forecast) (:name model) (str "v" (:version model)))
      (try
-       (let [outputs (mex/execute-model forecast model)
-             _ (log/warn "!!!!" outputs)]
+       (let [outputs (mex/execute-model forecast model)]
          (if (contains? outputs :error)
            (process-error! forecast (:error outputs))
            (let [_ (log/info "Finished running model" (:model_id forecast) "- processing...")
