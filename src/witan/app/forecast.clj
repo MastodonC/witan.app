@@ -176,6 +176,13 @@
                                   :in_progress false})
                (hayt/where {:forecast_id forecast-id :version version})))
 
+(defn update-forecast-header-error
+  [{:keys [forecast-id error]}]
+  (hayt/update :forecast_headers
+               (hayt/set-columns {:error error
+                                  :in_progress false})
+               (hayt/where {:forecast_id forecast-id})))
+
 (defn get-most-recent-version
   [id]
   (first (c/exec (find-most-recent-version id))))
@@ -312,8 +319,13 @@
                      (hayt/user-type output-as-data)) outputs)))
 
 (defn process-error!
-  [{:keys [forecast-id version]} error]
-  (c/exec (update-forecast-error {:forecast-id forecast-id :version version :error (or error "No error message was provided.")})))
+  [{:keys [forecast-id version version-id]} error]
+  (let [latest (get-most-recent-version forecast-id)
+        error (or error "No error message was provided.")]
+    (c/exec (update-forecast-error {:forecast-id forecast-id :version version :error error}))
+    (when (= (:version-id latest) version-id)
+      (c/exec (update-forecast-header-error {:forecast-id forecast-id :version version :error error})))))
+
 
 (defn run-model!
   ([forecast]
@@ -370,11 +382,12 @@
   (hash-map (name category) (data/get-data-by-data-id data-id)))
 
 (defn create-new-forecast-version!
-  [{:keys [forecast-id version] :as forecast}]
+  [{:keys [forecast-id version] :as forecast} old-version]
   (c/exec (create-forecast-version forecast))
   (c/exec (update-forecast-current-version-id forecast))
-  (if (== version 1)
-    (c/exec (delete-forecast-by-version forecast-id 0))))
+  (if (zero? old-version)
+    (c/exec (delete-forecast-by-version forecast-id 0))
+    (c/exec (update-forecast-latest forecast-id old-version false))))
 
 (defn update-forecast!
   [{:keys [forecast-id owner inputs]}]
@@ -396,7 +409,7 @@
                                   :model-id (:model_id latest-forecast)
                                   :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
                                   :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)])))]
-          (create-new-forecast-version! new-forecast)
+          (create-new-forecast-version! new-forecast old-version)
           (run-model! (assoc new-forecast :inputs inputs) model) ;; assoc to use the original inputs (not UDT'd)
           (get-forecast-version forecast-id new-version))
         (do (log/error "The incorrect number of inputs was supplied")
