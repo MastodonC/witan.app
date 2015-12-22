@@ -32,11 +32,11 @@ TODO: will need to get own config files")
   "Gets the content of an object
    NOTE ASSUMPTION: the input files are csv with \n or \r\n as eol characters"
   [key tag]
-  (log/info "Downloading " key "(tag" tag ")")
+  (log/info "Downloading" key "(tag" tag ")")
   (let [presigned-download-url (ws3/presigned-download-url key "tmp")
         slurped (slurp presigned-download-url)
         result (prepare-data slurped)
-        _ (log/info "Finished downloading" key)]
+        _ (log/info "Finished downloading" key "- rows:" (count result))]
     result))
 
 (defn get-properties
