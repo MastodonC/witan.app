@@ -251,7 +251,7 @@
                   user/retrieve-user (fn [_] {:name "user1"})
                   model/get-model-by-model-id (fn [_] (first (get-dummy-models)))
                   forecast/get-most-recent-version (fn [_] (first (get-dummy-forecasts)))
-                  forecast/create-new-forecast-version! (fn [_] {})
+                  forecast/create-new-forecast-version! (fn [_ _] {})
                   mex/execute-model (fn [_ _] {"housing-linked-population"
                                                [{:name "housing linked population figures - single year"
                                                  :data 123}
@@ -268,7 +268,7 @@
                   user/retrieve-user (fn [_] {:name "user2"})
                   model/get-model-by-model-id (fn [_] (first (get-dummy-models)))
                   forecast/get-most-recent-version (fn [_] (first (get-dummy-forecasts)))
-                  forecast/create-new-forecast-version! (fn [_] {})
+                  forecast/create-new-forecast-version! (fn [_ _] {})
                   forecast/process-error! get-error-forecast
 
                   mex/execute-model (fn [_ _] {:error "this is an error"})

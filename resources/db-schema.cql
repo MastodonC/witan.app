@@ -16,6 +16,7 @@ CREATE TABLE forecast_headers (
     version int,
     description text,
     in_progress boolean,
+    error text,
     public boolean,
     name text,
     owner uuid,
