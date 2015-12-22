@@ -14,10 +14,6 @@
                                   :description "DCLG household population projections i.e. people living in private rather than communal housing"})
 (def household-fixed-input {:category "households-data"
                             :description "DCLG projections for numbers of households"})
-(def low-trend-fixed-input {:category "low-trend-data"
-                            :description "GLA-generated low migration scenario trend-based population projections"})
-(def high-trend-fixed-input {:category "high-trend-data"
-                             :description "GLA-generated high migration scenario trend-based population projections"})
 (def dwellings-data-fixed-input {:category "dwellings-data"
                                  :description "Dwellings from most recent census"})
 
@@ -57,16 +53,6 @@
                                          :publisher (:id user1)
                                          :file-name "Long+HH.csv"
                                          :s3-key #uuid "fad572a5-6d90-4bbc-8874-62a2886b3ce6"})
-        low-trend-data (data/add-data! {:category (:category low-trend-fixed-input)
-                                        :name "Low trend"
-                                        :publisher (:id user1)
-                                        :file-name "Low+-+SYA.csv"
-                                        :s3-key #uuid "72aea88c-24cf-4213-a6f3-a3e2b36b8604"})
-        high-trend-data (data/add-data! {:category (:category high-trend-fixed-input)
-                                         :name "High trend"
-                                         :publisher (:id user1)
-                                         :file-name "High+-+SYA.csv"
-                                         :s3-key #uuid "765a4acc-0e54-4f17-9d4e-365c7bdd3fb2"})
         dwellings-data (data/add-data! {:category (:category dwellings-data-fixed-input)
                                         :name "Dwellings"
                                         :publisher (:id user1)
@@ -250,8 +236,6 @@
                                                                         (data/->Data institutional-data)
                                                                         (data/->Data private-housing-data)
                                                                         (data/->Data households-data)
-                                                                        (data/->Data low-trend-data)
-                                                                        (data/->Data high-trend-data)
                                                                         (data/->Data dwellings-data)
                                                                         ;; trend
                                                                         (data/->Data high-fert-high-births-data)
