@@ -54,7 +54,7 @@
    :properties []
    :version_id #uuid "49db8f19-5843-4fe0-b815-e7d3a9d85823"
    :input_data [input-category-a input-category-b]
-   :name "DCLG-based Housing Linked Model"
+   :name "Housing-linked Ward Population Projection Model"
    :output_data [output-category]
    :input_data_defaults {"Base population data" {:s3_key #uuid "4348bec5-12db-48bc-be28-2c4323f91197"
                                                  :data_id base-population-default-id

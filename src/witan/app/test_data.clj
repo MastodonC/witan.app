@@ -6,6 +6,40 @@
             [witan.app.user :as u]
             [clojure.tools.logging :as log]))
 
+(def london-boroughs
+  ["Barking and Dagenham"
+   "Barnet"
+   "Bexley"
+   "Brent"
+   "Bromley"
+   "Camden"
+   "Croydon"
+   "Ealing"
+   "Enfield"
+   "Greenwich"
+   "Hackney"
+   "Hammersmith and Fulham"
+   "Haringey"
+   "Harrow"
+   "Havering"
+   "Hillingdon"
+   "Hounslow"
+   "Islington"
+   "Kensington and Chelsea"
+   "Kingston upon Thames"
+   "Lambeth"
+   "Lewisham"
+   "Merton"
+   "Newham"
+   "Redbridge"
+   "Richmond upon Thames"
+   "Southwark"
+   "Sutton"
+   "Tower Hamlets"
+   "Waltham Forest"
+   "Wandsworth"
+   "Westminster"])
+
 (def population-fixed-input  {:category "population"
                               :description "Department of Communities and Local Government (DCLG) public population projections"})
 (def institutional-fixed-input {:category "institutional"
@@ -178,111 +212,176 @@
                                                :public? true
                                                :s3-key #uuid "4a1d84be-33aa-4247-9df5-76d7785146f1"})
 
+        ;;;;
+
+        high-fert-principal-births-data (data/add-data! {:category "high-fert-principal-births-data"
+                                                         :name "high-fert-principal-births-data"
+                                                         :publisher (:id user1)
+                                                         :file-name "high-fert-principal-births-data.csv"
+                                                         :public? true
+                                                         :s3-key #uuid "4eef9312-5cad-4893-a926-3f99a294095e"})
+        high-fert-principal-deaths-data (data/add-data! {:category "high-fert-principal-deaths-data"
+                                                         :name "high-fert-principal-deaths-data"
+                                                         :publisher (:id user1)
+                                                         :file-name "high-fert-principal-deaths-data.csv"
+                                                         :public? true
+                                                         :s3-key #uuid "3b23ce63-daf2-4cd4-adff-5e997ffe7c26"})
+        high-fert-principal-sya-data (data/add-data! {:category "high-fert-principal-sya-data"
+                                                      :name "high-fert-principal-sya-data"
+                                                      :publisher (:id user1)
+                                                      :file-name "high-fert-principal-sya-data.csv"
+                                                      :public? true
+                                                      :s3-key #uuid "c184151b-c3ce-4068-8422-d61106c28c8f"})
+
+        standard-fert-principal-births-data (data/add-data! {:category "standard-fert-principal-births-data"
+                                                             :name "standard-fert-principal-births-data"
+                                                             :publisher (:id user1)
+                                                             :file-name "standard-fert-principal-births-data.csv"
+                                                             :public? true
+                                                             :s3-key #uuid "6df9752a-b266-414c-8983-420a40ef0311"})
+        standard-fert-principal-deaths-data (data/add-data! {:category "standard-fert-principal-deaths-data"
+                                                             :name "standard-fert-principal-deaths-data"
+                                                             :publisher (:id user1)
+                                                             :file-name "standard-fert-principal-deaths-data.csv"
+                                                             :public? true
+                                                             :s3-key #uuid "928c46ae-2a55-4933-9e7a-a36aaad9d413"})
+        standard-fert-principal-sya-data (data/add-data! {:category "standard-fert-principal-sya-data"
+                                                          :name "standard-fert-principal-sya-data"
+                                                          :publisher (:id user1)
+                                                          :file-name "standard-fert-principal-sya-data.csv"
+                                                          :public? true
+                                                          :s3-key #uuid "75bfb295-d7b2-4dc7-aab5-969eccaf5912"})
+
+        low-fert-principal-births-data (data/add-data! {:category "low-fert-principal-births-data"
+                                                        :name "low-fert-principal-births-data"
+                                                        :publisher (:id user1)
+                                                        :file-name "low-fert-principal-births-data.csv"
+                                                        :public? true
+                                                        :s3-key #uuid "e61d11cf-fa9d-42b7-b53b-74c9e4b29acb"})
+        low-fert-principal-deaths-data (data/add-data! {:category "low-fert-principal-deaths-data"
+                                                        :name "low-fert-principal-deaths-data"
+                                                        :publisher (:id user1)
+                                                        :file-name "low-fert-principal-deaths-data.csv"
+                                                        :public? true
+                                                        :s3-key #uuid "d083d1b3-5992-4c54-9289-ffd8f04c71bb"})
+        low-fert-principal-sya-data (data/add-data! {:category "low-fert-principal-sya-data"
+                                                     :name "low-fert-principal-sya-data"
+                                                     :publisher (:id user1)
+                                                     :file-name "low-fert-principal-sya-data.csv"
+                                                     :public? true
+                                                     :s3-key #uuid "abafb395-abff-485c-bb1d-2692bbf98650"})
+
 
 
 
         ;; model
         _ (log/info "Adding models...")
 
-        dclg-housing-linked-model (model/add-model! {:name "DCLG-based Housing Linked Model"
-                                                     :description "Demography model developed at the [GLA](https://www.london.gov.uk/about-us/greater-london-authority-gla) to generate borough-level population projections that are consistent with an input housing trajectory. The title includes DCLG because it draws on data from the Department of Communities and Local Government (DCLG). More information, regarding the methods used in this model, [can be found here](https://files.datapress.com/london/dataset/2013-round-population-projections/technical-note-guide-gla-popproj-variants.pdf)."
-                                                     :owner (:id user1)
-                                                     :properties [{:name "borough"
-                                                                   :display "London Borough"
-                                                                   :type "dropdown"
-                                                                   :context "Please choose a London borough"
-                                                                   :enum_values ["Barking and Dagenham"
-                                                                                 "Barnet"
-                                                                                 "Bexley"
-                                                                                 "Brent"
-                                                                                 "Bromley"
-                                                                                 "Camden"
-                                                                                 "Croydon"
-                                                                                 "Ealing"
-                                                                                 "Enfield"
-                                                                                 "Greenwich"
-                                                                                 "Hackney"
-                                                                                 "Hammersmith and Fulham"
-                                                                                 "Haringey"
-                                                                                 "Harrow"
-                                                                                 "Havering"
-                                                                                 "Hillingdon"
-                                                                                 "Hounslow"
-                                                                                 "Islington"
-                                                                                 "Kensington and Chelsea"
-                                                                                 "Kingston upon Thames"
-                                                                                 "Lambeth"
-                                                                                 "Lewisham"
-                                                                                 "Merton"
-                                                                                 "Newham"
-                                                                                 "Redbridge"
-                                                                                 "Richmond upon Thames"
-                                                                                 "Southwark"
-                                                                                 "Sutton"
-                                                                                 "Tower Hamlets"
-                                                                                 "Waltham Forest"
-                                                                                 "Wandsworth"
-                                                                                 "Westminster"]}
-                                                                  {:name "fertility-assumption"
-                                                                   :display "Fertility Assumption"
-                                                                   :type "dropdown"
-                                                                   :context "Please choose a fertility assumption"
-                                                                   :enum_values ["High Fertility"
-                                                                                 "Standard Fertility"
-                                                                                 "Low Fertility"]}]
-                                                     :input-data [development-category]
-                                                     :output-data [output-category]
-                                                     :fixed-input-data [(data/->Data population-data)
-                                                                        (data/->Data institutional-data)
-                                                                        (data/->Data private-housing-data)
-                                                                        (data/->Data households-data)
-                                                                        (data/->Data dwellings-data)
-                                                                        ;; trend
-                                                                        (data/->Data high-fert-high-births-data)
-                                                                        (data/->Data high-fert-high-deaths-data)
-                                                                        (data/->Data high-fert-high-sya-data)
-                                                                        (data/->Data high-fert-low-births-data)
-                                                                        (data/->Data high-fert-low-deaths-data)
-                                                                        (data/->Data high-fert-low-sya-data)
-                                                                        (data/->Data standard-fert-high-births-data)
-                                                                        (data/->Data standard-fert-high-deaths-data)
-                                                                        (data/->Data standard-fert-high-sya-data)
-                                                                        (data/->Data standard-fert-low-births-data)
-                                                                        (data/->Data standard-fert-low-deaths-data)
-                                                                        (data/->Data standard-fert-low-sya-data)
-                                                                        (data/->Data low-fert-high-births-data)
-                                                                        (data/->Data low-fert-high-deaths-data)
-                                                                        (data/->Data low-fert-high-sya-data)
-                                                                        (data/->Data low-fert-low-births-data)
-                                                                        (data/->Data low-fert-low-deaths-data)
-                                                                        (data/->Data low-fert-low-sya-data)]})
+        base-ward-popn-model {:owner (:id user1)
+                              :properties [{:name "borough"
+                                            :display "London Borough"
+                                            :type "dropdown"
+                                            :context "Please choose a London borough"
+                                            :enum_values london-boroughs}
+                                           {:name "fertility-assumption"
+                                            :display "Fertility Assumption"
+                                            :type "dropdown"
+                                            :context "Please choose a fertility assumption"
+                                            :enum_values ["Standard Fertility"
+                                                          "High Fertility"
+                                                          "Low Fertility"]}]
+                              :input-data [development-category]
+                              :output-data [output-category]
+                              :fixed-input-data [(data/->Data population-data)
+                                                 (data/->Data institutional-data)
+                                                 (data/->Data private-housing-data)
+                                                 (data/->Data households-data)
+                                                 (data/->Data dwellings-data)]}
+
+        ;; Add Housing-linked model
+        dclg-housing-linked-model
+        (model/add-model!
+         (-> base-ward-popn-model
+             (merge {:name "Housing-linked Ward Population Projection Model"
+                     :description "Demography model developed at the [GLA](https://www.london.gov.uk/about-us/greater-london-authority-gla) to generate ward-level population projections that are consistent with an input housing trajectory. 'DCLG-based' and 'Capped Household Size' variants are available; explanation of the difference between variants [can be found here](https://files.datapress.com/london/dataset/2013-round-population-projections/technical-note-guide-gla-popproj-variants.pdf)."})
+             (update :properties #(conj % {:name "variant"
+                                           :display "Model Variant"
+                                           :type "dropdown"
+                                           :context "Please choose a model variant"
+                                           :enum_values ["DCLG"
+                                                         "Capped Household Size"]}))
+             (update :fixed-input-data #(vec (concat % [(data/->Data high-fert-high-births-data)
+                                                        (data/->Data high-fert-high-deaths-data)
+                                                        (data/->Data high-fert-high-sya-data)
+                                                        (data/->Data high-fert-low-births-data)
+                                                        (data/->Data high-fert-low-deaths-data)
+                                                        (data/->Data high-fert-low-sya-data)
+                                                        (data/->Data standard-fert-high-births-data)
+                                                        (data/->Data standard-fert-high-deaths-data)
+                                                        (data/->Data standard-fert-high-sya-data)
+                                                        (data/->Data standard-fert-low-births-data)
+                                                        (data/->Data standard-fert-low-deaths-data)
+                                                        (data/->Data standard-fert-low-sya-data)
+                                                        (data/->Data low-fert-high-births-data)
+                                                        (data/->Data low-fert-high-deaths-data)
+                                                        (data/->Data low-fert-high-sya-data)
+                                                        (data/->Data low-fert-low-births-data)
+                                                        (data/->Data low-fert-low-deaths-data)
+                                                        (data/->Data low-fert-low-sya-data)])))))
+
+        ;; Add Trend-based model
+        trend-based-model
+        (model/add-model!
+         (-> base-ward-popn-model
+             (merge {:name "Trend-based Ward Population Projection Model"
+                     :description "!!!! DESCRIPTION REQUIRED !!!"})
+             (update :fixed-input-data #(vec (concat % [(data/->Data high-fert-principal-births-data)
+                                                        (data/->Data high-fert-principal-deaths-data)
+                                                        (data/->Data high-fert-principal-sya-data)
+                                                        (data/->Data standard-fert-principal-births-data)
+                                                        (data/->Data standard-fert-principal-deaths-data)
+                                                        (data/->Data standard-fert-principal-sya-data)
+                                                        (data/->Data low-fert-principal-births-data)
+                                                        (data/->Data low-fert-principal-deaths-data)
+                                                        (data/->Data low-fert-principal-sya-data)])))))
 
         _ (log/info "Adding forecasts...")
-        f1 (forecast/add-forecast! {:name        "Housing Linked Model Islington"
-                                    :description "DCLG Housing Linked Model for the borough of Islington"
+        f1 (forecast/add-forecast! {:name        "Housing-linked Model Islington"
+                                    :description "DCLG Housing-linked Model for the borough of Islington"
                                     :owner       (:id user1)
                                     :owner-name  (:name user1)
                                     :model-id    (:model_id dclg-housing-linked-model)
                                     :model-properties [{:name "borough" :value "Islington"}
-                                                       {:name "fertility-assumption" :value "High Fertility"}]})
-        f2 (forecast/add-forecast! {:name        "Housing Linked Model Camden"
-                                    :description "DCLG Housing Linked Model for the borough of Camden"
+                                                       {:name "fertility-assumption" :value "High Fertility"}
+                                                       {:name "variant" :value "DCLG"}]})
+        f2 (forecast/add-forecast! {:name        "Housing-linked Model Camden"
+                                    :description "DCLG Housing-linked Model for the borough of Camden"
                                     :owner       (:id user2)
                                     :owner-name  (:name user2)
                                     :model-id    (:model_id dclg-housing-linked-model)
                                     :model-properties [{:name "borough" :value "Camden"}
-                                                       {:name "fertility-assumption" :value "Standard Fertility"}]})
-        f3 (forecast/add-forecast! {:name        "Housing Linked Model Bromley"
-                                    :description "DCLG Housing Linked Model for the borough of Bromley"
+                                                       {:name "fertility-assumption" :value "Standard Fertility"}
+                                                       {:name "variant" :value "DCLG"}]})
+        f3 (forecast/add-forecast! {:name        "Housing-linked Model Bromley"
+                                    :description "CHS Housing-linked Model for the borough of Bromley"
                                     :owner       (:id user1)
                                     :owner-name  (:name user1)
                                     :public?     true
                                     :model-id    (:model_id dclg-housing-linked-model)
                                     :model-properties [{:name "borough" :value "Bromley"}
+                                                       {:name "fertility-assumption" :value "Low Fertility"}
+                                                       {:name "variant" :value "Capped Household Size"}]})
+
+        f4 (forecast/add-forecast! {:name        "Trend-based Model Barnet"
+                                    :description "Trend-based Model for the borough of Barnet"
+                                    :owner       (:id user1)
+                                    :owner-name  (:name user1)
+                                    :public?     true
+                                    :model-id    (:model_id trend-based-model)
+                                    :model-properties [{:name "borough" :value "Barnet"}
                                                        {:name "fertility-assumption" :value "Low Fertility"}]})
         _ (log/info "Updating forecasts...")
 
         f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1)
                                          :owner (:id user1)
-                                         :inputs {(:category development-category) development-data}})
-        ]))
+                                         :inputs {(:category development-category) development-data}})]))
