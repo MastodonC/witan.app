@@ -334,7 +334,7 @@
         (model/add-model!
          (-> base-ward-popn-model
              (merge {:name "Trend-based Ward Population Projection Model"
-                     :description "!!!! DESCRIPTION REQUIRED !!!"})
+                     :description "Demographic model developed at the [GLA](https://www.london.gov.uk/about-us/greater-london-authority-gla) to generate ward-level population projections using ‘trend-based’ borough population projections. Trend-based borough projections are generated using models that project forward on the basis of recent trends in fertility, migration and mortality, and do not include housing data. Further explanation of the difference between GLA population projection variants [can be found here](https://files.datapress.com/london/dataset/2013-round-population-projections/technical-note-guide-gla-popproj-variants.pdf)."})
              (update :fixed-input-data #(vec (concat % [(data/->Data high-fert-principal-births-data)
                                                         (data/->Data high-fert-principal-deaths-data)
                                                         (data/->Data high-fert-principal-sya-data)
