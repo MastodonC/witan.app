@@ -17,7 +17,7 @@
   (testing "header validation failed"
     (let [validated (validate-content "development-data" (io/file "test-data/bad-header.csv"))]
       (is (not (first validated)))
-      (is (= "The header row of the file is incorrect. we expect GSS.Code,Borough name,Year,Past development,Future development" (validation-error validated)))))
+      (is (= "The header row of the file is missing one or more required rows. We expect GSS Code Borough,Borough Name,Ward Name,GSS Code Ward" (validation-error validated)))))
 
   (testing "validation ok"
     (let [validated (validate-content "development-data" (io/file "test-data/development.csv"))]
