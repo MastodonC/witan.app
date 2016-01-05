@@ -71,7 +71,7 @@
                           (if (http-post? ctx)
                             (= "application/json" (-> ctx :request :content-type)))
                           true)
-   :handle-unprocessable-entity {:error "The schema of the required entity was incorrect."}
+   :handle-unprocessable-entity {:error "The delivered entity was unprocessable."}
    :handle-malformed {:error "The request body was not valid JSON."}
    :handle-not-found {:error "The requested resource could not be found."}
    :malformed? (fn [ctx] (if (= :post (-> ctx :request :request-method))
