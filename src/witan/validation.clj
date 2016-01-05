@@ -12,22 +12,22 @@
   (let [ext (last (clojure.string/split filename #"\."))]
     (= ext "csv")))
 
-(defn header-line-ok?
-  [header expected-header]
-  (= header expected-header))
+(defmulti category-valid?
+  (fn [category lines] category))
 
-(defmulti header-row identity)
-(defmethod header-row development-data-category [category]
-   ["GSS.Code" "Borough name" "Year" "Past development" "Future development"])
+(defmethod category-valid? development-data-category
+  [category lines]
+  (let [req-headers #{"GSS Code Borough" "Borough Name" "GSS Code Ward" "Ward Name"}
+        inc-headers (set (clojure.string/split (first lines) #","))]
+    (when-not (empty? (clojure.set/difference req-headers inc-headers))
+      (str "The header row of the file is missing one or more required rows. We expect " (clojure.string/join "," req-headers)))))
 
 (defn validate
   [category file]
   (with-open [rdr (clojure.java.io/reader file)]
     (let [lines (line-seq rdr)
-          header (->> (header-row category) (clojure.string/join ","))
-          header-ok (header-line-ok? (first lines) header)]
-      [header-ok
-       (when-not header-ok {:error (str "The header row of the file is incorrect. we expect " header)})])))
+          error? (category-valid? category lines)]
+      [(nil? error?) (when error? {:error error?})])))
 
 (defn validate-content
   [category file]
