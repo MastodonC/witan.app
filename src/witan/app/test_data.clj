@@ -92,12 +92,12 @@
                                         :publisher (:id user1)
                                         :file-name "dwellings.csv"
                                         :s3-key #uuid "cb28732e-3d5b-43eb-945f-d9471c983161"})
-        development-data (data/add-data! {:category (:category development-category)
-                                          :name "Net new dwellings"
-                                          :publisher (:id user1)
-                                          :file-name "development.csv"
-                                          :public? true
-                                          :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
+        development-data-for-camden (data/add-data! {:category (:category development-category)
+                                                     :name "Net New Dwellings - Camden"
+                                                     :publisher (:id user1)
+                                                     :file-name "new-new-dwellings-camden.csv"
+                                                     :public? false
+                                                     :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
 
         ;;;;
 
@@ -271,6 +271,24 @@
                                                      :public? true
                                                      :s3-key #uuid "abafb395-abff-485c-bb1d-2692bbf98650"})
 
+        ;; LDD + SHLAA
+
+        ;; - LDD
+        past-development-data (data/add-data! {:category "past-development-data"
+                                               :name "ldd-data"
+                                               :publisher (:id user1)
+                                               :file-name "ldd-data.csv"
+                                               :public? true
+                                               :s3-key #uuid "0271c257-4ef6-421a-8707-98ac29fd0fb2"})
+
+        ;; - SHLAA
+        future-development-data (data/add-data! {:category "future-development-data"
+                                                 :name "shlaa-data"
+                                                 :publisher (:id user1)
+                                                 :file-name "shlaa-data.csv"
+                                                 :public? true
+                                                 :s3-key #uuid "4b0d668f-e6b4-4f2c-bbaf-115819c21478"})
+
 
 
 
@@ -296,7 +314,9 @@
                                                  (data/->Data institutional-data)
                                                  (data/->Data private-housing-data)
                                                  (data/->Data households-data)
-                                                 (data/->Data dwellings-data)]}
+                                                 (data/->Data dwellings-data)
+                                                 (data/->Data past-development-data)
+                                                 (data/->Data future-development-data)]}
 
         ;; Add Housing-linked model
         dclg-housing-linked-model
@@ -346,20 +366,20 @@
                                                         (data/->Data low-fert-principal-sya-data)])))))
 
         _ (log/info "Adding forecasts...")
-        f1 (forecast/add-forecast! {:name        "Housing-linked Model Islington"
-                                    :description "DCLG Housing-linked Model for the borough of Islington"
+        f1 (forecast/add-forecast! {:name        "Housing-linked Model Camden"
+                                    :description "DCLG Housing-linked Model for the borough of Camden"
                                     :owner       (:id user1)
                                     :owner-name  (:name user1)
                                     :model-id    (:model_id dclg-housing-linked-model)
-                                    :model-properties [{:name "borough" :value "Islington"}
+                                    :model-properties [{:name "borough" :value "Camden"}
                                                        {:name "fertility-assumption" :value "High Fertility"}
                                                        {:name "variant" :value "DCLG"}]})
-        f2 (forecast/add-forecast! {:name        "Housing-linked Model Camden"
-                                    :description "DCLG Housing-linked Model for the borough of Camden"
+        f2 (forecast/add-forecast! {:name        "Housing-linked Model Islington"
+                                    :description "DCLG Housing-linked Model for the borough of Islington"
                                     :owner       (:id user2)
                                     :owner-name  (:name user2)
                                     :model-id    (:model_id dclg-housing-linked-model)
-                                    :model-properties [{:name "borough" :value "Camden"}
+                                    :model-properties [{:name "borough" :value "Islington"}
                                                        {:name "fertility-assumption" :value "Standard Fertility"}
                                                        {:name "variant" :value "DCLG"}]})
         f3 (forecast/add-forecast! {:name        "Housing-linked Model Bromley"
@@ -384,4 +404,4 @@
 
         f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1)
                                          :owner (:id user1)
-                                         :inputs {(:category development-category) development-data}})]))
+                                         :inputs {(:category development-category) development-data-for-camden }})]))

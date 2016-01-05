@@ -513,6 +513,7 @@
                                    (not forecast) (log/error "Updating forecast failed because forecast was nil")
                                    (not ((util/post!-processable-validation ws/UpdateForecast) ctx)) (log/error "Updating forecast failed due to validation")
                                    (not (has-all-inputs? model inputs)) (log/error "Updating forecast failed because not all inputs are present")
+                                   (and (:public forecast) (not-every? true? (->> inputs (vals) (map :public)))) (log/error "One or more inputs is marked as private but this is a public forecast")
                                    :else [true {:inputs inputs}])]
                     result))
   :post!  (fn [ctx]
