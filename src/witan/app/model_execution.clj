@@ -3,7 +3,7 @@
             [witan.app.config :as c]
             [witan.app.s3 :as ws3]
             [clojure-csv.core :as csv]
-            [witan.models :as m]
+            [witan.models.dclg :as dclg]
             [clojure.tools.logging :as log]
             [clojure.string :as str]
             [clojure.walk :as walk]
@@ -97,7 +97,7 @@ TODO: will need to get own config files")
   (try
     (let [data (prepare-download-data forecast model)
           properties (get-properties forecast)
-          total-outputs (m/dclg-housing-linked-model {:properties properties :data data} download)]
+          total-outputs (dclg/dclg-housing-linked-model {:properties properties :data data} download)]
       (into {} (map (fn [{:keys [category outputs reports]}]
                       (hash-map category (map #(handle-output
                                                 (:owner forecast)
