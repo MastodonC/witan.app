@@ -446,60 +446,60 @@
                                                         (data/->Data institutional-data)
                                                         (data/->Data private-housing-popn-data)
                                                         (data/->Data households-data)
-                                                        (data/->Data dwellings-data)])))))]))
-;; Add Trend-based model
-trend-based-model
-(model/add-model!
- (-> base-ward-popn-model
-     (merge {:name "Trend-based Ward Population Projection Model"
-             :description "Demographic model developed at the [GLA](https://www.london.gov.uk/about-us/greater-london-authority-gla) to generate ward-level population projections using ‘trend-based’ borough population projections. Trend-based borough projections are generated using models that project forward on the basis of recent trends in fertility, migration and mortality, and do not include housing data. Further explanation of the difference between GLA population projection variants [can be found here](https://files.datapress.com/london/dataset/2013-round-population-projections/technical-note-guide-gla-popproj-variants.pdf)."})
-     (update :fixed-input-data #(vec (concat % [(data/->Data high-fert-principal-births-data)
-                                                (data/->Data high-fert-principal-deaths-data)
-                                                (data/->Data high-fert-principal-sya-data)
-                                                (data/->Data standard-fert-principal-births-data)
-                                                (data/->Data standard-fert-principal-deaths-data)
-                                                (data/->Data standard-fert-principal-sya-data)
-                                                (data/->Data low-fert-principal-births-data)
-                                                (data/->Data low-fert-principal-deaths-data)
-                                                (data/->Data low-fert-principal-sya-data)])))))
+                                                        (data/->Data dwellings-data)])))))
+        ;; Add Trend-based model
+        trend-based-model
+        (model/add-model!
+         (-> base-ward-popn-model
+             (merge {:name "Trend-based Ward Population Projection Model"
+                     :description "Demographic model developed at the [GLA](https://www.london.gov.uk/about-us/greater-london-authority-gla) to generate ward-level population projections using ‘trend-based’ borough population projections. Trend-based borough projections are generated using models that project forward on the basis of recent trends in fertility, migration and mortality, and do not include housing data. Further explanation of the difference between GLA population projection variants [can be found here](https://files.datapress.com/london/dataset/2013-round-population-projections/technical-note-guide-gla-popproj-variants.pdf)."})
+             (update :fixed-input-data #(vec (concat % [(data/->Data high-fert-principal-births-data)
+                                                        (data/->Data high-fert-principal-deaths-data)
+                                                        (data/->Data high-fert-principal-sya-data)
+                                                        (data/->Data standard-fert-principal-births-data)
+                                                        (data/->Data standard-fert-principal-deaths-data)
+                                                        (data/->Data standard-fert-principal-sya-data)
+                                                        (data/->Data low-fert-principal-births-data)
+                                                        (data/->Data low-fert-principal-deaths-data)
+                                                        (data/->Data low-fert-principal-sya-data)])))))
 
-_ (log/info "Adding forecasts...")
-f1 (forecast/add-forecast! {:name        "Housing-linked Model Camden"
-                            :description "DCLG Housing-linked Model for the borough of Camden"
-                            :owner       (:id user1)
-                            :owner-name  (:name user1)
-                            :model-id    (:model_id dclg-housing-linked-model)
-                            :model-properties [{:name "borough" :value "Camden"}
-                                               {:name "fertility-assumption" :value "High Fertility"}
-                                               {:name "variant" :value "DCLG"}]})
-f2 (forecast/add-forecast! {:name        "Housing-linked Model Islington"
-                            :description "DCLG Housing-linked Model for the borough of Islington"
-                            :owner       (:id user2)
-                            :owner-name  (:name user2)
-                            :model-id    (:model_id dclg-housing-linked-model)
-                            :model-properties [{:name "borough" :value "Islington"}
-                                               {:name "fertility-assumption" :value "Standard Fertility"}
-                                               {:name "variant" :value "DCLG"}]})
-f3 (forecast/add-forecast! {:name        "Housing-linked Model Bromley"
-                            :description "CHS Housing-linked Model for the borough of Bromley"
-                            :owner       (:id user1)
-                            :owner-name  (:name user1)
-                            :public?     true
-                            :model-id    (:model_id dclg-housing-linked-model)
-                            :model-properties [{:name "borough" :value "Bromley"}
-                                               {:name "fertility-assumption" :value "Low Fertility"}
-                                               {:name "variant" :value "Capped Household Size"}]})
+        _ (log/info "Adding forecasts...")
+        f1 (forecast/add-forecast! {:name        "Housing-linked Model Camden"
+                                    :description "DCLG Housing-linked Model for the borough of Camden"
+                                    :owner       (:id user1)
+                                    :owner-name  (:name user1)
+                                    :model-id    (:model_id housing-linked-model)
+                                    :model-properties [{:name "borough" :value "Camden"}
+                                                       {:name "fertility-assumption" :value "High Fertility"}
+                                                       {:name "variant" :value "DCLG"}]})
+        f2 (forecast/add-forecast! {:name        "Housing-linked Model Islington"
+                                    :description "DCLG Housing-linked Model for the borough of Islington"
+                                    :owner       (:id user2)
+                                    :owner-name  (:name user2)
+                                    :model-id    (:model_id housing-linked-model)
+                                    :model-properties [{:name "borough" :value "Islington"}
+                                                       {:name "fertility-assumption" :value "Standard Fertility"}
+                                                       {:name "variant" :value "DCLG"}]})
+        f3 (forecast/add-forecast! {:name        "Housing-linked Model Bromley"
+                                    :description "CHS Housing-linked Model for the borough of Bromley"
+                                    :owner       (:id user1)
+                                    :owner-name  (:name user1)
+                                    :public?     true
+                                    :model-id    (:model_id housing-linked-model)
+                                    :model-properties [{:name "borough" :value "Bromley"}
+                                                       {:name "fertility-assumption" :value "Low Fertility"}
+                                                       {:name "variant" :value "Capped Household Size"}]})
 
-f4 (forecast/add-forecast! {:name        "Trend-based Model Barnet"
-                            :description "Trend-based Model for the borough of Barnet"
-                            :owner       (:id user1)
-                            :owner-name  (:name user1)
-                            :public?     true
-                            :model-id    (:model_id trend-based-model)
-                            :model-properties [{:name "borough" :value "Barnet"}
-                                               {:name "fertility-assumption" :value "Low Fertility"}]})
-_ (log/info "Updating forecasts...")
+        f4 (forecast/add-forecast! {:name        "Trend-based Model Barnet"
+                                    :description "Trend-based Model for the borough of Barnet"
+                                    :owner       (:id user1)
+                                    :owner-name  (:name user1)
+                                    :public?     true
+                                    :model-id    (:model_id trend-based-model)
+                                    :model-properties [{:name "borough" :value "Barnet"}
+                                                       {:name "fertility-assumption" :value "Low Fertility"}]})
+        _ (log/info "Updating forecasts...")
 
-f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1)
-                                 :owner (:id user1)
-                                 :inputs {(:category development-category) development-data-for-camden }})]))
+        f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1)
+                                         :owner (:id user1)
+                                         :inputs {(:category development-category) development-data-for-camden }})]))
