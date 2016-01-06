@@ -44,7 +44,7 @@
                               :description "Department of Communities and Local Government (DCLG) public population projections"})
 (def institutional-fixed-input {:category "institutional"
                                 :description "DCLG institutional population projections, also known as communal establishment pop (CEP) i.e. people living in student halls, retirement homes etc."})
-(def private-housing-fixed-input {:category "private-housing"
+(def private-housing-fixed-input {:category "private-housing-popn"
                                   :description "DCLG household population projections i.e. people living in private rather than communal housing"})
 (def household-fixed-input {:category "households-data"
                             :description "DCLG projections for numbers of households"})
