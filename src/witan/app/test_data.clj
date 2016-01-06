@@ -44,7 +44,7 @@
                               :description "Department of Communities and Local Government (DCLG) public population projections"})
 (def institutional-fixed-input {:category "institutional"
                                 :description "DCLG institutional population projections, also known as communal establishment pop (CEP) i.e. people living in student halls, retirement homes etc."})
-(def private-housing-fixed-input {:category "private-housing"
+(def private-housing-fixed-input {:category "private-housing-popn"
                                   :description "DCLG household population projections i.e. people living in private rather than communal housing"})
 (def household-fixed-input {:category "households-data"
                             :description "DCLG projections for numbers of households"})
@@ -77,11 +77,11 @@
                                             :publisher (:id user1)
                                             :file-name "Long+Inst+Pop.csv"
                                             :s3-key #uuid "59400efa-b002-4eae-849b-34751b458f74"})
-        private-housing-data (data/add-data! {:category (:category private-housing-fixed-input)
-                                              :name "DCLG household population"
-                                              :publisher (:id user1)
-                                              :file-name "Long+PHP.csv"
-                                              :s3-key #uuid "f70f99c3-10d1-4271-a30b-dc1290117943"})
+        private-housing-popn-data (data/add-data! {:category (:category private-housing-fixed-input)
+                                                   :name "DCLG household population"
+                                                   :publisher (:id user1)
+                                                   :file-name "Long+PHP.csv"
+                                                   :s3-key #uuid "f70f99c3-10d1-4271-a30b-dc1290117943"})
         households-data (data/add-data! {:category (:category household-fixed-input)
                                          :name "DCLG households"
                                          :publisher (:id user1)
@@ -289,8 +289,76 @@
                                                  :public? true
                                                  :s3-key #uuid "4b0d668f-e6b4-4f2c-bbaf-115819c21478"})
 
+        ;; - Ward level inputs
+        ward-adults-php (data/add-data! {:category "ward-adults-php"
+                                  :name "ward-adults-php-data"
+                                  :publisher (:id user1)
+                                  :file-name "Adults PHP.csv"
+                                  :public? true
+                                  :s3-key #uuid "0057caa7-53df-4298-81dc-1eb3d9783918"})
 
+        ward-total-popn-baseyear (data/add-data! {:category "ward-total-popn"
+                                                  :name "ward-total-popn-baseyear"
+                                                  :publisher (:id user1)
+                                                  :file-name "Base Population.csv"
+                                                  :public? true
+                                                  :s3-key #uuid "7d3c8a0c-9d08-4550-9a3c-05896d0fc1a8"})
 
+        ward-fertility-rates (data/add-data! {:category "ward-fertility-rates"
+                                              :name "ward-fertility-rates"
+                                              :publisher (:id user1)
+                                              :file-name "Fertility Rates.csv"
+                                              :public? true
+                                              :s3-key #uuid "a1f09cfd-b9bd-4b86-9c23-c7c242e33238"})
+
+        ward-survival-rates (data/add-data! {:category "ward-survival-rates"
+                                             :name "ward-survival-rates"
+                                             :publisher (:id user1)
+                                             :file-name "Survival Rates.csv"
+                                             :public? true
+                                             :s3-key #uuid "66ab1245-fe5d-4b78-a4e3-49c06d9dd28f"})
+
+        ward-births (data/add-data! {:category "ward-births"
+                                     :name "ward-births"
+                                     :publisher (:id user1)
+                                     :file-name "Ward births.csv"
+                                     :public? true
+                                     :s3-key #uuid "2356bd21-a89d-43c8-83e1-a393b3b43a8c"})
+
+        ward-deaths (data/add-data! {:category "ward-deaths"
+                                     :name "ward-deaths"
+                                     :publisher (:id user1)
+                                     :file-name "Ward deaths.csv"
+                                     :public? true
+                                     :s3-key #uuid "63adb695-f89c-4831-8dac-a04ec66d220a"})
+
+        ward-inmigration (data/add-data! {:category "ward-inmigration-rates"
+                                          :name "ward-inmigration-rates"
+                                          :publisher (:id user1)
+                                          :file-name "Inmigrant characteristics.csv"
+                                          :public? true
+                                          :s3-key #uuid "a8518fff-ddda-4974-bfb3-fc481b2c9150"})
+
+        ward-outmigration (data/add-data! {:category "ward-outmigration-rates"
+                                           :name "ward-outmigration-rates"
+                                           :publisher (:id user1)
+                                           :file-name "Outmigrant probabilities.csv"
+                                           :public? true
+                                           :s3-key #uuid "0d2dba4a-18d0-4bad-89a1-1a1f429fe8c4"})
+
+        ward-census-dwellings (data/add-data! {:category "ward-dwellings"
+                                               :name "ward-census-dwellings"
+                                               :publisher (:id user1)
+                                               :file-name "Census dwellings - Ward.csv"
+                                               :public? true
+                                               :s3-key #uuid "7f972b64-0477-435c-bf83-4eb4ca3df88b"})
+
+        ward-institutional-data (data/add-data! {:category "ward-institutional"
+                                                 :name "ward-institutional"
+                                                 :publisher (:id user1)
+                                                 :file-name "Institutional Population.csv"
+                                                 :public? true
+                                                 :s3-key #uuid "f0129c15-1cb3-4426-ac57-4c1494e71349"})
 
         ;; model
         _ (log/info "Adding models...")
@@ -310,11 +378,16 @@
                                                           "Low Fertility"]}]
                               :input-data [development-category]
                               :output-data [output-category]
-                              :fixed-input-data [(data/->Data population-data)
-                                                 (data/->Data institutional-data)
-                                                 (data/->Data private-housing-data)
-                                                 (data/->Data households-data)
-                                                 (data/->Data dwellings-data)
+                              :fixed-input-data [(data/->Data ward-adults-php)
+                                                 (data/->Data ward-total-popn-baseyear)
+                                                 (data/->Data ward-fertility-rates)
+                                                 (data/->Data ward-survival-rates)
+                                                 (data/->Data ward-births)
+                                                 (data/->Data ward-deaths)
+                                                 (data/->Data ward-inmigration)
+                                                 (data/->Data ward-outmigration)
+                                                 (data/->Data ward-census-dwellings)
+                                                 (data/->Data ward-institutional-data)
                                                  (data/->Data past-development-data)
                                                  (data/->Data future-development-data)]}
 
@@ -347,7 +420,12 @@
                                                         (data/->Data low-fert-high-sya-data)
                                                         (data/->Data low-fert-low-births-data)
                                                         (data/->Data low-fert-low-deaths-data)
-                                                        (data/->Data low-fert-low-sya-data)])))))
+                                                        (data/->Data low-fert-low-sya-data)
+                                                        (data/->Data population-data)
+                                                        (data/->Data institutional-data)
+                                                        (data/->Data private-housing-popn-data)
+                                                        (data/->Data households-data)
+                                                        (data/->Data dwellings-data)])))))
 
         ;; Add Trend-based model
         trend-based-model
