@@ -294,8 +294,8 @@
                                                  :s3-key #uuid "4b0d668f-e6b4-4f2c-bbaf-115819c21478"})
 
         ;; - Ward level inputs
-        ward-php (data/add-data! {:category "ward-php"
-                                  :name "ward-php-data"
+        ward-adults-php (data/add-data! {:category "ward-adults-php"
+                                  :name "ward-adults-php-data"
                                   :publisher (:id user1)
                                   :file-name "Adults PHP.csv"
                                   :public? true
@@ -382,7 +382,7 @@
                                                           "Low Fertility"]}]
                               :input-data [development-category]
                               :output-data [output-category]
-                              :fixed-input-data [(data/->Data ward-php)
+                              :fixed-input-data [(data/->Data ward-adults-php)
                                                  (data/->Data ward-total-popn-baseyear)
                                                  (data/->Data ward-fertility-rates)
                                                  (data/->Data ward-survival-rates)
