@@ -1,6 +1,6 @@
 (ns witan.app.model-execution-test
   (:require [witan.app.model-execution :refer :all]
-            [witan.models.dclg :as dclg]
+            [witan.models :as m]
             [clojure.test :refer :all]))
 
 (def base-population-default-id #uuid "bf1c8571-4290-49c0-878e-0c2493ccf98e")
