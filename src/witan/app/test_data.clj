@@ -393,16 +393,7 @@
                                                  (data/->Data ward-census-dwellings)
                                                  (data/->Data ward-institutional-data)
                                                  (data/->Data past-development-data)
-                                                 (data/->Data future-development-data)
-                                                 (data/->Data high-fert-principal-births-data)
-                                                 (data/->Data high-fert-principal-deaths-data)
-                                                 (data/->Data high-fert-principal-sya-data)
-                                                 (data/->Data standard-fert-principal-births-data)
-                                                 (data/->Data standard-fert-principal-deaths-data)
-                                                 (data/->Data standard-fert-principal-sya-data)
-                                                 (data/->Data low-fert-principal-births-data)
-                                                 (data/->Data low-fert-principal-deaths-data)
-                                                 (data/->Data low-fert-principal-sya-data)]}
+                                                 (data/->Data future-development-data)]}
 
         ;; Add Housing-linked model
         dclg-housing-linked-model
@@ -446,7 +437,16 @@
          (-> base-ward-popn-model
              (merge {:name "Trend-based Ward Population Projection Model"
                      :description "Demographic model developed at the [GLA](https://www.london.gov.uk/about-us/greater-london-authority-gla) to generate ward-level population projections using ‘trend-based’ borough population projections. Trend-based borough projections are generated using models that project forward on the basis of recent trends in fertility, migration and mortality, and do not include housing data. Further explanation of the difference between GLA population projection variants [can be found here](https://files.datapress.com/london/dataset/2013-round-population-projections/technical-note-guide-gla-popproj-variants.pdf)."})
-             (update :input-data #(vec (concat % [births-category deaths-category])))))
+             (update :input-data #(vec (concat % [births-category deaths-category])))
+             (update :fixed-input-data #(vec (concat % [(data/->Data high-fert-principal-births-data)
+                                                        (data/->Data high-fert-principal-deaths-data)
+                                                        (data/->Data high-fert-principal-sya-data)
+                                                        (data/->Data standard-fert-principal-births-data)
+                                                        (data/->Data standard-fert-principal-deaths-data)
+                                                        (data/->Data standard-fert-principal-sya-data)
+                                                        (data/->Data low-fert-principal-births-data)
+                                                        (data/->Data low-fert-principal-deaths-data)
+                                                        (data/->Data low-fert-principal-sya-data)])))))
 
         _ (log/info "Adding forecasts...")
         f1 (forecast/add-forecast! {:name        "Housing-linked Model Camden"
