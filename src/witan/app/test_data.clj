@@ -81,11 +81,11 @@
                                             :publisher (:id user1)
                                             :file-name "Long+Inst+Pop.csv"
                                             :s3-key #uuid "59400efa-b002-4eae-849b-34751b458f74"})
-        private-housing-data (data/add-data! {:category (:category private-housing-fixed-input)
-                                              :name "DCLG household population"
-                                              :publisher (:id user1)
-                                              :file-name "Long+PHP.csv"
-                                              :s3-key #uuid "f70f99c3-10d1-4271-a30b-dc1290117943"})
+        private-housing-popn-data (data/add-data! {:category (:category private-housing-fixed-input)
+                                                   :name "DCLG household population"
+                                                   :publisher (:id user1)
+                                                   :file-name "Long+PHP.csv"
+                                                   :s3-key #uuid "f70f99c3-10d1-4271-a30b-dc1290117943"})
         households-data (data/add-data! {:category (:category household-fixed-input)
                                          :name "DCLG households"
                                          :publisher (:id user1)
@@ -427,7 +427,7 @@
                                                         (data/->Data low-fert-low-sya-data)
                                                         (data/->Data population-data)
                                                         (data/->Data institutional-data)
-                                                        (data/->Data private-housing-data)
+                                                        (data/->Data private-housing-popn-data)
                                                         (data/->Data households-data)
                                                         (data/->Data dwellings-data)])))))
 
