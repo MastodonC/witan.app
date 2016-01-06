@@ -1,6 +1,6 @@
 (ns witan.app.model-execution-test
   (:require [witan.app.model-execution :refer :all]
-            [witan.models.dclg :as dclg]
+            [witan.models :as m]
             [clojure.test :refer :all]))
 
 (def base-population-default-id #uuid "bf1c8571-4290-49c0-878e-0c2493ccf98e")
@@ -90,7 +90,7 @@
                                      #"Incomplete input data for model: Housing Linked Model"
                                      (get-inputs incomplete-forecast dummy-model))))))
   (testing "errors in model"
-    (with-redefs [dclg/dclg-housing-linked-model (fn [& _] (throw (Exception. "this is an error message")))
+    (with-redefs [m/housing-linked-ward-model (fn [& _] (throw (Exception. "this is an error message")))
                   download (fn [& _] {})
                   prepare-download-data (fn [& _] {})]
       (let [outputs (execute-model dummy-forecast dummy-model)]

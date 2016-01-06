@@ -137,6 +137,12 @@
                                                 :file-name "high-fert-low-sya-data.csv"
                                                 :public? true
                                                 :s3-key #uuid "618feb06-8b40-4aed-a08b-5af53420de33"})
+        high-fert-php-data (data/add-data! {:category "high-fert-php-data"
+                                            :name "high-fert-php-data"
+                                            :publisher (:id user1)
+                                            :file-name "high-fert-php-data.csv"
+                                            :public? true
+                                            :s3-key #uuid "96ab8c23-8ee1-4103-a4e9-f23d0339a267"})
 
         standard-fert-high-births-data (data/add-data! {:category "standard-fert-high-births-data"
                                                         :name "standard-fert-high-births-data"
@@ -174,6 +180,12 @@
                                                     :file-name "standard-fert-low-sya-data.csv"
                                                     :public? true
                                                     :s3-key #uuid "b7746aaf-ec2d-4faa-9860-a5931680f305"})
+        standard-fert-php-data (data/add-data! {:category "standard-fert-php-data"
+                                                :name "standard-fert-php-data"
+                                                :publisher (:id user1)
+                                                :file-name "standard-fert-php-data.csv"
+                                                :public? true
+                                                :s3-key #uuid "3c848b06-074f-46d4-b9d0-6f719854305c"})
 
         low-fert-high-births-data (data/add-data! {:category "low-fert-high-births-data"
                                                    :name "low-fert-high-births-data"
@@ -211,6 +223,12 @@
                                                :file-name "low-fert-low-sya-data.csv"
                                                :public? true
                                                :s3-key #uuid "4a1d84be-33aa-4247-9df5-76d7785146f1"})
+        low-fert-php-data (data/add-data! {:category "low-fert-php-data"
+                                           :name "low-fert-php-data"
+                                           :publisher (:id user1)
+                                           :file-name "low-fert-php-data.csv"
+                                           :public? true
+                                           :s3-key #uuid "f956beaf-9a89-4992-b6d8-0750cd0cf2c4"})
 
         ;;;;
 
@@ -291,11 +309,11 @@
 
         ;; - Ward level inputs
         ward-adults-php (data/add-data! {:category "ward-adults-php"
-                                  :name "ward-adults-php-data"
-                                  :publisher (:id user1)
-                                  :file-name "Adults PHP.csv"
-                                  :public? true
-                                  :s3-key #uuid "0057caa7-53df-4298-81dc-1eb3d9783918"})
+                                         :name "ward-adults-php-data"
+                                         :publisher (:id user1)
+                                         :file-name "Adults PHP.csv"
+                                         :public? true
+                                         :s3-key #uuid "0057caa7-53df-4298-81dc-1eb3d9783918"})
 
         ward-total-popn-baseyear (data/add-data! {:category "ward-total-popn"
                                                   :name "ward-total-popn-baseyear"
@@ -391,8 +409,8 @@
                                                  (data/->Data past-development-data)
                                                  (data/->Data future-development-data)]}
 
-        ;; Add Housing-linked model
-        dclg-housing-linked-model
+        ;; Add Housing-linked model - DCLG and capped
+        housing-linked-model
         (model/add-model!
          (-> base-ward-popn-model
              (merge {:name "Housing-linked Ward Population Projection Model"
@@ -409,24 +427,26 @@
                                                         (data/->Data high-fert-low-births-data)
                                                         (data/->Data high-fert-low-deaths-data)
                                                         (data/->Data high-fert-low-sya-data)
+                                                        (data/->Data high-fert-php-data)
                                                         (data/->Data standard-fert-high-births-data)
                                                         (data/->Data standard-fert-high-deaths-data)
                                                         (data/->Data standard-fert-high-sya-data)
                                                         (data/->Data standard-fert-low-births-data)
                                                         (data/->Data standard-fert-low-deaths-data)
                                                         (data/->Data standard-fert-low-sya-data)
+                                                        (data/->Data standard-fert-php-data)
                                                         (data/->Data low-fert-high-births-data)
                                                         (data/->Data low-fert-high-deaths-data)
                                                         (data/->Data low-fert-high-sya-data)
                                                         (data/->Data low-fert-low-births-data)
                                                         (data/->Data low-fert-low-deaths-data)
                                                         (data/->Data low-fert-low-sya-data)
+                                                        (data/->Data low-fert-php-data)
                                                         (data/->Data population-data)
                                                         (data/->Data institutional-data)
                                                         (data/->Data private-housing-popn-data)
                                                         (data/->Data households-data)
                                                         (data/->Data dwellings-data)])))))
-
         ;; Add Trend-based model
         trend-based-model
         (model/add-model!
@@ -448,7 +468,7 @@
                                     :description "DCLG Housing-linked Model for the borough of Camden"
                                     :owner       (:id user1)
                                     :owner-name  (:name user1)
-                                    :model-id    (:model_id dclg-housing-linked-model)
+                                    :model-id    (:model_id housing-linked-model)
                                     :model-properties [{:name "borough" :value "Camden"}
                                                        {:name "fertility-assumption" :value "High Fertility"}
                                                        {:name "variant" :value "DCLG"}]})
@@ -456,7 +476,7 @@
                                     :description "DCLG Housing-linked Model for the borough of Islington"
                                     :owner       (:id user2)
                                     :owner-name  (:name user2)
-                                    :model-id    (:model_id dclg-housing-linked-model)
+                                    :model-id    (:model_id housing-linked-model)
                                     :model-properties [{:name "borough" :value "Islington"}
                                                        {:name "fertility-assumption" :value "Standard Fertility"}
                                                        {:name "variant" :value "DCLG"}]})
@@ -465,7 +485,7 @@
                                     :owner       (:id user1)
                                     :owner-name  (:name user1)
                                     :public?     true
-                                    :model-id    (:model_id dclg-housing-linked-model)
+                                    :model-id    (:model_id housing-linked-model)
                                     :model-properties [{:name "borough" :value "Bromley"}
                                                        {:name "fertility-assumption" :value "Low Fertility"}
                                                        {:name "variant" :value "Capped Household Size"}]})
