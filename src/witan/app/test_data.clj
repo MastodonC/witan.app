@@ -343,12 +343,6 @@
                                      :public? true
                                      :s3-key #uuid "2356bd21-a89d-43c8-83e1-a393b3b43a8c"})
 
-        ward-deaths (data/add-data! {:category "ward-deaths"
-                                     :name "ward-deaths"
-                                     :publisher (:id user1)
-                                     :file-name "Ward deaths.csv"
-                                     :public? true
-                                     :s3-key #uuid "63adb695-f89c-4831-8dac-a04ec66d220a"})
 
         ward-inmigration (data/add-data! {:category "ward-inmigration-rates"
                                           :name "ward-inmigration-rates"
@@ -401,7 +395,6 @@
                                                  (data/->Data ward-fertility-rates)
                                                  (data/->Data ward-survival-rates)
                                                  (data/->Data ward-births)
-                                                 (data/->Data ward-deaths)
                                                  (data/->Data ward-inmigration)
                                                  (data/->Data ward-outmigration)
                                                  (data/->Data ward-census-dwellings)
