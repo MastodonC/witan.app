@@ -17,9 +17,10 @@
 
 (defmethod category-valid? development-data-category
   [category lines]
-  (let [req-headers #{"GSS Code Borough" "Borough Name" "GSS Code Ward" "Ward Name"}
-        inc-headers (set (clojure.string/split (first lines) #","))]
-    (when-not (empty? (clojure.set/difference req-headers inc-headers))
+  (let [req-headers #{"GSS.Code.Borough" "Borough" "GSS.Code.Ward" "Ward Name"}
+        inc-headers (set (map #(clojure.string/replace % #"\"" "") (clojure.string/split (first lines) #",")))
+        result (clojure.set/difference req-headers inc-headers)]
+    (when-not (empty? result)
       (str "The header row of the file is missing one or more required rows. We expect " (clojure.string/join "," req-headers)))))
 
 (defn validate
