@@ -342,8 +342,6 @@
                                      :file-name "Ward births.csv"
                                      :public? true
                                      :s3-key #uuid "2356bd21-a89d-43c8-83e1-a393b3b43a8c"})
-
-
         ward-inmigration (data/add-data! {:category "ward-inmigration-rates"
                                           :name "ward-inmigration-rates"
                                           :publisher (:id user1)

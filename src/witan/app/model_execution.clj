@@ -25,7 +25,9 @@ TODO: will need to get own config files")
                             (clojure.string/replace "\r"   "\n"))
         parsed-csv (csv/parse-csv normalised-data :end-of-line nil)
         parsed-data (rest parsed-csv)
-        headers (map str/lower-case (first parsed-csv))]
+        headers (->> (first parsed-csv)
+                     (map str/lower-case)
+                     (map #(str/replace % #"\s" ".")))]
     (map #(walk/keywordize-keys (zipmap headers %1)) parsed-data)))
 
 (defn download
