@@ -95,7 +95,7 @@
           (testing "POST /api/data"
             (let [{:keys [status body]} (client/post (app-url "/api/data")
                                                      {:headers (auth-header token)
-                                                      :multipart [{:name "file" :content (clojure.java.io/file "test-data/development.csv") :content-type "text/csv"}
+                                                      :multipart [{:name "file" :content (clojure.java.io/file "test-data/Template_DevelopmentData_Bexley_WithData.csv") :content-type "text/csv"}
                                                                   {:name "filename":content "development.csv"}
                                                                   {:name "name" :content "development.csv"}
                                                                   {:name "category" :content "development-data"}

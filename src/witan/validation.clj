@@ -1,5 +1,5 @@
 (ns witan.validation
-  (:require [clojure.tools.logging :as log]))
+  (:require [clojure.string :as str]))
 
 (def development-data-category "development-data")
 
@@ -12,21 +12,34 @@
   (let [ext (last (clojure.string/split filename #"\."))]
     (= ext "csv")))
 
-(defmulti category-valid?
-  (fn [category lines] category))
+(defn all-years-starting-from-2011
+  [year-headers]
+  (let [years (sort (map #(Long/parseLong (re-find #"\d{4}" %)) year-headers))]
+    (= (vec (range 2011 (inc (last years))))
+        years)))
 
-(defmethod category-valid? development-data-category
+(defn category-validation-error?
   [category lines]
-  (let [req-headers #{"GSS Code Borough" "Borough Name" "GSS Code Ward" "Ward Name"}
-        inc-headers (set (clojure.string/split (first lines) #","))]
-    (when-not (empty? (clojure.set/difference req-headers inc-headers))
-      (str "The header row of the file is missing one or more required rows. We expect " (clojure.string/join "," req-headers)))))
+  (let [req-headers #{"gss.code.borough" "gss.code.ward" "ward.name"}
+        inc-headers (str/split (first lines) #",")
+        formatted-headers (->> inc-headers
+                               (map str/lower-case)
+                               (map #(str/replace % #"\s" "."))
+                               (map #(str/replace % #"\"" ""))
+                               (set))
+        year-headers (filter #(re-find #"\d{4}-\d{4}" %) inc-headers)]
+    (cond
+      (not (empty? (clojure.set/difference req-headers formatted-headers)))
+      (str "The header row of the file is missing one or more required rows. We expect " (str/join "," req-headers))
+      (not (all-years-starting-from-2011 year-headers))
+      (str "Years should start at 2011-2012 and all be present up to the year to be projected to.")
+      :else nil)))
 
 (defn validate
   [category file]
   (with-open [rdr (clojure.java.io/reader file)]
     (let [lines (line-seq rdr)
-          error? (category-valid? category lines)]
+          error? (category-validation-error? category lines)]
       [(nil? error?) (when error? {:error error?})])))
 
 (defn validate-content
