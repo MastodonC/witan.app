@@ -1,6 +1,5 @@
 (ns witan.validation
-  (:require [clojure.string :as str]
-   [clojure.tools.logging :as log]))
+  (:require [clojure.string :as str]))
 
 (def development-data-category "development-data")
 
@@ -13,16 +12,16 @@
   (let [ext (last (clojure.string/split filename #"\."))]
     (= ext "csv")))
 
-(defmulti category-valid?
+(defmulti category-validation-error?
   (fn [category lines] category))
 
 (defn all-years-starting-from-2011
   [year-headers]
-  (let [years (sort (map #(java.lang.Integer/parseInt (re-find #"\d{4}" %)) year-headers))]
+  (let [years (sort (map #(Long/parseLong (re-find #"\d{4}" %)) year-headers))]
     (=  (vec (range 2011 (inc (last years))))
         years)))
 
-(defmethod category-valid? development-data-category
+(defmethod category-validation-error? development-data-category
   [category lines]
   (let [req-headers #{"gss.code.borough" "gss.code.ward" "ward.name"}
         inc-headers (str/split (first lines) #",")
@@ -43,7 +42,7 @@
   [category file]
   (with-open [rdr (clojure.java.io/reader file)]
     (let [lines (line-seq rdr)
-          error? (category-valid? category lines)]
+          error? (category-validation-error? category lines)]
       [(nil? error?) (when error? {:error error?})])))
 
 (defn validate-content
