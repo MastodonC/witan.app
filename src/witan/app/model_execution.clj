@@ -110,7 +110,17 @@ TODO: will need to get own config files")
 
 (defmethod execute-model ["Trend-based Ward Population Projection Model" 1]
   [forecast model]
-  (throw (Exception. (str "The Trend-based Ward Population Projection Model is currently unavailable."))))
+  (try
+    (let [data (prepare-download-data forecast model)
+          properties (get-properties forecast)
+          total-outputs (m/trend-based-ward-model {:properties properties :data data} download)]
+      (into {} (map (fn [{:keys [category outputs reports]}]
+                      (hash-map category (map #(handle-output
+                                                (:owner forecast)
+                                                category
+                                                %) outputs))) total-outputs)))
+    (catch Exception e (do (log/error "Model" (:model_id forecast) "threw an error:" (.getMessage e) (clojure.stacktrace/print-stack-trace e) )
+                           {:error (.getMessage e)}))))
 
 (defmethod execute-model :default
   [_ model]
