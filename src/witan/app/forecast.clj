@@ -159,7 +159,8 @@
                (hayt/set-columns {:current_version_id version-id
                                   :version version
                                   :in_progress in-progress?
-                                  :created (tf/unparse (tf/formatters :date-time) (t/now))})
+                                  :created (tf/unparse (tf/formatters :date-time) (t/now))
+                                  :error nil})
                (hayt/where {:forecast_id forecast-id})))
 
 (defn update-forecast-outputs
@@ -322,7 +323,7 @@
   [{:keys [forecast-id version version-id]} error]
   (let [error (or error "No error message was provided.")]
     (c/exec (update-forecast-error {:forecast-id forecast-id :version version :error error}))
-    (when (or (<= version 1) (= (-> forecast-id (get-most-recent-version) :version-id) version-id))
+    (when (or (<= version 1) (= (-> forecast-id (get-most-recent-version) :version_id) version-id))
       (c/exec (update-forecast-header-error {:forecast-id forecast-id :version version :error error})))))
 
 
@@ -354,7 +355,7 @@
         uuid-model-id (util/to-uuid model-id)
         checked-property-values (check-property-values uuid-model-id model-properties)]
     (if (-> checked-property-values :errors empty?)
-      (let [ owner-name (-> owner u/retrieve-user :name)
+      (let [owner-name (-> owner u/retrieve-user :name)
             new-forecast (assoc forecast :forecast-id id
                                 :version-id version-id
                                 :model-id uuid-model-id
@@ -399,17 +400,18 @@
               new-version (inc old-version)
               new-version-id (uuid/random)
               owner-name (-> owner u/retrieve-user :name) ;; TODO should check for nil
-              new-forecast (assoc latest-forecast
-                                  :version new-version
-                                  :version-id new-version-id
-                                  :owner owner
-                                  :owner-name owner-name
-                                  :in-progress? true
-                                  :public? (:public latest-forecast)
-                                  :forecast-id forecast-id
-                                  :model-id (:model_id latest-forecast)
-                                  :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
-                                  :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)])))]
+              new-forecast (-> latest-forecast
+                               (dissoc :error)
+                               (assoc :version new-version
+                                      :version-id new-version-id
+                                      :owner owner
+                                      :owner-name owner-name
+                                      :in-progress? true
+                                      :public? (:public latest-forecast)
+                                      :forecast-id forecast-id
+                                      :model-id (:model_id latest-forecast)
+                                      :model-property-values (into {} (for [[k v] (:model_property_values latest-forecast)] [k (hayt/user-type v)]))
+                                      :inputs (into {} (for [[k v] inputs] [(name k) (hayt/user-type v)]))))]
           (create-new-forecast-version! new-forecast old-version)
           (run-model! (assoc new-forecast :inputs inputs) model) ;; assoc to use the original inputs (not UDT'd)
           (get-forecast-version forecast-id new-version))
