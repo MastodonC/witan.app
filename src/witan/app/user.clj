@@ -41,12 +41,15 @@
   (let [user (retrieve-user-by-username username)]
     (c/exec (update-password (:id user) password))))
 
-(defn add-user! [{:keys [username] :as user}]
-  (s/validate ws/SignUp user)
-  (let [existing-users (retrieve-user-by-username username)]
-    (when (empty? existing-users)
-      (c/exec (create-user user))
-      (retrieve-user-by-username username))))
+(defn add-user! [raw-user]
+  (let [{:keys [username] :as user} (-> raw-user
+                                        (update :username clojure.string/trim)
+                                        (update :name clojure.string/trim))]
+    (s/validate ws/SignUp user)
+    (let [existing-users (retrieve-user-by-username username)]
+      (when (empty? existing-users)
+        (c/exec (create-user user))
+        (retrieve-user-by-username username)))))
 
 (defn password-ok? [existing-user password]
   (hs/check password (:password_hash existing-user)))
