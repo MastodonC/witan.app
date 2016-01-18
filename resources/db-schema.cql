@@ -145,3 +145,9 @@ CREATE TABLE models (
     output_data list<text>,
     fixed_input_data list<frozen<data_item>>
 );
+
+CREATE TABLE invite_tokens (
+    username text,
+    invite_token text,
+    PRIMARY KEY (username, invite_token)
+);

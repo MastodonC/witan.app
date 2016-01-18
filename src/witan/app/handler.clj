@@ -63,12 +63,14 @@
     (ok {:message "login failed"})))
 
 (defn signup
-  [{:keys [username password name] :as body}]
+  [{:keys [username password name invite-token] :as body}]
   (log/info "signup" body)
-  (if-let [{:keys [id]} (u/add-user! body)]
-    (let [token (add-token! id tokens)]
-      (created {:token token :id id}))
-    (ok {:message "User already present"})))
+  (if (u/invited? username invite-token)
+    (if-let [{:keys [id]} (u/add-user! body)]
+      (let [token (add-token! id tokens)]
+        (created {:token token :id id}))
+      (ok {:message "User already present"}))
+    (ok {:message "Please check your invite token - Witan only accepts invited users"})))
 
 (defn check-user [identity]
   (if-let [user (u/retrieve-user identity)]

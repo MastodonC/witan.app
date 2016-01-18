@@ -23,7 +23,8 @@
 
 (def SignUp
   (merge LoginDetails
-         {(s/required-key :name) s/Str}))
+         {(s/required-key :name) s/Str
+          (s/required-key :invite-token) s/Str}))
 
 (def LoginReturn
   (s/either {(s/required-key :token) s/Str

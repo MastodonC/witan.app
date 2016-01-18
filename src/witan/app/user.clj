@@ -20,6 +20,13 @@
 (defn find-user [id]
   (hayt/select :Users (hayt/where {:id id})))
 
+(defn find-invite-token [username invite-token]
+  (hayt/select :invite_tokens (hayt/where {:username username
+                                           :invite_token invite-token})))
+
+(defn invited? [username invite-token]
+  (not (nil? (first (c/exec (find-invite-token username invite-token))))))
+
 (defn create-user [user]
   (let [hash (hs/encrypt (:password user))]
     (hayt/insert :Users
