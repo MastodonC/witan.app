@@ -7,6 +7,7 @@
             [qbits.alia.uuid :as uuid]
             [witan.app.config :as c]
             [witan.app.schema :as ws]
+            [witan.app.util :as util]
             [schema.core :as s]))
 
 (defn random-token
@@ -26,6 +27,12 @@
 
 (defn invited? [username invite-token]
   (not (nil? (first (c/exec (find-invite-token username invite-token))))))
+
+(defn create-invite-token
+  [username invite-token]
+  (hayt/insert :invite_tokens
+               (hayt/values :username username
+                            :invite_token invite-token)))
 
 (defn create-user [user]
   (let [hash (hs/encrypt (:password user))]
@@ -47,6 +54,12 @@
 (defn change-password! [username password]
   (let [user (retrieve-user-by-username username)]
     (c/exec (update-password (:id user) password))))
+
+(defn add-invite-token!
+  [username]
+  (let [invite-token (util/user-friendly-token)]
+    (c/exec (create-invite-token username invite-token))
+    invite-token))
 
 (defn add-user! [raw-user]
   (let [{:keys [username] :as user} (-> raw-user
