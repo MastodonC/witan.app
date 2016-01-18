@@ -16,6 +16,10 @@
               "hostPort": 5001,
               "protocol": "tcp"
           }
+      ],
+      "parameters": [
+        {"key": "log-driver", "value": "syslog"},
+        {"key": "log-opt", "value": "tag=\"{{.ImageName}}/{{.Name}}/{{.ID}}\""}
       ]
     }
   },
