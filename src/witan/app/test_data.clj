@@ -52,7 +52,7 @@
                                  :description "Dwellings from most recent census"})
 
 (def development-category {:category "development-data"
-                           :description "Net new dwellings from London Development Database and projections of housing (SHLAA or BPO). Download a template here: [empty](/data/public/Template_DevelopmentData_{{ model-properties.borough|nowhitespace }}.csv) or [with SHLAA data](/data/public/Template_DevelopmentData_{{ model-properties.borough|nowhitespace }}_WithData.csv)"})
+                           :description "Net new dwellings from London Development Database and projections of housing (SHLAA or BPO). Download a template here: [empty](/data/public/Template_DevelopmentData_{{ model-properties.borough|nowhitespace }}.csv) or [with SHLAA data](/data/public/Template_DevelopmentData_{{ model-properties.borough|nowhitespace }}_WithData.csv). The ward level capacity is based on the capacity identified in the 2013 SHLAA. This includes potential sites which are given a capacity estimate based on the probability of a site coming forward ([see SHLAA report for detailed methodology](https://www.london.gov.uk/what-we-do/planning/london-plan/london-plan-technical-and-research-reports)) and a small site estimate. While this approach provides a robust understanding of a borough's overall capacity, ward based capacity is only indicative and should not be used to infer site level capacity. Boroughs are free to use their own ward level data as they wish, however, ward data from outside their borough should be treated as confidential."})
 (def output-category {:category "housing-linked-population"
                       :description "Housing-linked population projections"})
 
