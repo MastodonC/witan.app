@@ -4,6 +4,7 @@
             [witan.app.forecast :as forecast]
             [witan.app.model :as model]
             [witan.app.user :as u]
+            [witan.app.util :as util]
             [clojure.tools.logging :as log]))
 
 (def london-boroughs
@@ -62,9 +63,8 @@
   (let [;; add users
         _ (log/info "Adding users...")
         invite-token1 (u/add-invite-token! "support+witan@mastodonc.com")
-        user1 (u/add-user! {:name "Mastodon 1" :username "support+witan@mastodonc.com" :password "secret" :invite-token invite-token1})
-        invite-token2 (u/add-invite-token! "support+witan2@mastodonc.com")
-        user2 (u/add-user! {:name "Mastodon 2" :username "support+witan2@mastodonc.com" :password "secret" :invite-token invite-token2})
+        user1-password (str (util/user-friendly-token) (util/user-friendly-token))
+        user1 (u/add-user! {:name "Mastodon 1" :username "support+witan@mastodonc.com" :password user1-password :invite-token invite-token1})
 
         ;; fixed data sources
         ;; Note: data is uploaded in S3 with given keys in both witan-test-data and witan-staging-data buckets
@@ -456,43 +456,4 @@
                                                         (data/->Data low-fert-principal-deaths-data)
                                                         (data/->Data low-fert-principal-sya-data)])))))
 
-        _ (log/info "Adding forecasts...")
-        f1 (forecast/add-forecast! {:name        "Housing-linked Model Camden"
-                                    :description "DCLG Housing-linked Model for the borough of Camden"
-                                    :owner       (:id user1)
-                                    :owner-name  (:name user1)
-                                    :model-id    (:model_id housing-linked-model)
-                                    :model-properties [{:name "borough" :value "Camden"}
-                                                       {:name "fertility-assumption" :value "High Fertility"}
-                                                       {:name "variant" :value "DCLG"}]})
-        f2 (forecast/add-forecast! {:name        "Housing-linked Model Islington"
-                                    :description "DCLG Housing-linked Model for the borough of Islington"
-                                    :owner       (:id user2)
-                                    :owner-name  (:name user2)
-                                    :model-id    (:model_id housing-linked-model)
-                                    :model-properties [{:name "borough" :value "Islington"}
-                                                       {:name "fertility-assumption" :value "Standard Fertility"}
-                                                       {:name "variant" :value "DCLG"}]})
-        f3 (forecast/add-forecast! {:name        "Housing-linked Model Bromley"
-                                    :description "CHS Housing-linked Model for the borough of Bromley"
-                                    :owner       (:id user1)
-                                    :owner-name  (:name user1)
-                                    :public?     true
-                                    :model-id    (:model_id housing-linked-model)
-                                    :model-properties [{:name "borough" :value "Bromley"}
-                                                       {:name "fertility-assumption" :value "Low Fertility"}
-                                                       {:name "variant" :value "Capped Household Size"}]})
-
-        f4 (forecast/add-forecast! {:name        "Trend-based Model Barnet"
-                                    :description "Trend-based Model for the borough of Barnet"
-                                    :owner       (:id user1)
-                                    :owner-name  (:name user1)
-                                    :public?     true
-                                    :model-id    (:model_id trend-based-model)
-                                    :model-properties [{:name "borough" :value "Barnet"}
-                                                       {:name "fertility-assumption" :value "Low Fertility"}]})
-        _ (log/info "Updating forecasts...")
-
-        f1_1 (forecast/update-forecast! {:forecast-id (:forecast_id f1)
-                                         :owner (:id user1)
-                                         :inputs {(:category development-category) development-data-for-camden }})]))
+        _ (log/info "Done")]))
