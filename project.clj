@@ -1,7 +1,7 @@
 (def slf4j-version "1.7.12")
 (def cider-nrepl-version "0.9.1")
 
-(defproject witan.app "0.1.2-SNAPSHOT"
+(defproject witan.app "0.1.2"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :min-lein-version "2.0.0"
@@ -78,4 +78,11 @@
                               :passphrase :env/mc_aws_passphrase}]
                  ["snapshots" {:url "s3p://mc-maven-repo/snapshots"
                                :username :env/mc_aws_username
-                               :passphrase :env/mc_aws_passphrase}]])
+                               :passphrase :env/mc_aws_passphrase}]]
+  :release-tasks [["change" "version"
+                   "leiningen.release/bump-version" "release"]
+                  ["vcs" "commit"]
+                  ["vcs" "tag" "release-v"]
+                  ["change" "version" "leiningen.release/bump-version"]
+                  ["vcs" "commit"]
+                  ["vcs" "push"]])
