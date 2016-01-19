@@ -7,6 +7,7 @@
    [clj-http.client :as client]
    [witan.app.config :as c]
    [witan.app.s3 :as s3]
+   [witan.app.user :as usr]
    [witan.system :as ws]
    [clojure.tools.logging :as log]
    [com.stuartsierra.component :as component]
@@ -56,7 +57,8 @@
 
 (deftest smoke-tests
   (testing "POST /api/login"
-    (let [{:keys [status body]} (client/post (app-url "/api/login") {:body (json/generate-string {:username "support+witan@mastodonc.com" :password "secret"}) :content-type :json})]
+    (let [_ (usr/change-password! "support+witan@mastodonc.com" "secret")
+          {:keys [status body]} (client/post (app-url "/api/login") {:body (json/generate-string {:username "support+witan@mastodonc.com" :password "secret"}) :content-type :json})]
       (is (== status 200))))
   (testing "authenticated calls"
     (let [login (client/post (app-url "/api/login") {:body (json/generate-string {:username "support+witan@mastodonc.com" :password "secret"})  :content-type :json})
@@ -76,6 +78,21 @@
           (testing "GET /api/models/:model-id"
             (let [{:keys [status body]} (client/get (app-url (str "/api/models/" (get model "model-id"))) {:headers (auth-header token)})]
               (is (== status 200))))))
+      (testing "POST /api/forecasts"
+        (let [{:keys [status body]} (client/get (app-url "/api/models") {:headers (auth-header token)})
+              model (some #(when (>= (.indexOf (get % "name") "Housing") 0) %) (json/parse-string body))
+              req-body (json/generate-string
+                        {:name "Test Forecast"
+                         :model-id (get model "model-id")
+                         :model-properties [{:name "borough" :value "Islington"}
+                                            {:name "fertility-assumption" :value "Standard Fertility"}
+                                            {:name "variant" :value "DCLG"}]
+                         :public? false})
+              {:keys [status body]} (client/post (app-url "/api/forecasts")
+                                                 {:headers (auth-header token)
+                                                  :content-type :json
+                                                  :body req-body})]
+          (is (== status 201))))
       (testing "GET /api/forecasts"
         (let [{:keys [status body]} (client/get (app-url "/api/forecasts") {:headers (auth-header token)})
               forecast (first (json/parse-string body))
