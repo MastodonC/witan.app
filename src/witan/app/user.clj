@@ -22,7 +22,7 @@
   (hayt/select :Users (hayt/where {:id id})))
 
 (defn find-invite-token [username invite-token]
-  (hayt/select :invite_tokens (hayt/where {:username username
+  (hayt/select :invite_tokens (hayt/where {:username (clojure.string/lower-case username)
                                            :invite_token invite-token})))
 
 (defn invited? [username invite-token]
@@ -31,7 +31,7 @@
 (defn create-invite-token
   [username invite-token]
   (hayt/insert :invite_tokens
-               (hayt/values :username username
+               (hayt/values :username (clojure.string/lower-case username)
                             :invite_token invite-token)))
 
 (defn create-user [user]
