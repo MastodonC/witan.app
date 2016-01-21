@@ -16,7 +16,7 @@
     (codecs/bytes->hex randomdata)))
 
 (defn find-user-by-username [username]
-  (hayt/select :Users (hayt/where {:username username})))
+  (hayt/select :Users (hayt/where {:username (clojure.string/lower-case username)})))
 
 (defn find-user [id]
   (hayt/select :Users (hayt/where {:id id})))
@@ -34,13 +34,13 @@
                (hayt/values :username (clojure.string/lower-case username)
                             :invite_token invite-token)))
 
-(defn create-user [user]
-  (let [hash (hs/encrypt (:password user))]
+(defn create-user [{:keys [password username name]}]
+  (let [hash (hs/encrypt password)]
     (hayt/insert :Users
                  (hayt/values :id (uuid/random)
-                              :username (:username user)
+                              :username (clojure.string/lower-case username)
                               :password_hash hash
-                              :name (:name user)))))
+                              :name name))))
 
 (defn update-password [id password]
   (let [hash (hs/encrypt password)]
