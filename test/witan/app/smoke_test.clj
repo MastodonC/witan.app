@@ -30,10 +30,10 @@
                          (let [conn-fn (or @test-conn (reset! test-conn (c/store-execute test-config)))]
                            (conn-fn body)))
                 ws/system (fn []
-                         (-> (component/system-map
+                            (-> (component/system-map
                                  :jetty-server (ws/->JettyServer witan.app.handler/app test-server-port)
                                  :repl-server (Object.))))
-                s3/bucket "witan-dummy-data"]
+                s3/bucket (-> test-config :s3 :bucket)]
     (load-db-schema! test-config)
     (load-test-data!)
     (try
@@ -80,19 +80,32 @@
               (is (== status 200))))))
       (testing "POST /api/forecasts"
         (let [{:keys [status body]} (client/get (app-url "/api/models") {:headers (auth-header token)})
-              model (some #(when (>= (.indexOf (get % "name") "Housing") 0) %) (json/parse-string body))
-              req-body (json/generate-string
-                        {:name "Test Forecast"
-                         :model-id (get model "model-id")
-                         :model-properties [{:name "borough" :value "Islington"}
-                                            {:name "fertility-assumption" :value "Standard Fertility"}
-                                            {:name "variant" :value "DCLG"}]
-                         :public? false})
-              {:keys [status body]} (client/post (app-url "/api/forecasts")
-                                                 {:headers (auth-header token)
-                                                  :content-type :json
-                                                  :body req-body})]
-          (is (== status 201))))
+              parsed-body (json/parse-string body)
+              housing-model (some #(when (>= (.indexOf (get % "name") "Housing") 0) %) parsed-body)
+              trend-model (some #(when (>= (.indexOf (get % "name") "Trend") 0) %) parsed-body)
+              housing-req-body (json/generate-string
+                                {:name "Housing Test Forecast"
+                                 :model-id (get housing-model "model-id")
+                                 :model-properties [{:name "borough" :value "Bexley"}
+                                                    {:name "fertility-assumption" :value "Standard Fertility"}
+                                                    {:name "variant" :value "DCLG"}]
+                                 :public? false})
+              housing-resp (client/post (app-url "/api/forecasts")
+                                        {:headers (auth-header token)
+                                         :content-type :json
+                                         :body housing-req-body})
+              trend-req-body (json/generate-string
+                              {:name "Trend Test Forecast"
+                               :model-id (get trend-model "model-id")
+                               :model-properties [{:name "borough" :value "Bexley"}
+                                                  {:name "fertility-assumption" :value "High Fertility"}]
+                               :public? false})
+              trend-resp (client/post (app-url "/api/forecasts")
+                                      {:headers (auth-header token)
+                                       :content-type :json
+                                       :body trend-req-body})]
+          (is (== (:status housing-resp) 201))
+          (is (== (:status trend-resp) 201))))
       (testing "GET /api/forecasts"
         (let [{:keys [status body]} (client/get (app-url "/api/forecasts") {:headers (auth-header token)})
               forecast (first (json/parse-string body))
@@ -119,10 +132,37 @@
                                                                   {:name "public?" :content "true"}]})
                   data-id (get (json/parse-string body) "data-id")]
               (is (== status 201))
-              (comment (testing "POST /api/forecasts/:id/versions"
-                         (let [{:keys [status body]} (client/post (app-url (str "/api/forecasts/" forecast-id "/versions"))
-                                                                  {:headers (auth-header token)
-                                                                   :body (json/generate-string {:inputs {:development-data {:data-id data-id}}})
-                                                                   :content-type :json})])))))))
+              (testing "POST /api/forecasts/:id/versions"
+                (let [{:keys [body]} (client/get (app-url "/api/forecasts") {:headers (auth-header token)})
+                      parsed-body (json/parse-string body)
+                      housing-forecast (some #(when (>= (.indexOf (get % "name") "Housing") 0) %) parsed-body)
+                      trend-forecast (some #(when (>= (.indexOf (get % "name") "Trend") 0) %) parsed-body)
+                      housing-resp (client/post (app-url (str "/api/forecasts/" (get housing-forecast "forecast-id") "/versions"))
+                                                {:headers (auth-header token)
+                                                 :body (json/generate-string {:inputs {:development-data {:data-id data-id}}})
+                                                 :content-type :json})
+                      trend-resp (client/post (app-url (str "/api/forecasts/" (get trend-forecast "forecast-id") "/versions"))
+                                              {:headers (auth-header token)
+                                               :body (json/generate-string {:inputs {:development-data {:data-id data-id}}})
+                                               :content-type :json})]
+                  (is (== (:status housing-resp) 201))
+                  (is (== (:status trend-resp) 201))
+                  ;; checking models haven't errored
+                  (loop []
+                    (Thread/sleep 4000)
+                    (let [{:keys [body]}
+                          (client/get (app-url (str "/api/forecasts/" (get housing-forecast "forecast-id"))) {:headers (auth-header token)})
+                          forecast (first (json/parse-string body keyword))]
+                      (if (:in-progress? forecast)
+                        (recur)
+                        (is (nil? (:error forecast))))))
+                  (loop []
+                    (Thread/sleep 4000)
+                    (let [{:keys [body]}
+                          (client/get (app-url (str "/api/forecasts/" (get trend-forecast "forecast-id"))) {:headers (auth-header token)})
+                          forecast (first (json/parse-string body keyword))]
+                      (if (:in-progress? forecast)
+                        (recur)
+                        (is (nil? (:error forecast))))))))))))
       (testing "GET /api/data/:category"
         (let [{:keys [status body]} (client/get (app-url "/api/data/development-data") {:headers (auth-header token)})])))))
