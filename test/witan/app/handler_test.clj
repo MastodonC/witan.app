@@ -67,6 +67,7 @@
                                       :category "Base population data",
                                       :name "base population Camden",
                                       :publisher #uuid "bd163a4b-fecc-4f8d-a642-c9ee951d6f77",
+                                      :publisher_name "Dummy User 1"
                                       :version 1,
                                       :public false
                                       :file_name "base-population.csv",
@@ -116,6 +117,7 @@
                                     :category "Base population data",
                                     :name "base population Camden",
                                     :publisher #uuid "bd163a4b-fecc-4f8d-a642-c9ee951d6f77",
+                                    :publisher_name "Dummy User 1"
                                     :version 1,
                                     :public false
                                     :file_name "base-population.csv",
@@ -127,6 +129,7 @@
      :description "Description of my model",
      :model_id #uuid "d92e4e09-ede5-48a1-95f4-c3b15b0ba399",
      :owner #uuid "c9d5bfa6-9517-4d28-8c86-7232c8d92352",
+     :owner_name "Dummy Owner 1",
      :properties [],
      :version 0,
      :version_id #uuid "5012d65c-20fe-4fdf-b3cc-2a1e5760f52a"
@@ -136,12 +139,13 @@
      :description "Description of my model",
      :model_id #uuid "c1197cb3-54c3-4b59-ae20-384c64b95095",
      :owner #uuid "f6d452f1-3978-4e8a-ab38-58fab1949c7c",
+     :owner_name "Dummy Owner 2",
      :properties [],
      :version 0,
      :version_id #uuid "653c149a-86d8-4a3f-a7a8-d898c070177e"}))
 
 (defn get-dummy-data []
-  '({:category "Base population data", :created #inst "2015-10-28T18:27:33.968-00:00", :data_id #uuid "40ff789b-68dd-420d-81e7-2b19b69fd399", :file_name "base-population.csv", :name "base population Camden", :publisher #uuid "bd163a4b-fecc-4f8d-a642-c9ee951d6f77", :s3_key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd", :version 1 :public false}))
+  '({:category "Base population data", :created #inst "2015-10-28T18:27:33.968-00:00", :data_id #uuid "40ff789b-68dd-420d-81e7-2b19b69fd399", :file_name "base-population.csv", :name "base population Camden", :publisher #uuid "bd163a4b-fecc-4f8d-a642-c9ee951d6f77", :publisher_name "Dummy User 1", :s3_key #uuid "56f6ee27-8357-4108-a450-edfa4ad3c7cd", :version 1 :public false}))
 
 (defn auth-header [token] {"Authorization" (str "Token " token)})
 
