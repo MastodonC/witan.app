@@ -8,7 +8,8 @@
             [witan.app.config :as c]
             [witan.app.schema :as ws]
             [witan.app.util :as util]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [clojure.string :as str]))
 
 (defn random-token
   []
@@ -16,13 +17,13 @@
     (codecs/bytes->hex randomdata)))
 
 (defn find-user-by-username [username]
-  (hayt/select :Users (hayt/where {:username (clojure.string/lower-case username)})))
+  (hayt/select :Users (hayt/where {:username (str/lower-case username)})))
 
 (defn find-user [id]
   (hayt/select :Users (hayt/where {:id id})))
 
 (defn find-invite-token [username invite-token]
-  (hayt/select :invite_tokens (hayt/where {:username (clojure.string/lower-case username)
+  (hayt/select :invite_tokens (hayt/where {:username (str/lower-case username)
                                            :invite_token invite-token})))
 
 (defn invited? [username invite-token]
@@ -31,14 +32,14 @@
 (defn create-invite-token
   [username invite-token]
   (hayt/insert :invite_tokens
-               (hayt/values :username (clojure.string/lower-case username)
+               (hayt/values :username (str/lower-case username)
                             :invite_token invite-token)))
 
 (defn create-user [{:keys [password username name]}]
   (let [hash (hs/encrypt password)]
     (hayt/insert :Users
                  (hayt/values :id (uuid/random)
-                              :username (clojure.string/lower-case username)
+                              :username (str/lower-case username)
                               :password_hash hash
                               :name name))))
 
@@ -57,14 +58,15 @@
 
 (defn add-invite-token!
   [username]
-  (let [invite-token (util/user-friendly-token)]
-    (c/exec (create-invite-token username invite-token))
-    invite-token))
+  (let [invite-token (util/user-friendly-token)
+        clean-username (-> username str/trim str/lower-case)]
+    (c/exec (create-invite-token clean-username invite-token))
+    [clean-username invite-token]))
 
 (defn add-user! [raw-user]
   (let [{:keys [username] :as user} (-> raw-user
-                                        (update :username clojure.string/trim)
-                                        (update :name clojure.string/trim))]
+                                        (update :username str/trim)
+                                        (update :name str/trim))]
     (s/validate ws/SignUp user)
     (let [existing-users (retrieve-user-by-username username)]
       (when (empty? existing-users)
