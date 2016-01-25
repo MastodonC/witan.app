@@ -62,9 +62,9 @@
   []
   (let [;; add users
         _ (log/info "Adding users...")
-        invite-token1 (u/add-invite-token! "support+witan@mastodonc.com")
+        [email invite-token] (u/add-invite-token! "support+witan@mastodonc.com")
         user1-password (str (util/user-friendly-token) (util/user-friendly-token))
-        user1 (u/add-user! {:name "Mastodon 1" :username "support+witan@mastodonc.com" :password user1-password :invite-token invite-token1})
+        user1 (u/add-user! {:name "Mastodon 1" :username email :password user1-password :invite-token invite-token})
 
         ;; fixed data sources
         ;; Note: data is uploaded in S3 with given keys in both witan-test-data and witan-staging-data buckets
