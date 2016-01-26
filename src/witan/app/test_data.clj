@@ -94,13 +94,6 @@
                                         :publisher (:id user1)
                                         :file-name "dwellings.csv"
                                         :s3-key #uuid "cb28732e-3d5b-43eb-945f-d9471c983161"})
-        development-data-for-camden (data/add-data! {:category (:category development-category)
-                                                     :name "Net New Dwellings - Camden"
-                                                     :publisher (:id user1)
-                                                     :file-name "new-new-dwellings-camden.csv"
-                                                     :public? false
-                                                     :s3-key #uuid "d9bd8135-d330-43d5-a4f3-fc2a096b2774"})
-
         ;;;;
 
         high-fert-high-births-data (data/add-data! {:category "high-fert-high-births-data"
