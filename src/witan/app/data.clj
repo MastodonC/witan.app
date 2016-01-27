@@ -9,7 +9,8 @@
             [witan.app.schema :as ws]
             [witan.validation :as validation]
             [witan.app.util :as util]
-            [witan.app.s3 :as s3])
+            [witan.app.s3 :as s3]
+            [witan.app.user :as usr])
   (:use [liberator.core :only [defresource]]))
 
 (defn ->Data
@@ -19,15 +20,18 @@
             file_name
             s3_key
             created
-            public] :as data} url?]
+            public
+            publisher_name] :as data} url?]
    (let [new-data (-> data
                       (dissoc :data_id
                               :file_name
                               :s3_key
                               :public
-                              :created)
+                              :created
+                              :publisher_name)
                       (assoc :data-id data_id
                              :file-name file_name
+                             :publisher-name publisher_name
                              :s3-key s3_key
                              :public? public
                              :created (util/java-Date-to-ISO-Date-Time created)))]
@@ -88,19 +92,21 @@
     (first (c/exec (find-data-by-data-id id)))))
 
 (defn data-to-db
-  [{:keys [data-id category name publisher version file-name s3-key public?] :as data}]
+  [{:keys [data-id file-name s3-key public? publisher-name] :as data}]
   (-> data
       (dissoc :data-id
               :file-name
               :s3-key
-              :public?)
+              :public?
+              :publisher-name)
       (assoc :data_id data-id
              :file_name file-name
              :s3_key s3-key
-             :public public?)))
+             :public public?
+             :publisher_name publisher-name)))
 
 (defn create-data
-  [{:keys [data-id category name publisher version file-name s3-key public?]} data-table]
+  [{:keys [data-id category name publisher publisher-name version file-name s3-key public?]} data-table]
   (let [creation-time (tf/unparse (tf/formatters :date-time) (t/now))]
     (hayt/insert data-table (hayt/values :data_id data-id
                                          :category category
@@ -110,7 +116,8 @@
                                          :file_name file-name
                                          :public public?
                                          :s3_key s3-key
-                                         :created creation-time))))
+                                         :created creation-time
+                                         :publisher_name publisher-name))))
 
 (defn add-data!
   "add data version"
@@ -118,12 +125,14 @@
     :or {data-id (uuid/random)
          public? false}}] ;; always default public to false.
   (let [current-version (get-current-version-name name)
+        user-name (:name (usr/retrieve-user publisher))
         version (if current-version (inc current-version) 1)]
     (run! #(c/exec (create-data {:data-id data-id
                                  :category category
                                  :name name
                                  :file-name file-name
                                  :publisher publisher
+                                 :publisher-name user-name
                                  :version version
                                  :public? public?
                                  :s3-key s3-key} %)) '(:data_by_data_id :data_by_category :data_by_s3_key))

@@ -9,6 +9,7 @@
             [witan.app.util :as util]
             [witan.app.schema :as ws]
             [witan.app.data :as data]
+            [witan.app.user :as usr]
             [witan.validation :as validation]
             [schema.core :as s]
             [clojure.tools.logging :as log]
@@ -25,7 +26,8 @@
            input_data
            input_data_defaults
            output_data
-           fixed_input_data] :as model}]
+           fixed_input_data
+           owner_name] :as model}]
   (-> model
       (dissoc :version_id
               :model_id
@@ -33,9 +35,11 @@
               :input_data
               :input_data_defaults
               :output_data
-              :fixed_input_data)
+              :fixed_input_data
+              :owner_name)
       (assoc :version-id version_id
              :model-id model_id
+             :owner-name owner_name
              :description (markdown/md-to-html-string description)
              :created (util/java-Date-to-ISO-Date-Time created)
              :input-data (->> input_data
@@ -58,7 +62,7 @@
   (hayt/insert :model_names (hayt/values :name name :model_id model-id)))
 
 (defn create-model
-  [{:keys [name description owner model-id version version-id properties input-data output-data fixed-input-data]
+  [{:keys [name description owner owner-name model-id version version-id properties input-data output-data fixed-input-data]
     :or {model-id (uuid/random)
          version 1
          version-id (uuid/random)}}]
@@ -68,7 +72,8 @@
                           :name  name
                           :description description
                           :created (tf/unparse (tf/formatters :date-time) (t/now))
-                          :owner owner ;; TODO check owner exists?
+                          :owner owner
+                          :owner_name owner-name
                           :model_id model-id
                           :version version
                           :properties (map (fn [p] (hayt/user-type p)) properties)
@@ -106,10 +111,13 @@
 
 
 (defn add-model!
-  [{:keys [name] :as model}]
+  [{:keys [name owner] :as model}]
   (when (empty? (c/exec (find-model-by-name name)))
-    (let [model-id (uuid/random)]
-      (c/exec (create-model (assoc model :model-id model-id)))
+    (let [model-id (uuid/random)
+          user-name (:name (usr/retrieve-user owner))]
+      (c/exec (create-model (assoc model
+                                   :model-id model-id
+                                   :owner-name user-name)))
       (c/exec (create-model-name name model-id))
       (get-model-by-model-id model-id))))
 
