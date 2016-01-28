@@ -10,7 +10,7 @@ deployment:
       - lein clean
       - lein uberjar
       - ./prepare-aws-creds
-      - docker build --build-arg ENVIRONMENT=production -t mastodonc/witan.app .
+      - docker build -t mastodonc/witan.app .
       - docker tag -f mastodonc/witan.app mastodonc/witan.app:latest
       - docker tag -f mastodonc/witan.app mastodonc/witan.app:git-$(echo $CIRCLE_SHA1 | cut -c1-12)
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
@@ -22,9 +22,9 @@ deployment:
       - lein clean
       - lein uberjar
       - ./prepare-aws-creds
-      - docker build --build-arg ENVIRONMENT=staging -t mastodonc/witan.app.staging .
-      - docker tag -f mastodonc/witan.app.staging mastodonc/witan.app.staging:latest
-      - docker tag -f mastodonc/witan.app.staging mastodonc/witan.app.staging:git-$(echo $CIRCLE_SHA1 | cut -c1-12)
+      - docker build -t mastodonc/witan.app .
+      - docker tag -f mastodonc/witan.app mastodonc/witan.app:latest
+      - docker tag -f mastodonc/witan.app mastodonc/witan.app:git-$(echo $CIRCLE_SHA1 | cut -c1-12)
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - docker push mastodonc/witan.app.staging
+      - docker push mastodonc/witan.app
       - ./deploy.sh $DEPLOY_STAGING_IP
