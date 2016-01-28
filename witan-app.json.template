@@ -4,6 +4,9 @@
     "type": "DOCKER",
     "docker": {
       "image": "mastodonc/witan.app:@@TAG@@",
+      "parameters": [
+         {"key": "env", "value": "ENVIRONMENT=@@ENVIRONMENT@@"}
+      ],
       "network": "BRIDGE",
       "portMappings": [
           {
