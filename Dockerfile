@@ -1,7 +1,9 @@
 FROM mastodonc/basejava
 
+ARG ENVIRONMENT
+
 COPY target/witan-app.jar /root/witan-app.jar
-COPY resources/staging.witan-app.edn /root/.witan-app.edn
+COPY resources/$ENVIRONMENT.witan-app.edn /root/.witan-app.edn
 RUN mkdir /root/.aws
 COPY resources/aws-config /root/.aws/config
 COPY resources/aws-credentials /root/.aws/credentials
