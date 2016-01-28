@@ -1,4 +1,0 @@
-{:cassandra-session {:host "cassandra-dcos-node.cassandra.dcos.mesos"
-                     :keyspace "witan"
-                     :replication 3}
- :s3 {:bucket "witan-staging-data"}}
