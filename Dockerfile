@@ -10,4 +10,4 @@ ENV PORT 3000
 EXPOSE 3000
 EXPOSE 5001
 
-CMD ["java", "-jar", "/root/witan-app.jar"]
+CMD ["run_witan_app.sh"]
