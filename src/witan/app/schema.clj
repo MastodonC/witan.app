@@ -16,15 +16,21 @@
   (s/pred
    (fn [s] (re-matches #".*@.*" s))))
 
+(def Username
+  {(s/required-key :username) (s/both (length-greater 5) (is-an-email))})
+
 (def LoginDetails
   "validation for /login"
-  {(s/required-key :username) (s/both (length-greater 5) (is-an-email))
-   (s/required-key :password) (length-greater 5)})
+  (merge Username
+         {(s/required-key :password) (length-greater 5)}))
+
+(def InviteToken
+  {(s/required-key :invite-token) s/Str})
 
 (def SignUp
   (merge LoginDetails
-         {(s/required-key :name) s/Str
-          (s/required-key :invite-token) s/Str}))
+         InviteToken
+         {(s/required-key :name) s/Str}))
 
 (def LoginReturn
   (s/either {(s/required-key :token) s/Str
