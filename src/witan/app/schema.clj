@@ -64,17 +64,16 @@
 
 (def DataItem
   "A data item"
-  {(s/required-key :data-id)        IdType
-   (s/required-key :name)           s/Str
-   (s/required-key :category)       s/Str
-   (s/required-key :publisher)      IdType ;; a user or org
-   (s/required-key :publisher-name) s/Str
-   (s/required-key :public?)        s/Bool
-   (s/required-key :created)        DateTimeType
-   (s/optional-key :version)        s/Int
-   (s/optional-key :file-name)      s/Str
-   (s/optional-key :s3-key)         IdType
-   (s/optional-key :s3-url)         s/Str})
+  {(s/required-key :data-id)   IdType
+   (s/required-key :name)      s/Str
+   (s/required-key :category)  s/Str
+   (s/required-key :publisher) IdType ;; a user or org
+   (s/required-key :public?)   s/Bool
+   (s/required-key :created)   DateTimeType
+   (s/optional-key :version)   s/Int
+   (s/optional-key :file-name) s/Str
+   (s/optional-key :s3-key)    IdType
+   (s/optional-key :s3-url)    s/Str})
 
 (def ModelInputCategory
   "Inputs into the model"
@@ -89,7 +88,6 @@
   {(s/required-key :model-id)    IdType
    (s/required-key :name)        s/Str
    (s/required-key :owner)       IdType
-   (s/required-key :owner-name)  s/Str
    (s/required-key :version-id)  IdType
    (s/required-key :version)     s/Int
    (s/required-key :created)     DateTimeType

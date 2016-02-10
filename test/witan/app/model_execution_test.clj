@@ -31,7 +31,6 @@
                                 :category (:category input-category-a)
                                 :name "boo"
                                 :publisher #uuid "03b1039b-bd0e-4f24-a503-44b5c3f81130"
-                                :publisher_name "Dummy User 2"
                                 :version 1
                                 :file_name "boo.csv"
                                 :s3_key #uuid "16f885ee-f793-431e-b615-a227119f4a60"
@@ -43,7 +42,6 @@
                                :file_name "base-population.csv"
                                :name "base population Ealing"
                                :publisher #uuid "f132d30c-adf9-4385-8f26-baa4525a4bf0"
-                               :publisher_name "Dummy User 2"
                                :version 1}}
    :model_id #uuid "8dc43736-2e15-4c12-8f19-e58e833981e2"
    :in_progress true
@@ -65,12 +63,10 @@
                                                  :file_name "Long+Pop.csv"
                                                  :name "London base population"
                                                  :publisher #uuid "f132d30c-adf9-4385-8f26-baa4525a4bf0"
-                                                 :publisher_name "Dummy User 2"
                                                  :version 1}}
    :fixed_input_data {"Low Trend Data" {:category (:category input-category-c)
                                         :name "Low Trend Data GLA"
                                         :publisher #uuid "62d61b07-b658-430f-90b4-2e763e1df0ff"
-                                        :publisher-name "Dummy User 3"
                                         :version 1
                                         :data-id low-trend-data-id
                                         :file-name "low-trend.csv"
