@@ -34,10 +34,12 @@
                  [amazonica "0.3.35" :exclusions [com.amazonaws/aws-java-sdk]]
                  [clojure-csv/clojure-csv "2.0.1"]
                  [witan.models "0.1.6"]
+                 [clj-tuple "0.2.2"]
                  [clj-http "2.0.0"]
                  [slugger "1.0.1"]
                  [com.stuartsierra/component "0.3.0"]
                  [markdown-clj "0.9.82"]
+                 [clj-kafka "0.3.4" :exclusions [org.slf4j/slf4j-log4j12]]
 
                  ;; do this here to avoid clashes
                  ;; with local profiles.clj. We need

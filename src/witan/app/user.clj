@@ -8,6 +8,7 @@
             [witan.app.config :as c]
             [witan.app.schema :as ws]
             [witan.app.util :as util]
+            [witan.app.mq :as mq]
             [schema.core :as s]
             [clojure.string :as str]))
 
@@ -61,17 +62,20 @@
   (let [invite-token (util/user-friendly-token)
         clean-username (-> username str/trim str/lower-case)]
     (c/exec (create-invite-token clean-username invite-token))
+    (mq/send-command! :user-invited {:username clean-username :invite-token invite-token})
     [clean-username invite-token]))
 
 (defn add-user! [raw-user]
-  (let [{:keys [username] :as user} (-> raw-user
-                                        (update :username str/trim)
-                                        (update :name str/trim))]
+  (let [{:keys [username name] :as user} (-> raw-user
+                                             (update :username str/trim)
+                                             (update :name str/trim))]
     (s/validate ws/SignUp user)
     (let [existing-users (retrieve-user-by-username username)]
       (when (empty? existing-users)
         (c/exec (create-user user))
-        (retrieve-user-by-username username)))))
+        (let [new-user (retrieve-user-by-username username)]
+          (mq/send-command! :user-created (select-keys new-user [:name :username :id]))
+          new-user)))))
 
 (defn password-ok? [existing-user password]
   (hs/check password (:password_hash existing-user)))

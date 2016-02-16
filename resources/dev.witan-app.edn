@@ -1,4 +1,6 @@
 {:cassandra-session {:host "localhost"
                      :keyspace "witan"
                      :replication 1}
- :s3 {:bucket "witan-test-data"}}
+ :s3 {:bucket "witan-test-data"}
+ :kafka {:host "localhost"
+         :port 2181}}
