@@ -441,6 +441,17 @@
            :input_data
            (fn [model-categories] (every? #(some #{(name %)} model-categories) categories))))
 
+(defn delete-forecast!
+  "Deletes *all* versions of a forecast"
+  [forecast-id]
+  ;; - delete from forecast_names (name, owner)
+  ;; - delete from forecast_headers (forecast_id)
+  ;; - delete from forecasts (forecast_id, version)
+  (let [{:keys [name owner version]} (first (c/exec (find-forecast-by-id forecast-id)))]
+    (c/exec (hayt/delete :forecast_names (hayt/where {:name name :owner owner})))
+    (c/exec (hayt/delete :forecast_headers (hayt/where {:forecast_id forecast-id})))
+    (run! #(c/exec (delete-forecast-by-version forecast-id %)) (range 1 (inc version)))))
+
 ;;;;;;
 
 ;;;;;; NOTES:
