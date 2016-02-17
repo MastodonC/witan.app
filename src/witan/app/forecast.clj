@@ -450,7 +450,7 @@
   (let [{:keys [name owner version]} (first (c/exec (find-forecast-by-id forecast-id)))]
     (c/exec (hayt/delete :forecast_names (hayt/where {:name name :owner owner})))
     (c/exec (hayt/delete :forecast_headers (hayt/where {:forecast_id forecast-id})))
-    (run! #(c/exec (delete-forecast-by-version forecast-id %)) (range 1 (inc version)))))
+    (run! #(c/exec (delete-forecast-by-version forecast-id %)) (range (if (zero? version) 0 1) (inc version)))))
 
 ;;;;;;
 
