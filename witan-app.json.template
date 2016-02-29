@@ -5,7 +5,9 @@
     "docker": {
       "image": "mastodonc/witan.app:@@TAG@@",
       "parameters": [
-         {"key": "env", "value": "ENVIRONMENT=@@ENVIRONMENT@@"}
+         {"key": "env", "value": "ENVIRONMENT=@@ENVIRONMENT@@"},
+         {"key": "log-driver", "value": "gelf"},
+         {"key": "log-opt", "value": "gelf-address=udp://52.58.38.169:12201"}
       ],
       "network": "BRIDGE",
       "portMappings": [
