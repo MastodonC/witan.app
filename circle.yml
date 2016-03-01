@@ -16,7 +16,7 @@ deployment:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker push mastodonc/witan.app
       - ./deploy.sh $DEPLOY_IP production
-  staging_and_new_production:
+  staging:
     branch: master
     commands:
       - lein clean
@@ -28,4 +28,3 @@ deployment:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker push mastodonc/witan.app
       - ./deploy.sh $DEPLOY_STAGING_IP staging
-      - ./deploy.sh $DEPLOY_NEW_PRODUCTION_IP new-production
