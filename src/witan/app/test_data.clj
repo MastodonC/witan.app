@@ -14,6 +14,7 @@
    "Brent"
    "Bromley"
    "Camden"
+   "City of London"
    "Croydon"
    "Ealing"
    "Enfield"
