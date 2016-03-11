@@ -81,6 +81,17 @@
    (s/optional-key :s3-key)    IdType
    (s/optional-key :s3-url)    s/Str})
 
+(def NewDataItem
+  "A new data item"
+  {(s/required-key :data-id)   IdType
+   (s/required-key :name)      s/Str
+   (s/required-key :category)  s/Str
+   (s/required-key :publisher) IdType ;; a user or org
+   (s/required-key :public?)   s/Bool
+   (s/required-key :version)   s/Int
+   (s/required-key :file-name) s/Str
+   (s/required-key :s3-key)    IdType})
+
 (def ModelInputCategory
   "Inputs into the model"
   s/Str)
