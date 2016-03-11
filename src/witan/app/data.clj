@@ -118,15 +118,17 @@
     :or {data-id (uuid/random)
          public? false}}] ;; always default public to false.
   (let [current-version (get-current-version-name name)
-        version (if current-version (inc current-version) 1)]
-    (run! #(c/exec (create-data {:data-id data-id
-                                 :category category
-                                 :name name
-                                 :file-name file-name
-                                 :publisher publisher
-                                 :version version
-                                 :public? public?
-                                 :s3-key s3-key} %)) '(:data_by_data_id :data_by_category :data_by_s3_key))
+        version (if current-version (inc current-version) 1)
+        data {:data-id data-id
+              :category category
+              :name name
+              :file-name file-name
+              :publisher publisher
+              :version version
+              :public? public?
+              :s3-key s3-key}]
+    (s/validate ws/NewDataItem data)
+    (run! #(c/exec (create-data data %)) '(:data_by_data_id :data_by_category :data_by_s3_key))
     (c/exec (update-version-number-name name version))
     (get-data-by-data-id data-id)))
 
