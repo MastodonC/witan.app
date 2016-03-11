@@ -127,7 +127,7 @@
               :version version
               :public? public?
               :s3-key s3-key}]
-    (s/validate NewDataItem data)
+    (s/validate ws/NewDataItem data)
     (run! #(c/exec (create-data data %)) '(:data_by_data_id :data_by_category :data_by_s3_key))
     (c/exec (update-version-number-name name version))
     (get-data-by-data-id data-id)))
