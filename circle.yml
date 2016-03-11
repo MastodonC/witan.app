@@ -9,7 +9,6 @@ deployment:
     commands:
       - lein clean
       - lein uberjar
-      - ./prepare-aws-creds
       - docker build -t mastodonc/witan.app .
       - docker tag -f mastodonc/witan.app mastodonc/witan.app:latest
       - docker tag -f mastodonc/witan.app mastodonc/witan.app:git-$(echo $CIRCLE_SHA1 | cut -c1-12)
@@ -21,7 +20,6 @@ deployment:
     commands:
       - lein clean
       - lein uberjar
-      - ./prepare-aws-creds
       - docker build -t mastodonc/witan.app .
       - docker tag -f mastodonc/witan.app mastodonc/witan.app:latest
       - docker tag -f mastodonc/witan.app mastodonc/witan.app:git-$(echo $CIRCLE_SHA1 | cut -c1-12)
