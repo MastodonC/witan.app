@@ -119,16 +119,19 @@
          public? false}}] ;; always default public to false.
   (let [current-version (get-current-version-name name)
         version (if current-version (inc current-version) 1)]
-    (run! #(c/exec (create-data {:data-id data-id
-                                 :category category
-                                 :name name
-                                 :file-name file-name
-                                 :publisher publisher
-                                 :version version
-                                 :public? public?
-                                 :s3-key s3-key} %)) '(:data_by_data_id :data_by_category :data_by_s3_key))
-    (c/exec (update-version-number-name name version))
-    (get-data-by-data-id data-id)))
+    (if s3-key
+      (do
+        (run! #(c/exec (create-data {:data-id data-id
+                                     :category category
+                                     :name name
+                                     :file-name file-name
+                                     :publisher publisher
+                                     :version version
+                                     :public? public?
+                                     :s3-key s3-key} %)) '(:data_by_data_id :data_by_category :data_by_s3_key))
+        (c/exec (update-version-number-name name version))
+        (get-data-by-data-id data-id))
+      (throw (Exception. "s3-key was nil")))))
 
 (defresource search [{:keys [category groups]}]
   util/json-resource
