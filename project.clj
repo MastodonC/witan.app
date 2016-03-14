@@ -33,7 +33,7 @@
                  [com.amazonaws/aws-java-sdk "1.10.27"]
                  [amazonica "0.3.35" :exclusions [com.amazonaws/aws-java-sdk]]
                  [clojure-csv/clojure-csv "2.0.1"]
-                 [witan.models "0.1.8"]
+                 [witan.models "0.1.9"]
                  [clj-tuple "0.2.2"]
                  [clj-http "2.0.0"]
                  [slugger "1.0.1"]
