@@ -12,15 +12,16 @@
   [username]
   (let [user-str (str \[ username \])]
     (if (not-empty (usr/retrieve-user-by-username username))
-      (let [token (password-reset-token)]
+      ;; use an old token if we find one
+      (let [{:keys [password_reset_token]} (first (exec (hayt/select :password_reset_tokens (hayt/where {:username username}))))
+            token (or password_reset_token (password-reset-token))]
         (log/debug "Generating a password reset email for" user-str)
         (async/go
           (try
             (if-let [{:keys [message]} (send-password-reset! username token)]
               (do
-                (exec (hayt/insert :password_reset_tokens
-                                   (hayt/values :username username
-                                                :password_reset_token token)
+                (exec (hayt/insert :password_reset_tokens (hayt/values :username username
+                                                                       :password_reset_token token)
                                    (hayt/using :ttl 86400))) ;; 86400 == one day
                 (log/info "Reset password email was sent to" user-str))
               (throw (Exception. "send-password-reset! failed to send")))

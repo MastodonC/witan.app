@@ -1,12 +1,19 @@
 (ns witan.app.email
-  (:require [amazonica.aws.simpleemail :as ses]))
+  (:require [amazonica.aws.simpleemail :as ses]
+            [clojure.java.io :as io]
+            [clostache.parser :as parser]))
 
 (defn send-password-reset!
   [username token]
-  (let [url (str "http://witan-alpha.mastodonc.com/#/password-reset/" token)]
+  (let [url (str "witan-alpha.mastodonc.com/#/password-reset/" token)
+        ctx {:link_to_reset_password url}
+        render #(-> (str "email-templates/reset-your-password" %)
+                    (io/resource)
+                    (slurp)
+                    (parser/render ctx))]
     (ses/send-email {:endpoint "eu-west-1"}
                     {:destination {:to-addresses [username]}
                      :source "witan@mastodonc.com"
                      :message {:subject "Reset your password for Witan"
-                               :body {:html (str "<a href=\"" url "\">" url "</a>")
-                                      :text url}}})))
+                               :body {:html (render ".html")
+                                      :text (render ".txt")}}})))
