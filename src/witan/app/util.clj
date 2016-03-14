@@ -47,6 +47,15 @@
 (defmethod to-uuid java.lang.String [id] (java.util.UUID/fromString id))
 (defmethod to-uuid :default [id] id)
 
+(defn random-alphanumeric-char
+  []
+  (-> [(range 48 57)
+       (range 65 90)
+       (range 97 122)]
+      rand-nth
+      rand-nth
+      char))
+
 (defn user-friendly-token
   "small function to easily generate user-friendly tokens"
   []
@@ -54,6 +63,11 @@
         vowels #{\a \e \i \o \u \y}
         consonants (clojure.set/difference alphabet vowels)]
     (str (clojure.string/join (repeatedly 3 #(str (first (shuffle consonants)) (first (shuffle vowels)) ))) (rand-nth (range 1 999)))))
+
+(defn password-reset-token
+  "small function to easily generate user-friendly tokens"
+  []
+  (apply str (repeatedly 64 random-alphanumeric-char)))
 
 ;;;;;;;;;;;;;;;;
 

@@ -19,13 +19,21 @@
 (def Username
   {(s/required-key :username) (s/both (length-greater 5) (is-an-email))})
 
+(def Password
+  {(s/required-key :password) (length-greater 5)})
+
 (def LoginDetails
   "validation for /login"
   (merge Username
-         {(s/required-key :password) (length-greater 5)}))
+         Password))
 
 (def InviteToken
   {(s/required-key :invite-token) s/Str})
+
+(def PasswordReset
+  (merge Username
+         Password
+         {(s/required-key :password-reset-token) s/Str}))
 
 (def SignUp
   (merge LoginDetails

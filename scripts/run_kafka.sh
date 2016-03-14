@@ -8,3 +8,4 @@ echo "Waiting 7s..."
 sleep 7s
 docker run --net=host --rm ches/kafka kafka-topics.sh --create --topic test --replication-factor 1 --partitions 1 --zookeeper localhost
 docker run --net=host --rm ches/kafka kafka-topics.sh --create --topic command --replication-factor 1 --partitions 1 --zookeeper localhost
+docker run --net=host --rm ches/kafka kafka-topics.sh --create --topic event --replication-factor 1 --partitions 1 --zookeeper localhost
