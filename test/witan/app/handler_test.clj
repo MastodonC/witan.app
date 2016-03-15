@@ -147,7 +147,7 @@
 
 (defn logged-in-user-token []
   (with-redefs [u/user-valid? (fn [username password] {:id user-id})]
-    (let [[_ body _] (post* app "/api/login" {:body (json {"username" "test@test.com" "password" "secret"})})]
+    (let [[_ body _] (post* app "/api/login" {:body (json {"username" "test@test.com" "password" "secret123"})})]
       (:token body))))
 
 (deftest test-app
@@ -160,7 +160,7 @@
   (testing "/api/login"
     (testing "login success"
       (with-redefs [u/user-valid? (fn [username password] {:id user-id})]
-        (let [[status body _] (post* app "/api/login" {:body (json {"username" "support@mastodonc.com" "password" "secret"})})]
+        (let [[status body _] (post* app "/api/login" {:body (json {"username" "support@mastodonc.com" "password" "secret123"})})]
           (is (= status 200))
           (is (contains? body :token))
           (is (contains? body :id)))))
