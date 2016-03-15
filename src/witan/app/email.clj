@@ -5,7 +5,7 @@
 
 (defn send-password-reset!
   [username token]
-  (let [url (str "witan-alpha.mastodonc.com/#/password-reset/" token)
+  (let [url (str "witan-alpha.mastodonc.com/#/password-reset/" token "/" username)
         ctx {:link_to_reset_password url}
         render #(-> (str "email-templates/reset-your-password" %)
                     (io/resource)
