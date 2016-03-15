@@ -20,7 +20,7 @@
   {(s/required-key :username) (s/both (length-greater 5) (is-an-email))})
 
 (def Password
-  {(s/required-key :password) (length-greater 5)})
+  {(s/required-key :password) (length-greater 8)})
 
 (def LoginDetails
   "validation for /login"
