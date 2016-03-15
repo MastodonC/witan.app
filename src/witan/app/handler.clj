@@ -17,12 +17,12 @@
             [witan.app.util :refer [load-extensions!]]
             [witan.app.s3 :as s3]
             [witan.app.data :as data]
+            [witan.app.password-reset :as pwd]
             [schema.core :as s]
             [witan.app.schema :as w]
             [compojure.api.sweet :as sweet]
             [compojure.api.upload :as upload]
             [ring.util.http-response :refer :all]
-            [clojure.tools.logging :as log]
             [clj-time.core :as t]
             [overtone.at-at :as at]
             [ring.logger :refer [wrap-with-logger]]))
@@ -72,7 +72,8 @@
       (ok {:message "User already present"}))
     (ok {:message "Please check your invite token - Witan only accepts invited users"})))
 
-(defn check-user [identity]
+(defn check-user
+  [identity]
   (if-let [user (u/retrieve-user identity)]
     (ok (select-keys user [:id :username :name]))
     (unauthorized {:error "Unauthorized"})))
@@ -120,9 +121,15 @@
                                :summary "log in"
                                :return w/LoginReturn
                                (login login-details))
-                  (sweet/POST* "/reset-password" []
-                               :summary "Resets a users password"
-                               (not-implemented))
+                  (sweet/POST* "/request-password-reset" []
+                               :body [payload w/Username]
+                               :summary "Starts the process for resetting a users password"
+                               (pwd/begin-reset-password! (clojure.string/lower-case (:username payload)))
+                               {:status 200});; ALWAYS return a 200 for password resets, to deny attack vector on validating emails
+                  (sweet/POST* "/complete-password-reset" []
+                               :body [payload w/PasswordReset]
+                               :summary "Completes the process for resetting a users password"
+                               (pwd/complete-reset-password! payload))
                   (sweet/POST* "/user" []
                                :body [user w/SignUp]
                                :summary "sign up"

@@ -151,3 +151,9 @@ CREATE TABLE invite_tokens (
     invite_token text,
     PRIMARY KEY (username, invite_token)
 );
+
+CREATE TABLE password_reset_tokens (
+    username text,
+    password_reset_token text,
+    PRIMARY KEY (username, password_reset_token)
+);
