@@ -183,7 +183,7 @@
     (testing "sign up"
       (with-redefs [u/add-user! (fn [user] ())
                     u/invited? (fn [_ _] true)]
-        (let [[status body _] (post* app "/api/user" {:body (json {"username" "test@test.com" "password" "sekrit" "name" "Arthur Dent" "invite-token" "foobar"})})]
+        (let [[status body _] (post* app "/api/user" {:body (json {"username" "test@test.com" "password" "sekrit123" "name" "Arthur Dent" "invite-token" "foobar"})})]
           (is (= status 201))
           (is (contains? body :token))
           (is (contains? body :id))))))
