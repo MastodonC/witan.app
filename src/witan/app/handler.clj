@@ -125,12 +125,11 @@
                                :body [payload w/Username]
                                :summary "Starts the process for resetting a users password"
                                (pwd/begin-reset-password! (clojure.string/lower-case (:username payload)))
-                               {:status 200})
+                               {:status 200});; ALWAYS return a 200 for password resets, to deny attack vector on validating emails
                   (sweet/POST* "/complete-password-reset" []
                                :body [payload w/PasswordReset]
                                :summary "Completes the process for resetting a users password"
-                               (pwd/complete-reset-password! payload)
-                               {:status 200});; ALWAYS return a 200 for password resets, to deny attack vector on validating emails
+                               (pwd/complete-reset-password! payload))
                   (sweet/POST* "/user" []
                                :body [user w/SignUp]
                                :summary "sign up"

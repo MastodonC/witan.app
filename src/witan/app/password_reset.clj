@@ -31,11 +31,16 @@
 (defn complete-reset-password!
   "Completes the password reset process by checking token, processing password and deleting"
   [{:keys [username password password-reset-token]}]
-  (let [username (clojure.string/lower-case username)]
-    (if (not-empty (exec (hayt/select :password_reset_tokens
-                                      (hayt/where {:username username :password_reset_token password-reset-token}))))
-      (do
-        (usr/change-password! username password)
-        (exec (hayt/delete :password_reset_tokens (hayt/where {:username username :password_reset_token password-reset-token})))
-        (log/info "Password reset completed for user" (str \[ username \])))
-      (log/warn "A password reset completion was attempted using the following invalid details:" username password-reset-token))))
+  (try
+    (let [username (clojure.string/lower-case username)]
+      (if (not-empty (exec (hayt/select :password_reset_tokens
+                                        (hayt/where {:username username :password_reset_token password-reset-token}))))
+        (do
+          (usr/change-password! username password)
+          (exec (hayt/delete :password_reset_tokens (hayt/where {:username username :password_reset_token password-reset-token})))
+          (log/info "Password reset completed for user" (str \[ username \]))
+          {:status 200})
+        (do
+          (log/warn "A password reset completion was attempted using the following invalid details:" username password-reset-token)
+          {:status 400})))
+    (catch Exception e {:status 400})))
