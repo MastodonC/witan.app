@@ -167,7 +167,7 @@
 
     (testing "login failure"
       (with-redefs [u/user-valid? (fn [username password] false)]
-        (let [[status body _] (post* app "/api/login" {:body (json {"username" "blah@blah.blah" "password" "foobar"})})]
+        (let [[status body _] (post* app "/api/login" {:body (json {"username" "blah@blah.blah" "password" "foobar123"})})]
           (is (= status 200))
           (is (not (contains? body :token)))
           (is (not (contains? body :id))))))
