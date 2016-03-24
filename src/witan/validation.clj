@@ -20,7 +20,7 @@
 
 (defn category-validation-error?
   [category lines]
-  (let [req-headers #{"gss.code.borough" "gss.code.ward" "ward.name"}
+  (let [req-headers #{"gss.code.borough" "gss.code.ward" "borough" "ward.name"}
         inc-headers (str/split (first lines) #",")
         formatted-headers (->> inc-headers
                                (map str/lower-case)
