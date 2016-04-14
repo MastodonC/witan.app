@@ -24,8 +24,7 @@
             [compojure.api.upload :as upload]
             [ring.util.http-response :refer :all]
             [clj-time.core :as t]
-            [overtone.at-at :as at]
-            [ring.logger :refer [wrap-with-logger]]))
+            [overtone.at-at :as at]))
 
 ;; Global storage for store generated tokens.
 (defonce tokens (atom {}))
@@ -231,5 +230,4 @@
              (wrap-authorization auth-backend)
              (wrap-authentication auth-backend)
              (wrap-cors :access-control-allow-origin [#".*"]
-                        :access-control-allow-methods [:get :put :post :delete])
-             (wrap-with-logger)))
+                        :access-control-allow-methods [:get :put :post :delete])))

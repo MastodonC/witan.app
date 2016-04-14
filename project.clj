@@ -48,7 +48,6 @@
                  [cider/cider-nrepl              ~cider-nrepl-version]
                  [org.clojure/tools.namespace    "0.2.10"]
                  [org.clojure/tools.nrepl        "0.2.12"]
-                 [ring-logger "0.7.5"]
                  [environ "1.0.1"]
                  [de.ubercode.clostache/clostache "1.4.0"]]
 
