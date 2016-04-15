@@ -4,8 +4,8 @@
   <!-- Console output -->
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <!-- encoder defaults to ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
-    <encoder>
-      <pattern>%d{HH:mm:ss.SSS} %-5level %logger{10} %X{pipejine.q} - %msg%n</pattern>
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <customFields>{"appName": "witan-app"}</customFields>
     </encoder>
     <!-- Only log level INFO and above -->
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">

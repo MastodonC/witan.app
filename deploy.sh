@@ -4,10 +4,11 @@ SEBASTOPOL_IP=$1
 ENVIRONMENT=$2
 # using deployment service sebastopol
 TAG=git-$(echo $CIRCLE_SHA1 | cut -c1-12)
+VPC=sandpit
 if [ $ENVIRONMENT = "production" ]; then
   sed -e "s/@@TAG@@/$TAG/" -e "s/@@ENVIRONMENT@@/$ENVIRONMENT/" witan-app.json.old-docker.template > witan-app.json
 else
-  sed -e "s/@@TAG@@/$TAG/" -e "s/@@ENVIRONMENT@@/$ENVIRONMENT/" witan-app.json.template > witan-app.json
+  sed -e "s/@@TAG@@/$TAG/" -e "s/@@ENVIRONMENT@@/$ENVIRONMENT/" -e "s/@@VPC@@/$VPC/" witan-app.json.template > witan-app.json
 fi
 
 # we want curl to output something we can use to indicate success/failure

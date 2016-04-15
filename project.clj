@@ -28,6 +28,7 @@
                  [org.slf4j/jul-to-slf4j         ~slf4j-version]
                  [org.slf4j/jcl-over-slf4j       ~slf4j-version]
                  [org.slf4j/log4j-over-slf4j     ~slf4j-version]
+                 [net.logstash.logback/logstash-logback-encoder "4.6"]
                  [javax.mail/mail                "1.4.7"]
                  [overtone/at-at "1.2.0"]
                  [com.amazonaws/aws-java-sdk "1.10.27"]
@@ -48,7 +49,6 @@
                  [cider/cider-nrepl              ~cider-nrepl-version]
                  [org.clojure/tools.namespace    "0.2.10"]
                  [org.clojure/tools.nrepl        "0.2.12"]
-                 [ring-logger "0.7.5"]
                  [environ "1.0.1"]
                  [de.ubercode.clostache/clostache "1.4.0"]]
 
