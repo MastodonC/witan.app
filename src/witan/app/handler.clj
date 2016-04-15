@@ -225,9 +225,18 @@
 (let [delay (t/in-millis (t/days 7))]
   (at/every delay #(clear-expired-tokens! tokens) at-at-pool :initial-delay delay))
 
+(defn wrap-logger [handler]
+  (fn [{:keys [uri headers] :as request}]
+    (let [response (handler request)]
+      (log/info {:uri uri
+                 :headers headers
+                 :status (:status response)})
+      response)))
+
 ;; the Ring app definition including the authentication backend
 (def app (-> app'
              (wrap-authorization auth-backend)
              (wrap-authentication auth-backend)
              (wrap-cors :access-control-allow-origin [#".*"]
-                        :access-control-allow-methods [:get :put :post :delete])))
+                        :access-control-allow-methods [:get :put :post :delete])
+             (wrap-logger)))
