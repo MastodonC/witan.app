@@ -7,7 +7,7 @@
       "parameters": [
          {"key": "env", "value": "ENVIRONMENT=@@ENVIRONMENT@@"},
          {"key": "log-driver", "value": "gelf"},
-         {"key": "log-opt", "value": "gelf-address=udp://@@ENVIRONMENT@@-logstash.@@VPC@@-kixi.mesos:12201"},
+         {"key": "log-opt", "value": "gelf-address=udp://logstash.@@VPC@@-kixi.mesos:12201"},
          {"key": "label", "value": "cluster=@@ENVIRONMENT@@"},
          {"key": "label", "value": "application=witan-app"}
       ],
