@@ -234,9 +234,10 @@
       response)))
 
 ;; the Ring app definition including the authentication backend
-(def app (-> app'
-             (wrap-authorization auth-backend)
-             (wrap-authentication auth-backend)
-             (wrap-cors :access-control-allow-origin [#".*"]
-                        :access-control-allow-methods [:get :put :post :delete])
-             (wrap-logger)))
+(def app (try (-> app'
+                  (wrap-authorization auth-backend)
+                  (wrap-authentication auth-backend)
+                  (wrap-cors :access-control-allow-origin [#".*"]
+                             :access-control-allow-methods [:get :put :post :delete])
+                  (wrap-logger))
+              (catch Exception e (log/error e))))
