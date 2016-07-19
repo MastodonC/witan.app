@@ -7,6 +7,7 @@
             [witan.app.config           :as conf]
             [witan.app.components.kafka :as kafka]))
 
+
 (defrecord JettyServer [handler port]
   component/Lifecycle
   (start [this]

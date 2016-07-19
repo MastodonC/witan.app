@@ -233,10 +233,17 @@
                  :status (:status response)})
       response)))
 
+(defn wrap-catch-exceptions [handler]
+  (fn [request]
+    (try (handler request)
+         (catch Throwable t (log/error t)))))
+
 ;; the Ring app definition including the authentication backend
-(def app (-> app'
-             (wrap-authorization auth-backend)
-             (wrap-authentication auth-backend)
-             (wrap-cors :access-control-allow-origin [#".*"]
-                        :access-control-allow-methods [:get :put :post :delete])
-             (wrap-logger)))
+(def app
+  (-> app'
+      (wrap-authorization auth-backend)
+      (wrap-authentication auth-backend)
+      (wrap-cors :access-control-allow-origin [#".*"]
+                 :access-control-allow-methods [:get :put :post :delete])
+      (wrap-logger)
+      (wrap-catch-exceptions)))
