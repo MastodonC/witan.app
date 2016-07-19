@@ -22,6 +22,7 @@
             [witan.app.schema :as w]
             [compojure.api.sweet :as sweet]
             [compojure.api.upload :as upload]
+            [compojure.api.exception :as exception]
             [ring.util.http-response :refer :all]
             [clj-time.core :as t]
             [overtone.at-at :as at]))
@@ -102,7 +103,17 @@
     (println "RESOURCE: " result)
     result))
 
+(defn logging-handler [^Exception e data request]
+  (log/error e)
+  (internal-server-error {:message (.getMessage e)}))
+
+(defn schema-logging-handler [^Exception e data request]
+  (log/error e)
+  (exception/schema-error-handler e data request))
+
 (sweet/defapi app'
+  {:exceptions {:handlers {:compojure.api.exception/default logging-handler
+                           :compojure.api.exception/response-validation schema-logging-handler}}}
   (sweet/swagger-ui)
   (sweet/swagger-docs
    {:info {:title "Witan API"
@@ -233,11 +244,6 @@
                  :status (:status response)})
       response)))
 
-(defn wrap-catch-exceptions [handler]
-  (fn [request]
-    (try (handler request)
-         (catch Throwable t (log/error t)))))
-
 ;; the Ring app definition including the authentication backend
 (def app
   (-> app'
@@ -245,5 +251,4 @@
       (wrap-authentication auth-backend)
       (wrap-cors :access-control-allow-origin [#".*"]
                  :access-control-allow-methods [:get :put :post :delete])
-      (wrap-logger)
-      (wrap-catch-exceptions)))
+      (wrap-logger)))
