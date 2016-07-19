@@ -1,4 +1,4 @@
-(def slf4j-version "1.7.12")
+(def slf4j-version "1.7.21")
 (def cider-nrepl-version "0.9.1")
 
 (defproject witan.app "0.1.18-SNAPSHOT"
@@ -24,11 +24,10 @@
                  [kixi/schema-contrib "0.2.0"]
                  [kixi/compojure-api "0.24.0"]
                  [org.clojure/tools.logging      "0.3.1"]
-                 [ch.qos.logback/logback-classic "1.1.3"]
+                 [ch.qos.logback/logback-classic "1.1.7"]
                  [org.slf4j/jul-to-slf4j         ~slf4j-version]
                  [org.slf4j/jcl-over-slf4j       ~slf4j-version]
                  [org.slf4j/log4j-over-slf4j     ~slf4j-version]
-                 [net.logstash.logback/logstash-logback-encoder "4.6"]
                  [javax.mail/mail                "1.4.7"]
                  [overtone/at-at "1.2.0"]
                  [com.amazonaws/aws-java-sdk "1.10.27"]

@@ -8,12 +8,6 @@
             [clojure.tools.nrepl.server :as nrepl-server]
             [com.stuartsierra.component :as component]))
 
-;; See http://stuartsierra.com/2015/05/27/clojure-uncaught-exceptions
-(defn install-default-exception-handler []
-  (Thread/setDefaultUncaughtExceptionHandler
-   (reify Thread$UncaughtExceptionHandler
-     (uncaughtException [_ thread ex]
-       (log/error ex "Uncaught exception on " (.getName thread))))))
 
 (defrecord ReplServer [config]
   component/Lifecycle
@@ -50,6 +44,10 @@
       (println banner)
       (System/exit 0))
 
-    (install-default-exception-handler)
+    ;; See http://stuartsierra.com/2015/05/27/clojure-uncaught-exceptions
+    (Thread/setDefaultUncaughtExceptionHandler
+     (reify Thread$UncaughtExceptionHandler
+       (uncaughtException [_ thread ex]
+         (log/error ex "Uncaught exception on" (.getName thread)))))
 
     (alter-var-root #'witan.application/system (fn [_] (component/start (build-application opts))))))
