@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-echo -en "This will erase the database on staging..\n\nConfirm [yN]: "
+PUBLIC_SLAVE_IP=$1
+echo -en "This will erase the database from $PUBLIC_SLAVE_IP..\n\nConfirm [yN]: "
 
 read yn
 
@@ -14,4 +15,4 @@ cat <<EOF |
 (load-db-schema! c/config)
 (exit)
 EOF
-lein repl :connect witan-app.marathon.mesos:5001
+lein repl :connect $PUBLIC_SLAVE_IP:5001
