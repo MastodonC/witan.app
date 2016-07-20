@@ -1,7 +1,7 @@
 (def slf4j-version "1.7.21")
 (def cider-nrepl-version "0.9.1")
 
-(defproject witan.app "0.1.18"
+(defproject witan.app "0.1.19-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :min-lein-version "2.0.0"
