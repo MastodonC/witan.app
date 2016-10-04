@@ -7,7 +7,7 @@
 
 (defn cluster
   [host]
-  (alia/cluster {:contact-points [host]}))
+  (alia/cluster {:contact-points host}))
 
 (defn session-setup
   [host]
