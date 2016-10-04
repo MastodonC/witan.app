@@ -2,7 +2,9 @@
 
 # config
 cat <<EOF  > /root/.witan-app.edn
-{:cassandra-session {:host "cassandra-dcos-node.cassandra.dcos.mesos"
+{:cassandra-session {:host ["node-0.cassandra.mesos"
+                            "node-1.cassandra.mesos"
+                            "node-2.cassandra.mesos"]
                      :keyspace "witan"
                      :replication 3}
  :s3 {:bucket "witan-${ENVIRONMENT?not defined}-data"}

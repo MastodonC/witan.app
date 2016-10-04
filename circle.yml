@@ -14,7 +14,7 @@ deployment:
       - docker tag -f mastodonc/witan.app mastodonc/witan.app:git-$(echo $CIRCLE_SHA1 | cut -c1-12)
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker push mastodonc/witan.app
-      - ./deploy.sh $DEPLOY_IP production
+      - ./deploy.sh sandpit-production-deploy.mastodonc.net production
   staging:
     branch: master
     commands:

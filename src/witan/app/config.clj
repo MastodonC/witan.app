@@ -18,7 +18,7 @@
            (get-config default-config)))))
 
 (defn cluster [host]
-  (alia/cluster {:contact-points [host]}))
+  (alia/cluster {:contact-points host}))
 
 (defn session [host keyspace]
   (alia/connect (cluster host) keyspace))
