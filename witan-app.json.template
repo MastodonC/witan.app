@@ -29,7 +29,7 @@
   },
   "id": "witan-app",
   "cpus": 1,
-  "mem": 4096,
+  "mem": 2048,
   "healthChecks": [{
         "protocol": "TCP",
         "gracePeriodSeconds": 600,

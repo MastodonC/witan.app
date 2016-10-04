@@ -1,4 +1,4 @@
-{:cassandra-session {:host "localhost"
+{:cassandra-session {:host ["localhost"]
                      :keyspace "witan"
                      :replication 1}
  :s3 {:bucket "witan-test-data"}
